@@ -54,15 +54,14 @@ export default function FeaturedProperties({
                   <div className="absolute top-4 right-4 flex items-center gap-2 z-10" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => onToggleCompare(prop.id)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                         isCompared
-                          ? 'bg-[#1A1A1A] text-white shadow-sm'
-                          : 'bg-white/90 backdrop-blur-md text-[#6B7280] hover:text-[#1A1A1A]'
+                          ? 'bg-[#1A1A1A] text-white shadow-md'
+                          : 'bg-white/90 backdrop-blur-md text-[#6B7280] hover:text-[#E1224D]'
                       }`}
                       title="Compare property"
                     >
-                      <Scale className="w-3.5 h-3.5 inline mr-1" />
-                      {isCompared ? 'Compared' : '+ Compare'}
+                      <Scale className="w-4 h-4" />
                     </button>
 
                     <button
