@@ -1,6 +1,6 @@
 import React from 'react';
 import WhyOwnStayGrid from '../components/sections/WhyOwnStayGrid';
-import FAQSection from '../components/sections/FAQSection';
+import FAQSection from '../components/sections/FaqSection';
 import { Sparkles, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

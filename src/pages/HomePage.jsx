@@ -5,7 +5,7 @@ import CitiesCarousel from '../components/sections/CitiesCarousel';
 import WhyOwnStayGrid from '../components/sections/WhyOwnStayGrid';
 import PropertiesSection from '../components/properties/PropertiesSection';
 import BlogSection from '../components/sections/BlogSection';
-import FAQSection from '../components/sections/FAQSection';
+import FAQSection from '../components/sections/FaqSection';
 import RentalCategoriesShowcase from '../components/sections/RentalCategoriesShowcase';
 import ManagedServicesShowcase from '../components/sections/ManagedServicesShowcase';
 import { Link } from 'react-router-dom';
