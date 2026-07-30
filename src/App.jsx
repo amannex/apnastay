@@ -137,9 +137,10 @@ export default function App() {
                 searchFilters={searchFilters}
                 onSearchChange={(type, val) => {
                   if (type === 'city') setSelectedCity(val);
-                  if (type === 'price') setMaxPrice(val);
+                  if (type === 'price') setMaxPrice(Number(val));
                   if (type === 'roomType') setRoomType(val);
                 }}
+                onReset={handleResetFilters}
                 onCitySelect={(city) => setSelectedCity(city)}
                 onOpenModal={(prop) => setSelectedPropertyModal(prop)}
                 onOpenCompare={handleToggleCompare}

@@ -8,18 +8,35 @@ export default function PropertiesSection({
   onTabChange,
   onOpenModal,
   onOpenCompare,
-  showSectionHeader = true
+  showSectionHeader = true,
+  searchFilters = null
 }) {
   const [selectedCityTab, setSelectedCityTab] = useState('All');
 
   const filteredProperties = useMemo(() => {
     return STATIC_PROPERTIES.filter((p) => {
+      // 1. City tab filter
       if (selectedCityTab !== 'All' && p.city !== selectedCityTab) {
         return false;
       }
+      // 2. SearchBar city filter
+      if (searchFilters?.selectedCity && searchFilters.selectedCity !== 'all' && p.city !== searchFilters.selectedCity) {
+        return false;
+      }
+      // 3. SearchBar maxPrice filter
+      if (searchFilters?.maxPrice && p.price > searchFilters.maxPrice) {
+        return false;
+      }
+      // 4. SearchBar roomType filter
+      if (searchFilters?.roomType && searchFilters.roomType !== 'all') {
+        const query = searchFilters.roomType.toLowerCase();
+        if (!p.roomType.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
       return true;
     });
-  }, [selectedCityTab]);
+  }, [selectedCityTab, searchFilters]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">

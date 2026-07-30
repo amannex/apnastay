@@ -14,6 +14,7 @@ import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 export default function HomePage({
   searchFilters,
   onSearchChange,
+  onReset,
   onCitySelect,
   activeTab,
   onTabChange,
@@ -28,7 +29,7 @@ export default function HomePage({
 
       {/* 2. SEARCH & FILTER SECTION */}
       <div className="relative z-10 py-8">
-        <SearchBar filters={searchFilters} onChange={onSearchChange} />
+        <SearchBar filters={searchFilters} onChange={onSearchChange} onReset={onReset} />
       </div>
 
       {/* 3. INDIAN TIER-2 CITIES CAROUSEL */}
@@ -49,6 +50,7 @@ export default function HomePage({
           onTabChange={onTabChange}
           onOpenModal={onOpenModal}
           onOpenCompare={onOpenCompare}
+          searchFilters={searchFilters}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-center">
           <Link
