@@ -71,19 +71,18 @@ export default function PropertyModal({
   property,
   onClose,
   isWishlisted,
-  onToggleWishlist,
   onBookVisit
 }) {
-  if (!property) return null;
-
   const [activeTab, setActiveTab] = useState('gallery');
   const [chatMessage, setChatMessage] = useState('');
   const [chatLog, setChatLog] = useState([
     {
       sender: 'owner',
-      text: `Hi! I'm ${property.owner.name}. Let me know if you have any questions about the acoustics or Wi-Fi speeds!`
+      text: `Hi! I'm ${property?.owner?.name || 'the owner'}. Let me know if you have any questions about the acoustics or Wi-Fi speeds!`
     }
   ]);
+
+  if (!property) return null;
 
   const handleSendChat = (e) => {
     e.preventDefault();
