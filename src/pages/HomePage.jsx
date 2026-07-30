@@ -28,7 +28,7 @@ export default function HomePage({
       <VideoWalkthroughHero2D />
 
       {/* 2. SEARCH & FILTER SECTION */}
-      <div className="relative z-10 py-8">
+      <div className="relative z-30 pt-6 pb-4">
         <SearchBar filters={searchFilters} onChange={onSearchChange} onReset={onReset} />
       </div>
 

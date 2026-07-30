@@ -76,7 +76,7 @@ export default function SearchBar({
   const hasActiveFilters = activeCity !== 'all' || activePrice < 50000 || activeRoomType !== 'all';
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 -mt-16 sm:-mt-10 relative z-40">
+    <div className="w-full max-w-6xl mx-auto px-4 relative z-40">
       <div className="glass-panel rounded-3xl p-3 sm:p-4 shadow-apple-lg border border-white">
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
           {/* STEP 1: CITY SELECTOR */}
