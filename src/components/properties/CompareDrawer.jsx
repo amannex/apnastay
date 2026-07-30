@@ -75,104 +75,168 @@ export default function CompareDrawer({
           </div>
         ) : (
           <div className="p-6 overflow-x-auto">
-            <div className="min-w-[700px] grid grid-cols-4 gap-4">
-              {/* COLUMN 1: LABEL HEADER */}
-            <div className="space-y-6 pt-16 font-semibold text-xs text-[#6B7280]">
-              <div className="h-10 flex items-center">Monthly Rent ($0 Brokerage)</div>
-              <div className="h-10 flex items-center">Security Deposit</div>
-              <div className="h-10 flex items-center">OwnStay Audit Score</div>
-              <div className="h-10 flex items-center">Primary Transit</div>
-              <div className="h-10 flex items-center">Wi-Fi & Desk Setup</div>
-              <div className="h-10 flex items-center">Self-Tour Status</div>
-            </div>
+            <table className="w-full min-w-[760px] border-collapse text-left">
+              <thead>
+                <tr>
+                  <th className="p-4 w-[220px] align-bottom pb-6">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">
+                      Property Features
+                    </div>
+                    <div className="text-sm font-extrabold text-[#1A1A1A] mt-1">
+                      Comparing {compareList.length} Homes
+                    </div>
+                  </th>
+                  {compareList.map((prop) => (
+                    <th key={prop.id} className="p-3 w-[220px] align-top">
+                      <div className="bg-[#FAFAFA] rounded-2xl border border-[#EDEDED] p-3 relative group">
+                        <button
+                          onClick={() => onRemoveCompare(prop.id)}
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white border border-[#EDEDED] flex items-center justify-center text-[#6B7280] hover:text-[#E1224D] transition-colors z-10"
+                          title="Remove"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                        <div
+                          onClick={() => {
+                            onClose();
+                            onSelectProperty(prop);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <img
+                            src={prop.images[0]}
+                            alt={prop.title}
+                            className="w-full h-28 rounded-xl object-cover mb-2.5"
+                          />
+                          <h4 className="text-sm font-bold text-[#1A1A1A] line-clamp-1 group-hover:text-[#E1224D] transition-colors">
+                            {prop.title}
+                          </h4>
+                          <p className="text-xs text-[#6B7280] line-clamp-1">{prop.neighborhood}</p>
+                        </div>
+                      </div>
+                    </th>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <th key={`empty-header-${idx}`} className="p-3 w-[220px] align-top">
+                      <div className="h-full min-h-[160px] rounded-2xl border-2 border-dashed border-[#EDEDED] flex flex-col items-center justify-center p-4 text-center bg-[#FAFAFA]/50">
+                        <div className="w-9 h-9 rounded-full bg-white border border-[#EDEDED] flex items-center justify-center text-[#6B7280] mb-2 shadow-sm">
+                          +
+                        </div>
+                        <span className="text-xs font-bold text-[#1A1A1A]">Add Home</span>
+                        <span className="text-[10px] text-[#6B7280] mt-0.5">Click + Compare on card</span>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#EDEDED] text-xs">
+                {/* ROW 1: Monthly Rent */}
+                <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
+                  <td className="p-4 font-bold text-[#6B7280]">Monthly Rent (₹0 Brokerage)</td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4 font-extrabold text-sm text-[#E1224D]">
+                      ₹{prop.price.toLocaleString('en-IN')}/mo
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-rent-${idx}`} className="p-4 text-[#6B7280] text-center">—</td>
+                  ))}
+                </tr>
 
-            {/* COLUMNS 2-4: PROPERTIES */}
-            {compareList.map((prop) => (
-              <div
-                key={prop.id}
-                className="bg-[#FAFAFA] rounded-2xl border border-[#EDEDED] p-4 flex flex-col justify-between relative group"
-              >
-                <button
-                  onClick={() => onRemoveCompare(prop.id)}
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white border border-[#EDEDED] flex items-center justify-center text-[#6B7280] hover:text-[#E1224D] transition-colors"
-                  title="Remove"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                {/* ROW 2: Security Deposit */}
+                <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
+                  <td className="p-4 font-bold text-[#6B7280]">Security Deposit</td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4 font-bold text-emerald-600">
+                      ₹{prop.costBreakdown.securityDeposit.toLocaleString('en-IN')} (100% Refundable)
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-dep-${idx}`} className="p-4 text-[#6B7280] text-center">—</td>
+                  ))}
+                </tr>
 
-                {/* PROPERTY HEADER CARD */}
-                <div
-                  onClick={() => {
-                    onClose();
-                    onSelectProperty(prop);
-                  }}
-                  className="cursor-pointer mb-4"
-                >
-                  <img
-                    src={prop.images[0]}
-                    alt={prop.title}
-                    className="w-full h-24 rounded-xl object-cover mb-2"
-                  />
-                  <h4 className="text-sm font-bold text-[#1A1A1A] line-clamp-1 group-hover:text-[#E1224D] transition-colors">
-                    {prop.title}
-                  </h4>
-                  <p className="text-xs text-[#6B7280]">{prop.neighborhood}</p>
-                </div>
+                {/* ROW 3: OwnStay Audit Score */}
+                <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
+                  <td className="p-4 font-bold text-[#6B7280]">OwnStay Audit Score</td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4 font-bold text-[#1A1A1A]">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-[#E1224D]">
+                        <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span>25-Point Pass ({prop.aiAttributes?.matchScore || 95}%)</span>
+                      </div>
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-audit-${idx}`} className="p-4 text-[#6B7280] text-center">—</td>
+                  ))}
+                </tr>
 
-                {/* VALUES LIST */}
-                <div className="space-y-6 text-xs font-bold text-[#1A1A1A]">
-                  <div className="h-10 flex items-center text-sm text-[#E1224D]">
-                    ${prop.price}/mo
-                  </div>
-                  <div className="h-10 flex items-center text-emerald-600">
-                    ${prop.costBreakdown.securityDeposit} (100% Refundable)
-                  </div>
-                  <div className="h-10 flex items-center gap-1">
-                    <ShieldCheck className="w-4 h-4 text-[#E1224D]" />
-                    <span>25-Point Pass ({prop.aiAttributes?.matchScore || 95}% score)</span>
-                  </div>
-                  <div className="h-10 flex items-center text-xs text-[#6B7280] font-medium">
-                    {prop.nearby[0]?.name || 'Metro station nearby'}
-                  </div>
-                  <div className="h-10 flex items-center text-xs text-[#6B7280] font-medium">
-                    {prop.amenities[0]?.name || 'High-speed Fiber'}
-                  </div>
-                  <div className="h-10 flex items-center gap-1.5 text-xs text-yellow-600 font-semibold">
-                    <Key className="w-3.5 h-3.5" />
-                    <span>NFC Instant Tour</span>
-                  </div>
-                </div>
+                {/* ROW 4: Primary Transit */}
+                <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
+                  <td className="p-4 font-bold text-[#6B7280]">Primary Transit</td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4 font-medium text-[#1A1A1A]">
+                      {prop.nearby[0]?.name || 'Metro station nearby'}
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-transit-${idx}`} className="p-4 text-[#6B7280] text-center">—</td>
+                  ))}
+                </tr>
 
-                {/* SELECT BUTTON */}
-                <button
-                  onClick={() => {
-                    onClose();
-                    onSelectProperty(prop);
-                  }}
-                  className="w-full mt-6 py-2.5 rounded-full bg-[#1A1A1A] text-white text-xs font-semibold hover:bg-[#E1224D] transition-colors"
-                >
-                  Inspect Room →
-                </button>
-              </div>
-            ))}
+                {/* ROW 5: Wi-Fi & Desk Setup */}
+                <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
+                  <td className="p-4 font-bold text-[#6B7280]">Wi-Fi & Desk Setup</td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4 font-medium text-[#1A1A1A]">
+                      {prop.amenities[0]?.name || 'High-speed Fiber'}
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-wifi-${idx}`} className="p-4 text-[#6B7280] text-center">—</td>
+                  ))}
+                </tr>
 
-            {/* EMPTY SLOT PLACEHOLDERS */}
-            {Array.from({ length: 3 - compareList.length }).map((_, i) => (
-              <div
-                key={i}
-                className="border-2 border-dashed border-[#EDEDED] rounded-2xl p-6 flex flex-col items-center justify-center text-center text-[#6B7280]"
-              >
-                <div className="w-10 h-10 rounded-full bg-[#FAFAFA] flex items-center justify-center mb-2">
-                  <Scale className="w-5 h-5 text-[#EDEDED]" />
-                </div>
-                <p className="text-xs font-semibold">Add another room</p>
-                <p className="text-[11px] text-[#6B7280]">
-                  Click '+ Compare' on any property card
-                </p>
-              </div>
-            ))}
+                {/* ROW 6: Self-Tour Status */}
+                <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
+                  <td className="p-4 font-bold text-[#6B7280]">Self-Tour Status</td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4 font-bold text-yellow-700">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-50 border border-yellow-200/60">
+                        <Key className="w-3.5 h-3.5 shrink-0 text-yellow-600" />
+                        <span>NFC Instant Tour</span>
+                      </div>
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-tour-${idx}`} className="p-4 text-[#6B7280] text-center">—</td>
+                  ))}
+                </tr>
+
+                {/* ROW 7: Action Button */}
+                <tr>
+                  <td className="p-4"></td>
+                  {compareList.map((prop) => (
+                    <td key={prop.id} className="p-4">
+                      <button
+                        onClick={() => {
+                          onClose();
+                          onSelectProperty(prop);
+                        }}
+                        className="w-full py-2.5 rounded-full bg-[#1A1A1A] text-white text-xs font-bold hover:bg-[#E1224D] transition-colors shadow-sm"
+                      >
+                        Inspect Room →
+                      </button>
+                    </td>
+                  ))}
+                  {Array.from({ length: 3 - compareList.length }).map((_, idx) => (
+                    <td key={`empty-btn-${idx}`} className="p-4"></td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
         )}
       </div>
     </div>
