@@ -25,8 +25,8 @@ export default function App() {
   const [roomType, setRoomType] = useState('all');
 
   // --- SaaS USER ROLE & WISHLIST STATE ---
-  const [wishlistIds, setWishlistIds] = useState(['rm-101']);
-  const [compareIds, setCompareIds] = useState(['rm-101', 'rm-102']);
+  const [wishlistIds, setWishlistIds] = useState(['prop-101']);
+  const [compareIds, setCompareIds] = useState(['prop-101', 'prop-102']);
   const [activeRole, setActiveRole] = useState('tenant');
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -143,6 +143,10 @@ export default function App() {
                 onReset={handleResetFilters}
                 onCitySelect={(city) => setSelectedCity(city)}
                 onOpenModal={(prop) => setSelectedPropertyModal(prop)}
+                compareIds={compareIds}
+                wishlistIds={wishlistIds}
+                onToggleCompare={handleToggleCompare}
+                onToggleWishlist={handleToggleWishlist}
                 onOpenCompare={handleToggleCompare}
                 onOpenAiMatchmaker={() => setIsAiMatchmakerOpen(true)}
               />
@@ -153,6 +157,10 @@ export default function App() {
             element={
               <PropertiesPage
                 activeTab="All"
+                compareIds={compareIds}
+                wishlistIds={wishlistIds}
+                onToggleCompare={handleToggleCompare}
+                onToggleWishlist={handleToggleWishlist}
                 onOpenModal={(prop) => setSelectedPropertyModal(prop)}
                 onOpenCompare={handleToggleCompare}
               />

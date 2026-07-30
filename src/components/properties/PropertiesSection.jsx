@@ -9,7 +9,11 @@ export default function PropertiesSection({
   onOpenModal,
   onOpenCompare,
   showSectionHeader = true,
-  searchFilters = null
+  searchFilters = null,
+  compareIds = [],
+  wishlistIds = [],
+  onToggleCompare,
+  onToggleWishlist
 }) {
   const [selectedCityTab, setSelectedCityTab] = useState('All');
 
@@ -84,10 +88,10 @@ export default function PropertiesSection({
       {/* 3. PROPERTY CARDS GRID */}
       <FeaturedProperties
         properties={filteredProperties}
-        wishlistIds={['rm-101']}
-        compareIds={['rm-101', 'rm-102']}
-        onToggleWishlist={() => {}}
-        onToggleCompare={onOpenCompare ? () => onOpenCompare('rm-101') : () => {}}
+        wishlistIds={wishlistIds}
+        compareIds={compareIds}
+        onToggleWishlist={onToggleWishlist || (() => {})}
+        onToggleCompare={onToggleCompare || onOpenCompare || (() => {})}
         onSelectProperty={onOpenModal}
         showHeader={false}
       />
