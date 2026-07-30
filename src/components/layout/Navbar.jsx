@@ -101,13 +101,17 @@ export default function Navbar({
 
             {/* Compare Counter Button */}
             <button
-              onClick={onOpenCompare}
-              className="relative p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#1A1A1A] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenCompare?.();
+              }}
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-colors shrink-0"
               title="Compare Properties"
             >
-              <Scale className="w-4 h-4" />
+              <Scale className="w-3.5 h-3.5 text-[#E1224D]" />
+              <span className="hidden sm:inline">Compare</span>
               {compareCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
                   {compareCount}
                 </span>
               )}
@@ -282,6 +286,24 @@ export default function Navbar({
               </Link>
 
               <div className="pt-2 mt-1 border-t border-[#EDEDED] flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenCompare?.();
+                  }}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F0F2F5] transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-[#E1224D]" />
+                    <span>Compare Properties</span>
+                  </div>
+                  {compareCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
+                      {compareCount}
+                    </span>
+                  )}
+                </button>
+
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

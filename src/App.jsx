@@ -59,6 +59,10 @@ export default function App() {
   };
 
   const handleToggleCompare = (id) => {
+    if (!id || typeof id !== 'string') {
+      setIsCompareOpen(true);
+      return;
+    }
     setCompareIds((prev) => {
       if (prev.includes(id)) return prev.filter((i) => i !== id);
       if (prev.length >= 3) {

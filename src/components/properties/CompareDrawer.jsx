@@ -11,7 +11,10 @@ export default function CompareDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-end justify-center p-4 sm:p-6 animate-slide-up">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[100] overflow-y-auto bg-black/50 backdrop-blur-sm flex items-end justify-center p-4 sm:p-6 animate-slide-up"
+    >
       <div
         className="relative w-full max-w-6xl bg-white rounded-3xl shadow-apple-lg border border-[#EDEDED] overflow-hidden max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
