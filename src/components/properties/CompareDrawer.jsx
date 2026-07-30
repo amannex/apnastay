@@ -6,6 +6,7 @@ export default function CompareDrawer({
   onClose,
   compareList = [],
   onRemoveCompare,
+  onClearCompare,
   onSelectProperty
 }) {
   if (!isOpen) return null;

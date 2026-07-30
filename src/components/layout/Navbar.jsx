@@ -99,13 +99,13 @@ export default function Navbar({
               <span>AI Matchmaker</span>
             </button>
 
-            {/* Compare Counter Button */}
+            {/* Compare Counter Button (hidden on mobile header, available in mobile hamburger menu) */}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenCompare?.();
               }}
-              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-colors shrink-0"
+              className="relative hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-colors shrink-0"
               title="Compare Properties"
             >
               <Scale className="w-3.5 h-3.5 text-[#E1224D]" />
