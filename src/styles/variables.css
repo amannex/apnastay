@@ -1,0 +1,73 @@
+/* ==========================================================================
+   OWNSTAY GLOBAL DESIGN SYSTEM VARIABLES
+   Centralized CSS Custom Properties (:root) for typography, colors,
+   shadows, radii, transitions, and z-index layers across the app.
+   ========================================================================== */
+
+:root {
+  /* --- BRAND PRIMARY PALETTE --- */
+  --color-primary: #E1224D;
+  --color-primary-hover: #C71B42;
+  --color-primary-light: #FFE4EA;
+  --color-primary-50: #FFF0F3;
+  --color-primary-100: #FFE4EA;
+  --color-primary-200: #FFC3D1;
+  --color-primary-500: #E1224D;
+  --color-primary-600: #C71B42;
+  --color-primary-700: #9E1332;
+
+  /* --- BRAND NEUTRAL / SURFACES --- */
+  --color-bg-white: #FFFFFF;
+  --color-bg-light: #FAFAFA;
+  --color-bg-subtle: #F5F5F7;
+  --color-bg-dark: #0F131A;
+  --color-bg-black: #000000;
+
+  /* --- TEXT PALETTE --- */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-light: #F9FAFB;
+  --color-text-white: #FFFFFF;
+
+  /* --- BORDERS & DIVIDERS --- */
+  --color-border: #EDEDED;
+  --color-border-subtle: rgba(237, 237, 237, 0.8);
+  --color-border-dark: rgba(31, 41, 55, 0.8);
+
+  /* --- STATUS & ALERTS --- */
+  --color-success: #10B981;
+  --color-success-light: #ECFDF5;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FFFBEB;
+  --color-error: #EF4444;
+  --color-error-light: #FEF2F2;
+
+  /* --- TYPOGRAPHY FAMILIES --- */
+  --font-primary: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
+
+  /* --- APPLE-STYLE ELEVATION & SHADOWS --- */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-apple: 0 4px 24px -2px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+  --shadow-apple-hover: 0 12px 36px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --shadow-apple-lg: 0 24px 64px -8px rgba(0, 0, 0, 0.14), 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+  /* --- BORDER RADIUS TOKENS --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-2xl: 2.25rem;
+  --radius-full: 9999px;
+
+  /* --- TRANSITIONS & ANIMATIONS --- */
+  --transition-fast: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* --- LAYOUT CONFIG --- */
+  --layout-max-width: 1280px; /* max-w-7xl */
+}
