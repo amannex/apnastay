@@ -27,12 +27,12 @@ jobs:
       - name: Run fast linter (Oxlint)
         run: npm run lint
 
-      - name: Build production bundle (Vite)
+      - name: Build production bundle (Next.js)
         run: npm run build
 
       - name: Upload production build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: production-dist
-          path: dist/
+          name: nextjs-production-build
+          path: .next/
           retention-days: 7
