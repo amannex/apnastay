@@ -21,6 +21,7 @@ import {
   Wind,
   Shirt,
   Coffee
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { Property } from '../types';
 

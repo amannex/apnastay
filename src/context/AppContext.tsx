@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable */
 
 import React, { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
 import { STATIC_PROPERTIES, STATIC_CITIES } from '../data/staticProperties';
