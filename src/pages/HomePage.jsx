@@ -9,7 +9,8 @@ import FAQSection from '../components/sections/FaqSection';
 import RentalCategoriesShowcase from '../components/sections/RentalCategoriesShowcase';
 import ManagedServicesShowcase from '../components/sections/ManagedServicesShowcase';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import AppLaunchBanner from '../components/sections/AppLaunchBanner';
 
 export default function HomePage({
   searchFilters,
@@ -74,6 +75,9 @@ export default function HomePage({
 
       {/* 5.5. MANAGED LIVING SERVICES & TRUST (bg-[#FAFAFA]) */}
       <ManagedServicesShowcase />
+
+      {/* 5.8. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}
+      <AppLaunchBanner />
 
       {/* 6. OWNSTAY JOURNAL & URBAN LIVING GUIDE */}
       <BlogSection />

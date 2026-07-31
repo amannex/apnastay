@@ -5,11 +5,8 @@ export default function AiMatchmakerModal({
   isOpen,
   onClose,
   cities = [],
-  properties = [],
   onSelectProperty
 }) {
-  if (!isOpen) return null;
-
   const [step, setStep] = useState(1);
   const [targetCity, setTargetCity] = useState(cities[0]?.name || 'New York');
   const [budget, setBudget] = useState(2500);
@@ -17,6 +14,8 @@ export default function AiMatchmakerModal({
   const [lifestyle, setLifestyle] = useState('Quiet WFH & Acoustics');
   const [isCalculating, setIsCalculating] = useState(false);
   const [results, setResults] = useState([]);
+
+  if (!isOpen) return null;
 
   const lifestyleOptions = [
     { id: 'Quiet WFH & Acoustics', label: 'Quiet WFH & Acoustics', icon: '🔇', desc: 'Soundproofed double-glazing & fiber' },
