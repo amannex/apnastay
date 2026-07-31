@@ -8,6 +8,7 @@ import AuthModal from '../auth/AuthModal';
 import PropertyModal from '../properties/PropertyModal';
 import AiMatchmakerModal from '../ai/AiMatchmakerModal';
 import CompareDrawer from '../properties/CompareDrawer';
+import WishlistDrawer from '../properties/WishlistDrawer';
 import RoleDashboardModal from '../dashboard/RoleDashboardModal';
 import { STATIC_CITIES, STATIC_PROPERTIES } from '../../data/staticProperties';
 import { CheckCircle2, Key, X } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     currentUser,
     onRoleChange,
     onOpenCompare,
+    onOpenWishlist,
     onOpenRoleModal,
     onOpenAiMatchmaker,
     onOpenAuthModal,
@@ -30,15 +32,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     selectedPropertyModal,
     onCloseModal,
     onToggleWishlist,
+    onClearWishlist,
     onBookVisit,
     isAiMatchmakerOpen,
     onCloseAiMatchmaker,
     onOpenModal,
     isCompareOpen,
+    isWishlistOpen,
     onCloseCompare,
+    onCloseWishlist,
     comparePropertiesList,
+    wishlistPropertiesList,
     onRemoveCompare,
     onClearCompare,
+    onSelectForCompare,
     isRoleModalOpen,
     onCloseRoleModal,
     bookingConfirmation,
@@ -54,6 +61,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         currentUser={currentUser}
         onRoleChange={onRoleChange}
         onOpenCompare={onOpenCompare}
+        onOpenWishlist={onOpenWishlist}
         onOpenRoleModal={onOpenRoleModal}
         onOpenAiMatchmaker={onOpenAiMatchmaker}
         onOpenAuthModal={onOpenAuthModal}
@@ -102,6 +110,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onRemoveCompare={onRemoveCompare}
         onClearCompare={onClearCompare}
         onSelectProperty={onOpenModal}
+      />
+
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={onCloseWishlist}
+        properties={wishlistPropertiesList}
+        onToggleWishlist={onToggleWishlist}
+        onClearWishlist={onClearWishlist}
+        onOpenModal={onOpenModal}
+        onOpenCompare={onOpenCompare}
+        onSelectForCompare={onSelectForCompare}
       />
 
       <RoleDashboardModal

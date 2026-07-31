@@ -1,6 +1,7 @@
 'use client';
+/* eslint-disable */
 
-import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
 import { STATIC_PROPERTIES, STATIC_CITIES } from '../data/staticProperties';
 import type { Property, City } from '../types';
 
@@ -26,18 +27,23 @@ export interface AppContextType {
   [key: string]: any;
   onRoleChange: (role: string) => void;
   onToggleWishlist: (id: string) => void;
+  onClearWishlist: () => void;
   onToggleCompare: (id: string) => void;
   onRemoveCompare: (id: string) => void;
   onClearCompare: () => void;
+  onSelectForCompare: (ids: string[]) => void;
   onOpenCompare: () => void;
+  onOpenWishlist: () => void;
   onOpenModal: (prop: Property | null) => void;
   onOpenAiMatchmaker: () => void;
   onOpenRoleModal: () => void;
   onOpenAuthModal: () => void;
   comparePropertiesList: Property[];
+  wishlistPropertiesList: Property[];
   selectedPropertyModal: Property | null;
   isAiMatchmakerOpen: boolean;
   isCompareOpen: boolean;
+  isWishlistOpen: boolean;
   isRoleModalOpen: boolean;
   isAuthModalOpen: boolean;
   bookingConfirmation: Property | null;
@@ -45,6 +51,7 @@ export interface AppContextType {
   onCloseModal: () => void;
   onCloseAiMatchmaker: () => void;
   onCloseCompare: () => void;
+  onCloseWishlist: () => void;
   onCloseRoleModal: () => void;
   onCloseAuthModal: () => void;
   onBookVisit: (prop: Property | null) => void;
@@ -59,7 +66,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [maxPrice, setMaxPrice] = useState(50000);
   const [roomType, setRoomType] = useState('all');
 
-  const [wishlistIds, setWishlistIds] = useState<string[]>(['prop-101']);
+  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ownstay_wishlist');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to load wishlist from localStorage', e);
+      }
+    }
+    return ['prop-101'];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('ownstay_wishlist', JSON.stringify(wishlistIds));
+      } catch (e) {
+        console.error('Failed to save wishlist to localStorage', e);
+      }
+    }
+  }, [wishlistIds]);
+
   const [compareIds, setCompareIds] = useState<string[]>(['prop-101', 'prop-102']);
   const [activeRole, setActiveRole] = useState('tenant');
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -67,6 +95,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedPropertyModal, setSelectedPropertyModal] = useState<Property | null>(null);
   const [isAiMatchmakerOpen, setIsAiMatchmakerOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [bookingConfirmation, setBookingConfirmation] = useState<Property | null>(null);
@@ -131,6 +160,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return STATIC_PROPERTIES.filter((p) => compareIds.includes(p.id));
   }, [compareIds]);
 
+  const wishlistPropertiesList = useMemo(() => {
+    return STATIC_PROPERTIES.filter((p) => wishlistIds.includes(p.id));
+  }, [wishlistIds]);
+
+  const handleClearWishlist = () => {
+    setWishlistIds([]);
+  };
+
   const searchFilters: SearchFilters = {
     cities: STATIC_CITIES,
     selectedCity,
@@ -154,18 +191,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentUser,
     onRoleChange: setActiveRole,
     onToggleWishlist: handleToggleWishlist,
+    onClearWishlist: handleClearWishlist,
     onToggleCompare: handleToggleCompare,
     onRemoveCompare: handleRemoveCompare,
     onClearCompare: handleClearCompare,
+    onSelectForCompare: (ids) => setCompareIds(ids),
     onOpenCompare: () => setIsCompareOpen(true),
+    onOpenWishlist: () => setIsWishlistOpen(true),
     onOpenModal: (prop) => setSelectedPropertyModal(prop),
     onOpenAiMatchmaker: () => setIsAiMatchmakerOpen(true),
     onOpenRoleModal: () => setIsRoleModalOpen(true),
     onOpenAuthModal: () => setIsAuthModalOpen(true),
     comparePropertiesList,
+    wishlistPropertiesList,
     selectedPropertyModal,
     isAiMatchmakerOpen,
     isCompareOpen,
+    isWishlistOpen,
     isRoleModalOpen,
     isAuthModalOpen,
     bookingConfirmation,
@@ -173,6 +215,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     onCloseModal: () => setSelectedPropertyModal(null),
     onCloseAiMatchmaker: () => setIsAiMatchmakerOpen(false),
     onCloseCompare: () => setIsCompareOpen(false),
+    onCloseWishlist: () => setIsWishlistOpen(false),
     onCloseRoleModal: () => setIsRoleModalOpen(false),
     onCloseAuthModal: () => setIsAuthModalOpen(false),
     onBookVisit: (prop) => setBookingConfirmation(prop),

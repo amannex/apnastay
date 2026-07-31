@@ -12,6 +12,7 @@ export default function Navbar({
   currentUser = null as any,
   onRoleChange,
   onOpenCompare,
+  onOpenWishlist,
   onOpenRoleModal,
   onOpenAiMatchmaker,
   onOpenAuthModal
@@ -122,12 +123,14 @@ export default function Navbar({
 
             {/* Wishlist Counter Button */}
             <button
+              onClick={onOpenWishlist}
               className="relative p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
-              title="Wishlist"
+              title="Saved Residences"
+              aria-label="View Saved Residences"
             >
               <Heart className="w-4 h-4" />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
                   {wishlistCount}
                 </span>
               )}
@@ -289,6 +292,24 @@ export default function Navbar({
               </Link>
 
               <div className="pt-2 mt-1 border-t border-[#EDEDED] flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenWishlist?.();
+                  }}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] hover:bg-[#F0F2F5] transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-[#E1224D]" />
+                    <span>Saved Residences</span>
+                  </div>
+                  {wishlistCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
+
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

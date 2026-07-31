@@ -22,6 +22,7 @@ import {
   Shirt,
   Coffee
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import type { Property } from '../types';
 
 interface PropertyDetailPageProps {
@@ -29,10 +30,11 @@ interface PropertyDetailPageProps {
 }
 
 export default function PropertyDetailPage({ property }: PropertyDetailPageProps) {
+  const { wishlistIds, onToggleWishlist } = useApp();
   const defaultImage = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
   const images = property.images && property.images.length > 0 ? property.images : [property.image || defaultImage];
   const [activeImage, setActiveImage] = useState(images[0]);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const isWishlisted = wishlistIds.includes(property.id);
   const [isBooked, setIsBooked] = useState(false);
 
   const title = property.title || 'OwnStay Verified Residence';
@@ -95,13 +97,14 @@ export default function PropertyDetailPage({ property }: PropertyDetailPageProps
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setIsWishlisted(!isWishlisted)}
+              onClick={() => onToggleWishlist(property.id)}
               className={`p-3 rounded-full border transition-colors ${
                 isWishlisted
                   ? 'border-rose-200 bg-rose-50 text-rose-600'
                   : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
               }`}
               aria-label="Save to Wishlist"
+              title="Save to Wishlist"
             >
               <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-rose-600' : ''}`} />
             </button>
