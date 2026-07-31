@@ -6,7 +6,8 @@
 [![Live Demo](https://img.shields.io/badge/LIVE_DEMO-ownstay--eight.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://ownstay-eight.vercel.app)
 [![CI / CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/amannex/ownstay/actions)
 [![React 19](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Vite 6](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Next.js 15+](https://img.shields.io/badge/Next.js_15+-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Three.js](https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![Oxlint](https://img.shields.io/badge/Linted_by-Oxlint-FF6B6B?style=for-the-badge)](https://oxc.rs/)
@@ -58,7 +59,7 @@ Traditional real estate rental platforms are plagued by fake photos, hidden brok
 ```
                      +-----------------------------------+
                      |         OwnStay Web App           |
-                     |         (React 19 + Vite)         |
+                     |         (Next.js 15+ & TS)        |
                      +-----------------+-----------------+
                                        |
           +----------------------------+----------------------------+
@@ -79,7 +80,7 @@ Traditional real estate rental platforms are plagued by fake photos, hidden brok
 
 | Category | Technology | Description |
 | :--- | :--- | :--- |
-| **Frontend Framework** | **React 19** + **Vite 6** | Modern declarative UI with instant HMR dev server |
+| **Frontend Framework** | **Next.js 15+ (App Router)** + **React 19** + **TypeScript 5.x** | Static & dynamic SEO-optimized routing with full type safety and server/client components |
 | **Styling & UI Design** | **Tailwind CSS** + **Lucide Icons** | Utility-first styling with responsive glassmorphic cards and badges |
 | **3D & WebGL Engine** | **Three.js** + `@react-three/fiber` | High-performance 3D canvas rendering and camera animations |
 | **Animation Library** | **GSAP** (GreenSock) | Smooth scroll-triggered animations and UI transitions |
@@ -133,22 +134,29 @@ npm run build
 ownstay/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml             # GitHub Actions CI workflow (Oxlint + Vite Build)
+│       └── ci.yml             # GitHub Actions CI workflow (Oxlint + Next.js Build)
 ├── src/
+│   ├── app/                   # Next.js 15+ App Router layouts & route handlers
+│   │   ├── properties/        # Dynamic SEO property routes & listings
+│   │   ├── cities/            # Tech hubs & city directory routes
+│   │   ├── journal/           # Blog & legal articles routes
+│   │   ├── why-ownstay/       # Zero-brokerage mission page
+│   │   ├── layout.tsx         # Root layout with metadata & fonts
+│   │   └── page.tsx           # Home page route handler
 │   ├── components/
 │   │   ├── ai/                # AI Lifestyle Matchmaker modal & scoring logic
 │   │   ├── auth/              # Authentication & User Role modals
 │   │   ├── hero3d/            # Interactive Three.js 3D scenes & architectural viewers
-│   │   ├── layout/            # Navbar, Footer, and interactive drawers
+│   │   ├── layout/            # AppShell, Navbar, Footer, and interactive drawers
 │   │   ├── properties/        # Featured properties, PropertyModal, CompareDrawer
-│   │   └── sections/          # ExploreCities, BlogSection, ManagedServicesShowcase
-│   ├── pages/                 # HomePage, PropertiesPage, JournalPage, WhyOwnStayPage
-│   ├── services/              # WordPress REST API client & static fallbacks
-│   ├── App.jsx                # Application router & modal state providers
-│   └── main.jsx               # React 19 application entry point
-├── index.html                 # Root HTML & responsive meta tags
-├── tailwind.config.js         # Custom theme tokens, fonts, and animation utilities
-└── vite.config.js             # Vite bundler & React plugin configuration
+│   │   └── sections/          # AppLaunchBanner, ExploreCities, BlogSection
+│   ├── context/               # Global AppContext state provider
+│   ├── types/                 # TypeScript interfaces and type definitions
+│   ├── views/                 # Reusable page views (HomePage, PropertiesPage, etc.)
+│   └── services/              # WordPress REST API client & static fallbacks
+├── next.config.ts             # Next.js 15+ compiler & bundle configuration
+├── tsconfig.json              # TypeScript 5.x compiler options
+└── tailwind.config.js         # Custom theme tokens, fonts, and animation utilities
 ```
 
 ---
