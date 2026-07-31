@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "oxlint && next lint"
+    "lint": "oxlint"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
