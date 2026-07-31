@@ -52,6 +52,11 @@ Traditional real estate rental platforms are plagued by fake photos, hidden brok
 - **Dynamic Content Ingestion**: Fetches live editorial articles, market insights, and co-living guides via the WordPress REST API (`wordpressCms.js`).
 - **Static Resilient Fallbacks**: Guarantees zero downtime with built-in fallback articles if external CMS endpoints are unreachable.
 
+### 🌐 SEO, XML Sitemap & Schema.org Rich Results
+- **Automated Sitemap & Robots.txt**: Dynamically generates Google-compliant `/sitemap.xml` and `/robots.txt` on build (`sitemap.ts` & `robots.ts`) for all static routes and dynamic property listings.
+- **Rich OpenGraph & Twitter Cards**: Configured with `metadataBase`, canonical URLs, and mobile PWA manifest (`manifest.webmanifest`).
+- **Schema.org Structured Data**: Injects `RealEstateAgent`, `Organization`, and per-property `RealEstateListing` JSON-LD schemas for Google Search rich snippets.
+
 ---
 
 ## 🏗️ System Architecture & Component Map
@@ -137,11 +142,16 @@ ownstay/
 │       └── ci.yml             # GitHub Actions CI workflow (Oxlint + Next.js Build)
 ├── src/
 │   ├── app/                   # Next.js 15+ App Router layouts & route handlers
-│   │   ├── properties/        # Dynamic SEO property routes & listings
+│   │   ├── properties/
+│   │   │   ├── [id]/page.tsx  # Dynamic property SEO detail routes & JSON-LD
+│   │   │   └── page.tsx       # Property listing directory route
 │   │   ├── cities/            # Tech hubs & city directory routes
 │   │   ├── journal/           # Blog & legal articles routes
 │   │   ├── why-ownstay/       # Zero-brokerage mission page
-│   │   ├── layout.tsx         # Root layout with metadata & fonts
+│   │   ├── sitemap.ts         # Automated sitemap.xml generator
+│   │   ├── robots.ts          # Automated robots.txt generator
+│   │   ├── manifest.ts        # PWA manifest.webmanifest generator
+│   │   ├── layout.tsx         # Root layout with OpenGraph, canonicals & Schema.org JSON-LD
 │   │   └── page.tsx           # Home page route handler
 │   ├── components/
 │   │   ├── ai/                # AI Lifestyle Matchmaker modal & scoring logic
