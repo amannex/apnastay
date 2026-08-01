@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, MapPin, IndianRupee, Home, X } from 'lucide-react';
+import { Search, MapPin, IndianRupee, Home, X, ChevronDown } from 'lucide-react';
 
 export default function SearchBar({
   filters,
@@ -33,17 +33,17 @@ export default function SearchBar({
     ? filters.totalResults
     : totalResults;
 
-  const handleCityChange = (val) => {
+  const handleCityChange = (val: string) => {
     if (onChange) onChange('city', val);
     if (onCityChange) onCityChange(val);
   };
 
-  const handlePriceChange = (val) => {
+  const handlePriceChange = (val: string) => {
     if (onChange) onChange('price', Number(val));
     if (onPriceChange) onPriceChange(Number(val));
   };
 
-  const handleRoomTypeChange = (val) => {
+  const handleRoomTypeChange = (val: string) => {
     if (onChange) onChange('roomType', val);
     if (onRoomTypeChange) onRoomTypeChange(val);
   };
@@ -75,14 +75,22 @@ export default function SearchBar({
     { id: 'Luxury', label: 'Luxury Waterfront' }
   ];
 
+  const budgetOptions = [
+    { value: 50000, label: '₹50,000+/mo (All Budgets)' },
+    { value: 35000, label: 'Under ₹35,000 / month' },
+    { value: 25000, label: 'Under ₹25,000 / month' },
+    { value: 20000, label: 'Under ₹20,000 / month' },
+    { value: 15000, label: 'Under ₹15,000 / month' }
+  ];
+
   const hasActiveFilters = activeCity !== 'all' || activePrice < 50000 || activeRoomType !== 'all';
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 relative z-40">
-      <div className="glass-panel rounded-3xl p-3 sm:p-4 shadow-apple-lg border border-white">
+      <div className="bg-white rounded-[2rem] p-3 sm:p-4 shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-[#EDEDED] hover:border-[#D1D5DB] transition-all">
         <div className="flex flex-col md:flex-row items-center justify-between gap-3">
           {/* STEP 1: CITY SELECTOR */}
-          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-[#FAFAFA] transition-colors border border-transparent hover:border-[#EDEDED]">
+          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-[#FAFAFA] transition-colors border border-transparent hover:border-[#EDEDED] relative">
             <MapPin className="w-5 h-5 text-[#E1224D] shrink-0" />
             <div className="flex-1 min-w-0">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
@@ -91,48 +99,47 @@ export default function SearchBar({
               <select
                 value={activeCity}
                 onChange={(e) => handleCityChange(e.target.value)}
-                className="w-full bg-transparent text-sm font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer"
+                className="w-full bg-transparent text-sm font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer appearance-none pr-6"
               >
                 <option value="all">All Indian Cities</option>
-                {activeCities.map((c) => (
+                {activeCities.map((c: any) => (
                   <option key={c.id || c.name} value={c.name}>
                     {c.name}
                   </option>
                 ))}
               </select>
             </div>
+            <ChevronDown className="w-4 h-4 text-[#6B7280] pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" />
           </div>
 
           <div className="hidden md:block w-px h-10 bg-[#EDEDED]" />
 
-          {/* STEP 2: BUDGET SLIDER (INR) */}
-          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2 rounded-2xl hover:bg-[#FAFAFA] transition-colors border border-transparent hover:border-[#EDEDED]">
+          {/* STEP 2: BUDGET SELECTOR */}
+          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-[#FAFAFA] transition-colors border border-transparent hover:border-[#EDEDED] relative">
             <IndianRupee className="w-5 h-5 text-[#E1224D] shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                  Max Budget
-                </label>
-                <span className="text-xs font-bold text-[#E1224D]">
-                  {activePrice >= 50000 ? '₹50,000+/mo (All)' : `₹${activePrice.toLocaleString('en-IN')}/mo`}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10000"
-                max="50000"
-                step="1000"
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                Max Budget
+              </label>
+              <select
                 value={activePrice}
                 onChange={(e) => handlePriceChange(e.target.value)}
-                className="w-full h-1.5 bg-[#EDEDED] rounded-lg appearance-none cursor-pointer accent-[#E1224D] mt-1"
-              />
+                className="w-full bg-transparent text-sm font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer appearance-none pr-6"
+              >
+                {budgetOptions.map((b) => (
+                  <option key={b.value} value={b.value}>
+                    {b.label}
+                  </option>
+                ))}
+              </select>
             </div>
+            <ChevronDown className="w-4 h-4 text-[#6B7280] pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" />
           </div>
 
           <div className="hidden md:block w-px h-10 bg-[#EDEDED]" />
 
           {/* STEP 3: ROOM TYPE SELECTOR */}
-          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-[#FAFAFA] transition-colors border border-transparent hover:border-[#EDEDED]">
+          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl hover:bg-[#FAFAFA] transition-colors border border-transparent hover:border-[#EDEDED] relative">
             <Home className="w-5 h-5 text-[#E1224D] shrink-0" />
             <div className="flex-1 min-w-0">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
@@ -141,7 +148,7 @@ export default function SearchBar({
               <select
                 value={activeRoomType}
                 onChange={(e) => handleRoomTypeChange(e.target.value)}
-                className="w-full bg-transparent text-sm font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer"
+                className="w-full bg-transparent text-sm font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer appearance-none pr-6"
               >
                 {roomTypes.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -150,6 +157,7 @@ export default function SearchBar({
                 ))}
               </select>
             </div>
+            <ChevronDown className="w-4 h-4 text-[#6B7280] pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" />
           </div>
 
           {/* SEARCH BUTTON & MATCH COUNT */}
@@ -157,22 +165,22 @@ export default function SearchBar({
             <button
               type="button"
               onClick={handleSearchClick}
-              className="flex-1 md:flex-none flex items-center justify-between gap-3 px-6 py-3 rounded-2xl bg-[#E1224D] text-white font-bold text-sm shadow-apple hover:bg-[#C71B42] transition-all cursor-pointer hover:scale-105 active:scale-95"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl bg-[#E1224D] text-white font-bold text-sm shadow-apple hover:bg-[#C71B42] transition-all cursor-pointer hover:scale-105 active:scale-95 whitespace-nowrap"
             >
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                <span>Search</span>
-              </div>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/25 font-bold">
-                {activeResults}
-              </span>
+              <Search className="w-4 h-4 shrink-0" />
+              <span>Search</span>
+              {activeResults > 0 && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/20 font-bold ml-0.5">
+                  {activeResults} {activeResults === 1 ? 'Home' : 'Homes'}
+                </span>
+              )}
             </button>
 
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="p-3 rounded-2xl bg-[#FAFAFA] hover:bg-[#EDEDED] text-[#6B7280] hover:text-[#1A1A1A] transition-colors border border-[#EDEDED]"
+                className="p-3.5 rounded-2xl bg-[#FAFAFA] hover:bg-[#EDEDED] text-[#6B7280] hover:text-[#1A1A1A] transition-colors border border-[#EDEDED]"
                 title="Reset filters"
               >
                 <X className="w-4 h-4" />
@@ -184,3 +192,4 @@ export default function SearchBar({
     </div>
   );
 }
+

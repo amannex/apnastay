@@ -12,7 +12,7 @@ const ICON_MAP = {
 
 export default function WhyOwnStayGrid() {
   return (
-    <section id="why-ownstay" className="py-24 bg-[#FAFAFA] border-y border-[#EDEDED]">
+    <section id="why-ownstay" className="py-24 bg-white border-b border-[#EDEDED]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* SECTION HEADER WITH RELEVANT CONTEXTUAL TAG */}
         <div className="max-w-2xl mx-auto text-center mb-16">
