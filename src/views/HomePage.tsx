@@ -29,30 +29,31 @@ export default function HomePage(props: any = {}) {
   const onToggleWishlist = props.onToggleWishlist || app.onToggleWishlist;
   const onOpenAiMatchmaker = props.onOpenAiMatchmaker || app.onOpenAiMatchmaker;
   const activeTab = props.activeTab || app.activeTab || 'All';
-  const onTabChange = props.onTabChange || app.onTabChange || (() => {});
+  const onTabChange = props.onTabChange || app.onTabChange || (() => { });
   return (
-    <main className="min-h-screen bg-[#FAFAFA]">
+    <main className="min-h-screen bg-white">
       {/* 1. APPLE SIMPLE LIGHT THEME HERO */}
       <AppleSimpleHero />
 
-      {/* 2. SEARCH & FILTER SECTION */}
-      <div className="relative z-30 pt-6 pb-4">
-        <SearchBar filters={searchFilters} onChange={onSearchChange} onReset={onReset} />
-      </div>
+      {/* 2. SEARCH & FILTER SECTION & CITIES CAROUSEL ON SEAMLESS WHITE BACKGROUND */}
+      <section className="bg-white pb-12 border-b border-[#EDEDED]">
+        <div className="relative z-30 pt-4 pb-6">
+          <SearchBar filters={searchFilters} onChange={onSearchChange} onReset={onReset} />
+        </div>
 
-      {/* 3. INDIAN TIER-2 CITIES CAROUSEL */}
-      <div className="pt-8">
-        <CitiesCarousel onCityClick={onCitySelect} />
-      </div>
+        <div className="pt-2">
+          <CitiesCarousel onCityClick={onCitySelect} />
+        </div>
+      </section>
 
-      {/* 3.5. INDIAN RENTAL STAY CATEGORIES (Inspired by RoomRentJaipur, LetsRentz, ZoloStays & Nestaway) */}
+      {/* 3.5. INDIAN RENTAL STAY CATEGORIES */}
       <RentalCategoriesShowcase />
 
-      {/* 4. WHY OWNSTAY ZERO-BROKERAGE PROMISE (bg-[#FAFAFA]) */}
+      {/* 4. WHY OWNSTAY ZERO-BROKERAGE PROMISE */}
       <WhyOwnStayGrid />
 
-      {/* 5. FEATURED VERIFIED ROOMS WITH LINK TO MULTI-PAGE EXPLORER (bg-white) */}
-      <section className="pt-16 pb-12 bg-white border-y border-gray-200/80">
+      {/* 5. FEATURED VERIFIED ROOMS WITH LINK TO MULTI-PAGE EXPLORER */}
+      <section className="pt-16 pb-12 bg-[#FAFAFA] border-b border-[#EDEDED]">
         <PropertiesSection
           activeTab={activeTab}
           onTabChange={onTabChange}
@@ -64,7 +65,7 @@ export default function HomePage(props: any = {}) {
           onToggleWishlist={onToggleWishlist}
           searchFilters={searchFilters}
         />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-2 text-center">
           <Link
             href="/properties"
             className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#E1224D] text-white font-bold text-xs sm:text-sm shadow-apple hover:bg-[#C71B42] transition-all hover:scale-105 whitespace-nowrap max-w-full"

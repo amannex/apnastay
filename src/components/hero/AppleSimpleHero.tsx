@@ -6,7 +6,7 @@ import { ShieldCheck, ArrowRight, Sparkles, Key, CheckCircle2 } from 'lucide-rea
 
 export default function AppleSimpleHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#FAFAFA] to-white pt-32 pb-16 sm:pt-36 sm:pb-24 lg:pt-44 lg:pb-32 border-b border-[#EDEDED]/80">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#FAFAFA]/40 to-white pt-32 pb-10 sm:pt-36 sm:pb-14 lg:pt-44 lg:pb-16">
       {/* Subtle Apple-style Top Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-b from-[#E1224D]/5 via-[#E1224D]/3 to-transparent blur-3xl pointer-events-none -z-10" />
 

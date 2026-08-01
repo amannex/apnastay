@@ -65,7 +65,7 @@ const STAY_CATEGORIES = [
 
 export default function RentalCategoriesShowcase() {
   return (
-    <section className="py-20 bg-white border-y border-gray-100">
+    <section className="py-20 bg-[#FAFAFA] border-b border-[#EDEDED]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* CLEAN MINIMAL HEADER */}
