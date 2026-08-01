@@ -79,11 +79,11 @@ export default function HomePage(props: any = {}) {
       {/* 5.5. MANAGED LIVING SERVICES & TRUST (bg-[#FAFAFA]) */}
       <ManagedServicesShowcase />
 
-      {/* 5.8. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}
-      <AppLaunchBanner />
-
       {/* 6. OWNSTAY JOURNAL & URBAN LIVING GUIDE */}
       <BlogSection />
+
+      {/* 6.5. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}
+      <AppLaunchBanner />
 
       {/* 7. FREQUENTLY ASKED QUESTIONS */}
       <FAQSection />

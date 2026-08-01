@@ -100,14 +100,14 @@ export default function ManagedServicesShowcase() {
       </div>
 
       {/* FULL WIDTH INSPIRED CTA FORM BANNER (100% Edge-to-Edge, No Divider) */}
-      <div className="w-full bg-[#0F131A] text-white py-20">
+      <div className="w-full bg-[#0F131A] text-white py-20 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-12">
           <div className="max-w-xl text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-[#E1224D] text-xs font-bold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E1224D]/20 border border-[#E1224D]/40 text-[#FF4D73] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
               <PhoneCall className="w-3.5 h-3.5 animate-bounce" />
               <span>Free Instant Tenant Callback • Zero Brokerage</span>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Looking for a verified home in Jaipur, Indore or Chandigarh?
             </h3>
             <p className="text-xs sm:text-sm text-gray-300 mt-2">
