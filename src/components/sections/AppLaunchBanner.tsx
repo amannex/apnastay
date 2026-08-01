@@ -36,7 +36,7 @@ export default function AppLaunchBanner() {
               </div>
 
               {/* Headline */}
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-white">
                 Take OwnStay With You — <br className="hidden sm:inline" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400">
                   Launching Soon on Google Play

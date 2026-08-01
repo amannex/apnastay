@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import VideoWalkthroughHero2D from '../components/hero3d/VideoWalkthroughHero2D';
-// Note: All 3D hero variations preserved in src/components/hero3d/ (FosterCinematicHero.tsx, UnsplashWalkthroughHero.tsx, HeroScrollStory.tsx)
+import AppleSimpleHero from '../components/hero/AppleSimpleHero';
 import SearchBar from '../components/search/SearchBar';
 import CitiesCarousel from '../components/sections/CitiesCarousel';
 import WhyOwnStayGrid from '../components/sections/WhyOwnStayGrid';
@@ -33,8 +32,8 @@ export default function HomePage(props: any = {}) {
   const onTabChange = props.onTabChange || app.onTabChange || (() => {});
   return (
     <main className="min-h-screen bg-[#FAFAFA]">
-      {/* 1. 2D PHOTOREALISTIC CINEMATIC VIDEO WALKTHROUGH HERO */}
-      <VideoWalkthroughHero2D />
+      {/* 1. APPLE SIMPLE LIGHT THEME HERO */}
+      <AppleSimpleHero />
 
       {/* 2. SEARCH & FILTER SECTION */}
       <div className="relative z-30 pt-6 pb-4">
@@ -80,11 +79,11 @@ export default function HomePage(props: any = {}) {
       {/* 5.5. MANAGED LIVING SERVICES & TRUST (bg-[#FAFAFA]) */}
       <ManagedServicesShowcase />
 
-      {/* 5.8. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}
-      <AppLaunchBanner />
-
       {/* 6. OWNSTAY JOURNAL & URBAN LIVING GUIDE */}
       <BlogSection />
+
+      {/* 6.5. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}
+      <AppLaunchBanner />
 
       {/* 7. FREQUENTLY ASKED QUESTIONS */}
       <FAQSection />
