@@ -1,9 +1,10 @@
 'use client';
 /* eslint-disable */
 
-import React, { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useRef, ReactNode } from 'react';
 import { STATIC_PROPERTIES, STATIC_CITIES } from '../data/staticProperties';
 import type { Property, City } from '../types';
+import { handleRoleRedirect } from '../lib/auth/session';
 
 export interface SearchFilters {
   cities: City[];
@@ -66,20 +67,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [maxPrice, setMaxPrice] = useState(50000);
   const [roomType, setRoomType] = useState('all');
 
-  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('ownstay_wishlist');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to load wishlist from localStorage', e);
-      }
-    }
-    return ['prop-101'];
-  });
+  const [wishlistIds, setWishlistIds] = useState<string[]>(['prop-101']);
+  const isWishlistLoaded = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('ownstay_wishlist');
+      if (saved) {
+        setWishlistIds(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error('Failed to load wishlist from localStorage', e);
+    } finally {
+      isWishlistLoaded.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isWishlistLoaded.current) {
       try {
         localStorage.setItem('ownstay_wishlist', JSON.stringify(wishlistIds));
       } catch (e) {
@@ -154,6 +159,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveRole(user.role || 'tenant');
     setAuthToast(`Logged in as ${user.name} (${user.roleTitle || user.role})`);
     setTimeout(() => setAuthToast(null), 4000);
+    handleRoleRedirect(user);
   };
 
   const comparePropertiesList = useMemo(() => {

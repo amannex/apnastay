@@ -78,7 +78,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Route Content */}
       <main>{children}</main>
 
-      <Footer onExploreClick={() => {}} />
+      <Footer onExploreClick={() => { }} />
 
       {/* Shared Modals & Drawers */}
       <AuthModal

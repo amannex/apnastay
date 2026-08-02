@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck } from 'lucide-react';
 
-export default function Footer({ onExploreClick }) {
+export default function Footer({ onExploreClick }: { onExploreClick?: () => void }) {
   return (
     <footer className="bg-[#1A1A1A] text-white pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,6 +75,7 @@ export default function Footer({ onExploreClick }) {
               <li><Link href="/properties" className="hover:text-white transition-colors">Verified Indian Listings</Link></li>
               <li><Link href="/why-ownstay" className="hover:text-white transition-colors">Aadhaar / PAN E-Sign</Link></li>
               <li><Link href="/why-ownstay" className="hover:text-white transition-colors">Instant NFC Self-Tour</Link></li>
+              <li><Link href="/permission-matrix" className="hover:text-white transition-colors text-emerald-400 font-semibold">🔒 Phase 24 RBAC Matrix Suite</Link></li>
               <li><Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
@@ -97,8 +98,7 @@ export default function Footer({ onExploreClick }) {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
           <p>© 2026 OwnStay Technologies India Pvt Ltd. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <span>Made for Indian Renters</span>
-            <span>#E1224D Brand Accent</span>
+            <span>Made for Indian Renters & Owners</span>
           </div>
         </div>
       </div>

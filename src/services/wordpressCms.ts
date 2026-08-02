@@ -114,11 +114,22 @@ export const STATIC_ADMIN_ANALYTICS = {
 };
 
 export async function fetchBlogPosts() {
+  if (!process.env.NEXT_PUBLIC_WP_API_URL) {
+    return STATIC_BLOG_POSTS;
+  }
   try {
-    const res = await fetch(`${WP_API_BASE}/posts?_embed&per_page=3`);
-    if (!res.ok) throw new Error('CMS offline');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const res = await fetch(`${WP_API_BASE}/posts?_embed&per_page=3`, {
+      signal: controller.signal,
+    }).catch(() => null);
+    clearTimeout(timeoutId);
+
+    if (!res || !res.ok) {
+      return STATIC_BLOG_POSTS;
+    }
     const data = await res.json();
-    return data.map((post) => ({
+    return data.map((post: any) => ({
       id: post.id,
       slug: post.slug,
       title: post.title.rendered,

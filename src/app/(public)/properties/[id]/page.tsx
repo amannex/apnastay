@@ -1,8 +1,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { STATIC_PROPERTIES } from '../../../data/staticProperties';
-import PropertyDetailPage from '../../../views/PropertyDetailPage';
+import { STATIC_PROPERTIES } from '@/data/staticProperties';
+import PropertyDetailPage from '@/views/PropertyDetailPage';
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
