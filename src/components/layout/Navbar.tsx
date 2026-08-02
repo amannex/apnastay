@@ -37,7 +37,7 @@ export default function Navbar({
       {/* EXPANDED CONTAINER WIDTH FOR CLEAN, UNCLUTTERED SINGLE-LINE SPARE ROOM */}
       <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
         <nav className="glass-panel rounded-full px-3.5 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 shadow-apple border border-white/90">
-          
+
           {/* BRAND LOGO (NEVER WRAPS) */}
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0 whitespace-nowrap">
             <div className="w-8 h-8 rounded-full bg-[#E1224D] flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:scale-105 transition-transform">
@@ -52,41 +52,36 @@ export default function Navbar({
           <div className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 text-xs xl:text-sm font-medium text-[#6B7280]">
             <Link
               href="/"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
-              }`}
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+                }`}
             >
               Home
             </Link>
             <Link
               href="/properties"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/properties') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
-              }`}
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/properties') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+                }`}
             >
               Verified Rooms
             </Link>
             <Link
               href="/cities"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/cities') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
-              }`}
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/cities') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+                }`}
             >
               Tier-2 Cities
             </Link>
             <Link
               href="/why-ownstay"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/why-ownstay') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
-              }`}
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/why-ownstay') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+                }`}
             >
               Why ₹0 Brokerage
             </Link>
             <Link
               href="/journal"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/journal') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
-              }`}
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/journal') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+                }`}
             >
               OwnStay Journal
             </Link>
@@ -115,7 +110,7 @@ export default function Navbar({
               <Scale className="w-3.5 h-3.5 text-[#E1224D]" />
               <span className="hidden sm:inline">Compare</span>
               {compareCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
+                <span suppressHydrationWarning={true} className="w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
                   {compareCount}
                 </span>
               )}
@@ -130,7 +125,7 @@ export default function Navbar({
             >
               <Heart className="w-4 h-4" />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
+                <span suppressHydrationWarning={true} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
                   {wishlistCount}
                 </span>
               )}
@@ -200,11 +195,10 @@ export default function Navbar({
                           setRoleMenuOpen(false);
                           onOpenRoleModal(role.id);
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-colors ${
-                          isActive
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-colors ${isActive
                             ? 'bg-rose-50 text-[#E1224D] font-semibold'
                             : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <Icon className={`w-4 h-4 ${isActive ? 'text-[#E1224D]' : 'text-[#6B7280]'}`} />
@@ -244,9 +238,8 @@ export default function Navbar({
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
+                  }`}
               >
                 <span>Home</span>
               </Link>
@@ -254,9 +247,8 @@ export default function Navbar({
               <Link
                 href="/properties"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/properties') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/properties') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
+                  }`}
               >
                 <span>Verified Rooms</span>
               </Link>
@@ -264,9 +256,8 @@ export default function Navbar({
               <Link
                 href="/cities"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/cities') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/cities') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
+                  }`}
               >
                 <span>Tier-2 Cities</span>
               </Link>
@@ -274,9 +265,8 @@ export default function Navbar({
               <Link
                 href="/why-ownstay"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/why-ownstay') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/why-ownstay') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
+                  }`}
               >
                 <span>Why ₹0 Brokerage</span>
               </Link>
@@ -284,9 +274,8 @@ export default function Navbar({
               <Link
                 href="/journal"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/journal') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/journal') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
+                  }`}
               >
                 <span>OwnStay Journal</span>
               </Link>
