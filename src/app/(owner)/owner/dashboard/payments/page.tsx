@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Rental Earnings & Payments | OwnStay India',
+  title: 'Rental Earnings & Payments | ApnaStay India',
   description: 'Monitor your 100% zero-brokerage rental income, security deposits, and UPI Autopay receipts.',
 };
 

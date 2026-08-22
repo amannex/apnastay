@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Notifications & Alerts | OwnStay India',
+  title: 'Notifications & Alerts | ApnaStay India',
   description: 'Stay updated on tour reminders, rent due dates, and agreement milestones.',
 };
 

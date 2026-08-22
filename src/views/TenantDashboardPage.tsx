@@ -78,7 +78,7 @@ export default function TenantDashboardPage() {
             <p className="text-xs text-[#86868B] mt-1 mb-4 leading-relaxed">
               1 active smart-lock key for scheduled visit at Vijay Nagar, Indore.
             </p>
-            {can(user, 'ownstay_book_visit') && (
+            {can(user, 'apnastay_book_visit') && (
               <button className="text-xs font-bold text-[#E1224D] hover:underline inline-flex items-center gap-1">
                 <span>View Access Token</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -96,7 +96,7 @@ export default function TenantDashboardPage() {
             <p className="text-xs text-[#86868B] mt-1 mb-4 leading-relaxed">
               Aadhaar & PAN e-signed rental deed legally stamped under Registration Act.
             </p>
-            {can(user, 'ownstay_view_agreement') && (
+            {can(user, 'apnastay_view_agreement') && (
               <button className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-1">
                 <span>Download PDF Deed</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ export default function TenantDashboardPage() {
             <p className="text-xs text-[#86868B] mt-1 mb-4 leading-relaxed">
               Next automated rent transfer: ₹24,000 due on Aug 5 (0% platform fees).
             </p>
-            {can(user, 'ownstay_make_payment') && (
+            {can(user, 'apnastay_make_payment') && (
               <button className="text-xs font-bold text-emerald-600 hover:underline inline-flex items-center gap-1">
                 <span>Pay via UPI / Autopay</span>
                 <ArrowRight className="w-3.5 h-3.5" />

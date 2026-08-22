@@ -139,7 +139,7 @@ function TenantDashboardShellInner({
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 </div>
                 <p className="text-[10px] text-[#86868B] font-medium truncate">
-                  {user?.role || 'ownstay_tenant'}
+                  {user?.role || 'apnastay_tenant'}
                 </p>
               </div>
             </div>
@@ -229,7 +229,7 @@ function TenantDashboardShellInner({
                 </span>
               </div>
               <p className="text-xs text-rose-700 mt-1 leading-relaxed">
-                Your attempt to access the Owner Portal (<code className="font-mono bg-rose-100 px-1 py-0.5 rounded text-rose-800">/owner/dashboard</code>) was intercepted and blocked. Your account role is <span className="font-bold underline">ownstay_tenant</span>, which cannot view owner resources.
+                Your attempt to access the Owner Portal (<code className="font-mono bg-rose-100 px-1 py-0.5 rounded text-rose-800">/owner/dashboard</code>) was intercepted and blocked. Your account role is <span className="font-bold underline">apnastay_tenant</span>, which cannot view owner resources.
               </p>
             </div>
           </div>
@@ -250,7 +250,7 @@ function TenantDashboardShellInner({
                 </span>
               </div>
               <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                Your attempt to access the WordPress backend (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/wp-admin/</code>) was intercepted. Tenant accounts interact exclusively through the OwnStay Next.js application.
+                Your attempt to access the WordPress backend (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/wp-admin/</code>) was intercepted. Tenant accounts interact exclusively through the ApnaStay Next.js application.
               </p>
             </div>
           </div>

@@ -47,10 +47,10 @@ export default function RoleDashboardModal({
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">
-                OwnStay India SaaS Dashboard Showcase
+                ApnaStay India SaaS Dashboard Showcase
               </h2>
               <p className="text-xs text-[#6B7280]">
-                User Type Showcase — Test how OwnStay serves Indian Tenants, Property Owners, and Field Auditors
+                User Type Showcase — Test how ApnaStay serves Indian Tenants, Property Owners, and Field Auditors
               </p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function RoleDashboardModal({
               return (
                 <button
                   key={r.id}
-                  onClick={() => onRoleChange(r.id)}
+                  onClick={() => handleRoleChange(r.id)}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
                       ? 'bg-[#E1224D] text-white shadow-sm'
@@ -174,7 +174,7 @@ export default function RoleDashboardModal({
                   </p>
                 </div>
                 <button
-                  onClick={() => alert('New Property Listing Wizard — In OwnStay, every listing is inspected by our Indian field engineers within 48 hours!')}
+                  onClick={() => alert('New Property Listing Wizard — In ApnaStay, every listing is inspected by our Indian field engineers within 48 hours!')}
                   className="px-5 py-2.5 rounded-full bg-[#E1224D] text-white text-xs font-semibold shadow-apple hover:bg-[#C71B42] transition-all flex items-center gap-2"
                 >
                   <PlusCircle className="w-4 h-4" />
@@ -220,7 +220,7 @@ export default function RoleDashboardModal({
             <div className="space-y-8">
               <div>
                 <h3 className="text-2xl font-bold text-[#1A1A1A]">
-                  OwnStay India Admin & Growth Analytics
+                  ApnaStay India Admin & Growth Analytics
                 </h3>
                 <p className="text-xs text-[#6B7280]">
                   Real-time KPI telemetry across Indore, Jaipur, Coimbatore, Kochi, Chandigarh, and Pune
@@ -280,7 +280,7 @@ export default function RoleDashboardModal({
 
         {/* MODAL FOOTER */}
         <div className="px-6 py-4 border-t border-[#EDEDED] bg-white flex items-center justify-between text-xs text-[#6B7280]">
-          <span>OwnStay India Multi-Role SaaS Engine v2.4</span>
+          <span>ApnaStay India Multi-Role SaaS Engine v2.4</span>
           <button
             onClick={onClose}
             className="px-5 py-2 rounded-full bg-[#1A1A1A] text-white font-semibold hover:bg-black transition-colors"

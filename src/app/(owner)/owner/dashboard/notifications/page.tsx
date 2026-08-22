@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Owner Notifications & Alerts | OwnStay India',
+  title: 'Owner Notifications & Alerts | ApnaStay India',
   description: 'Real-time alerts for KYC verification updates, NFC self-tour entries, and rent credits.',
 };
 

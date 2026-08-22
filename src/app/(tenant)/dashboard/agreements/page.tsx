@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Digital E-Agreements & Legal Deeds | OwnStay India',
+  title: 'Digital E-Agreements & Legal Deeds | ApnaStay India',
   description: 'Access your Aadhaar & PAN e-signed legally stamped rental deeds.',
 };
 

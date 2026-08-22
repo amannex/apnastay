@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY AUTHENTICATION & RBAC GUARDS
+// APNASTAY AUTHENTICATION & RBAC GUARDS
 // High-level route and action guards for Next.js views and components
 // ============================================================================
 
@@ -87,18 +87,18 @@ export function requireAuthenticated(user: UserProfile | null | undefined): bool
 
 /**
  * Checks whether a user is allowed to access the Property Owner Dashboard / Portal.
- * Validates capability: ownstay_create_property (or admin).
+ * Validates capability: apnastay_create_property (or admin).
  */
 export function canAccessOwnerPortal(user: UserProfile | null | undefined): boolean {
-  return userCan(user, 'ownstay_create_property');
+  return userCan(user, 'apnastay_create_property');
 }
 
 /**
  * Checks whether a user is allowed to access the Admin Management Portal.
- * Validates capability: ownstay_verify_owner.
+ * Validates capability: apnastay_verify_owner.
  */
 export function canAccessAdminPortal(user: UserProfile | null | undefined): boolean {
-  return userCan(user, 'ownstay_verify_owner');
+  return userCan(user, 'apnastay_verify_owner');
 }
 
 /**

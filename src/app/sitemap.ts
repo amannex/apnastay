@@ -4,7 +4,7 @@ import { STATIC_PROPERTIES } from '../data/staticProperties';
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://ownstay-eight.vercel.app';
+  const baseUrl = 'https://apnastay-eight.vercel.app';
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/why-ownstay`,
+      url: `${baseUrl}/why-apnastay`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,

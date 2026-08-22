@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY STATIC DATA LAYER — ZERO-BROKERAGE INDIAN RENTAL PLATFORM
+// APNASTAY STATIC DATA LAYER — ZERO-BROKERAGE INDIAN RENTAL PLATFORM
 // Curated for India's Fastest-Growing Tier-2 & Tier-1 Hubs
 // ============================================================================
 import type { Property, City } from '../types';
@@ -118,12 +118,12 @@ export const STATIC_PROPERTIES: Property[] = [
     ],
     owner: {
       name: 'Aditya Sharma',
-      role: 'Verified OwnStay Partner',
+      role: 'Verified ApnaStay Partner',
       responseTime: 'Under 10 mins',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
     },
     auditTimeline: [
-      { date: 'July 24, 2026', event: 'Acoustics & Wi-Fi Speed Certified by OwnStay Field Engineer', status: 'pass' },
+      { date: 'July 24, 2026', event: 'Acoustics & Wi-Fi Speed Certified by ApnaStay Field Engineer', status: 'pass' },
       { date: 'July 26, 2026', event: 'NFC Smart Lock Firmware Verified v4.2', status: 'pass' },
       { date: 'July 28, 2026', event: 'Sanitization & HVAC Filter Replacement Complete', status: 'pass' }
     ],
@@ -179,12 +179,12 @@ export const STATIC_PROPERTIES: Property[] = [
     ],
     owner: {
       name: 'Priya Rathore',
-      role: 'Verified OwnStay Partner',
+      role: 'Verified ApnaStay Partner',
       responseTime: 'Under 15 mins',
       avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80'
     },
     auditTimeline: [
-      { date: 'July 22, 2026', event: 'Water pressure & Solar heating tested by OwnStay Engineer', status: 'pass' },
+      { date: 'July 22, 2026', event: 'Water pressure & Solar heating tested by ApnaStay Engineer', status: 'pass' },
       { date: 'July 25, 2026', event: 'Smart-lock NFC key programmed', status: 'pass' }
     ],
     aiAttributes: {
@@ -237,7 +237,7 @@ export const STATIC_PROPERTIES: Property[] = [
     ],
     owner: {
       name: 'Siddharth Iyer',
-      role: 'Verified OwnStay Partner',
+      role: 'Verified ApnaStay Partner',
       responseTime: 'Under 5 mins',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
     },
@@ -294,7 +294,7 @@ export const STATIC_PROPERTIES: Property[] = [
     ],
     owner: {
       name: 'Ananya Nair',
-      role: 'Verified OwnStay Partner',
+      role: 'Verified ApnaStay Partner',
       responseTime: 'Under 10 mins',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
     },
@@ -351,7 +351,7 @@ export const STATIC_PROPERTIES: Property[] = [
     ],
     owner: {
       name: 'Harpreet Singh',
-      role: 'Verified OwnStay Partner',
+      role: 'Verified ApnaStay Partner',
       responseTime: 'Under 12 mins',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
     },
@@ -408,12 +408,12 @@ export const STATIC_PROPERTIES: Property[] = [
     ],
     owner: {
       name: 'Rohan Deshmukh',
-      role: 'Verified OwnStay Partner',
+      role: 'Verified ApnaStay Partner',
       responseTime: 'Under 5 mins',
       avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80'
     },
     auditTimeline: [
-      { date: 'July 28, 2026', event: 'Wi-Fi speed & acoustic seal verified by OwnStay Engineer', status: 'pass' }
+      { date: 'July 28, 2026', event: 'Wi-Fi speed & acoustic seal verified by ApnaStay Engineer', status: 'pass' }
     ],
     aiAttributes: {
       matchScore: 98,
@@ -435,7 +435,7 @@ export const VALUE_PROPS = [
   {
     id: 'vp-02',
     title: '25-Point Physical Engineering Inspection',
-    description: 'Every apartment is visited by an OwnStay field engineer to test acoustic decibels, Wi-Fi fiber speeds, water pressure, and legal deed authenticity.',
+    description: 'Every apartment is visited by an ApnaStay field engineer to test acoustic decibels, Wi-Fi fiber speeds, water pressure, and legal deed authenticity.',
     icon: 'ShieldCheck',
     badge: 'Physically Inspected',
     color: 'bg-blue-50 text-blue-600 border-blue-100'

@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import LoginPage from '@/views/LoginPage';
 
 export const metadata: Metadata = {
-  title: 'Log In | OwnStay India',
-  description: 'Log in to your OwnStay account to manage your verified apartment tours, digital agreements, and zero-brokerage rentals.'
+  title: 'Log In | ApnaStay India',
+  description: 'Log in to your ApnaStay account to manage your verified apartment tours, digital agreements, and zero-brokerage rentals.'
 };
 
 export default function Page() {

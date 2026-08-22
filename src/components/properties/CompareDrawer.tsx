@@ -158,9 +158,9 @@ export default function CompareDrawer({
                   ))}
                 </tr>
 
-                {/* ROW 3: OwnStay Audit Score */}
+                {/* ROW 3: ApnaStay Audit Score */}
                 <tr className="hover:bg-[#FAFAFA]/60 transition-colors">
-                  <td className="p-4 font-bold text-[#6B7280]">OwnStay Audit Score</td>
+                  <td className="p-4 font-bold text-[#6B7280]">ApnaStay Audit Score</td>
                   {compareList.map((prop) => (
                     <td key={prop.id} className="p-4 font-bold text-[#1A1A1A]">
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-[#E1224D]">

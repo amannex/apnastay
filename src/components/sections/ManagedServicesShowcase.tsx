@@ -65,7 +65,7 @@ export default function ManagedServicesShowcase() {
         {/* CLEAN MINIMAL HEADER */}
         <div className="max-w-2xl mb-12">
           <span className="text-xs font-bold text-[#E1224D] uppercase tracking-wider">
-            The OwnStay Advantage
+            The ApnaStay Advantage
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mt-1">
             Managed living comfort with zero brokerage.

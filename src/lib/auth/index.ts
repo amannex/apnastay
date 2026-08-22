@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY AUTHENTICATION LIB EXPORTS
+// APNASTAY AUTHENTICATION LIB EXPORTS
 // ============================================================================
 
 export * from './session';

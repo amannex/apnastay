@@ -1,13 +1,13 @@
 // ============================================================================
-// OWNSTAY AUTHENTICATION TYPES & RBAC CAPABILITY DEFINITIONS
-// Authoritative TypeScript interfaces matching WordPress ownstay-core plugin
+// APNASTAY AUTHENTICATION TYPES & RBAC CAPABILITY DEFINITIONS
+// Authoritative TypeScript interfaces matching WordPress apnastay-core plugin
 // ============================================================================
 
 export type AccountType = 'tenant' | 'owner';
 
 export type RoleSlug =
-  | 'ownstay_tenant'
-  | 'ownstay_owner'
+  | 'apnastay_tenant'
+  | 'apnastay_owner'
   | 'administrator'
   | 'guest'
   | 'TENANT'
@@ -17,34 +17,34 @@ export type RoleSlug =
 
 export type Capability =
   // Tenant capabilities
-  | 'ownstay_manage_wishlist'
-  | 'ownstay_book_visit'
-  | 'ownstay_cancel_own_visit'
-  | 'ownstay_request_booking'
-  | 'ownstay_make_payment'
-  | 'ownstay_view_agreement'
-  | 'ownstay_create_review'
-  | 'ownstay_chat'
+  | 'apnastay_manage_wishlist'
+  | 'apnastay_book_visit'
+  | 'apnastay_cancel_own_visit'
+  | 'apnastay_request_booking'
+  | 'apnastay_make_payment'
+  | 'apnastay_view_agreement'
+  | 'apnastay_create_review'
+  | 'apnastay_chat'
   // Owner capabilities
-  | 'ownstay_create_property'
-  | 'ownstay_edit_own_property'
-  | 'ownstay_delete_own_property'
-  | 'ownstay_upload_property_media'
-  | 'ownstay_manage_rooms'
-  | 'ownstay_manage_availability'
-  | 'ownstay_manage_visits'
-  | 'ownstay_manage_bookings'
-  | 'ownstay_view_owner_payments'
+  | 'apnastay_create_property'
+  | 'apnastay_edit_own_property'
+  | 'apnastay_delete_own_property'
+  | 'apnastay_upload_property_media'
+  | 'apnastay_manage_rooms'
+  | 'apnastay_manage_availability'
+  | 'apnastay_manage_visits'
+  | 'apnastay_manage_bookings'
+  | 'apnastay_view_owner_payments'
   // Admin capabilities
-  | 'ownstay_verify_owner'
-  | 'ownstay_verify_property'
-  | 'ownstay_manage_users'
-  | 'ownstay_manage_properties'
-  | 'ownstay_manage_complaints'
-  | 'ownstay_manage_payments'
-  | 'ownstay_view_analytics'
-  | 'ownstay_view_revenue'
-  | 'ownstay_moderate_reviews'
+  | 'apnastay_verify_owner'
+  | 'apnastay_verify_property'
+  | 'apnastay_manage_users'
+  | 'apnastay_manage_properties'
+  | 'apnastay_manage_complaints'
+  | 'apnastay_manage_payments'
+  | 'apnastay_view_analytics'
+  | 'apnastay_view_revenue'
+  | 'apnastay_moderate_reviews'
   // Generic read
   | 'read';
 
@@ -71,7 +71,7 @@ export interface UserProfile {
   id: number;
   name: string;
   email: string | null;
-  role: string; // 'ownstay_tenant' | 'ownstay_owner' | 'administrator' | 'guest'
+  role: string; // 'apnastay_tenant' | 'apnastay_owner' | 'administrator' | 'guest'
   capabilities: Capability[] | string[];
   owner_verification_status?: OwnerVerificationStatus;
   verification_status?: OwnerVerificationStatus;

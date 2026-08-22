@@ -26,7 +26,7 @@ export default function AboutPage() {
             Redefining Rentals Across India with 0% Brokerage
           </h1>
           <p className="text-base sm:text-lg text-[#6E6E73] mt-4 leading-relaxed">
-            OwnStay connects verified residential property owners directly with screened tenants across Tier-2 Indian hubs—eliminating middlemen, unfair deposits, and broker fees forever.
+            ApnaStay connects verified residential property owners directly with screened tenants across Tier-2 Indian hubs—eliminating middlemen, unfair deposits, and broker fees forever.
           </p>
         </div>
 

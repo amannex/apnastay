@@ -15,7 +15,7 @@ export default function JournalPage() {
             Indian Urban Living & Rent Law Guides
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1A1A1A]">
-            The OwnStay Knowledge Hub.
+            The ApnaStay Knowledge Hub.
           </h1>
           <p className="text-[#6B7280] text-sm sm:text-base mt-2 max-w-2xl">
             Everything you need to know about Indian rental agreements, security deposit refund laws, acoustic soundproofing, and moving into Tier-2 tech hubs.
@@ -29,7 +29,7 @@ export default function JournalPage() {
         <div className="mt-16 bg-white rounded-3xl p-8 sm:p-12 border border-[#EDEDED] shadow-sm max-w-3xl mx-auto text-center">
           <BookOpen className="w-10 h-10 text-[#E1224D] mx-auto mb-4" />
           <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2">
-            Subscribe to OwnStay Tier-2 Market Reports
+            Subscribe to ApnaStay Tier-2 Market Reports
           </h3>
           <p className="text-sm text-[#6B7280] mb-6">
             Get monthly data on rental yield trends in Indore, Jaipur, Coimbatore, Kochi, Chandigarh, and Pune.
@@ -41,7 +41,7 @@ export default function JournalPage() {
               className="w-full px-4 py-3 rounded-xl border border-[#EDEDED] bg-[#FAFAFA] text-xs font-medium focus:outline-none focus:border-[#E1224D]"
             />
             <button
-              onClick={() => alert('Subscribed to OwnStay Indian Rental Market Reports!')}
+              onClick={() => alert('Subscribed to ApnaStay Indian Rental Market Reports!')}
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#E1224D] text-white text-xs font-bold shadow-apple hover:bg-[#C71B42] transition-colors shrink-0"
             >
               Subscribe

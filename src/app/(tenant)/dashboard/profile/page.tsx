@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Tenant Profile & KYC | OwnStay India',
+  title: 'Tenant Profile & KYC | ApnaStay India',
   description: 'Manage your profile details, verified Aadhaar/PAN status, and security preferences.',
 };
 

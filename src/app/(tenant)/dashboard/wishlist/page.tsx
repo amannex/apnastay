@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Saved Properties & Wishlist | OwnStay India',
+  title: 'Saved Properties & Wishlist | ApnaStay India',
   description: 'View your saved zero-brokerage residential properties across Tier-2 Indian hubs.',
 };
 

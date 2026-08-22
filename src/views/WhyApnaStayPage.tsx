@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import WhyOwnStayGrid from '../components/sections/WhyOwnStayGrid';
+import WhyApnaStayGrid from '../components/sections/WhyApnaStayGrid';
 import FAQSection from '../components/sections/FaqSection';
 import { Sparkles, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-export default function WhyOwnStayPage() {
+export default function WhyApnaStayPage() {
   return (
     <main className="min-h-screen bg-[#FAFAFA] pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,17 +20,17 @@ export default function WhyOwnStayPage() {
             How We Eliminate 1-Month Brokerage Across India.
           </h1>
           <p className="text-[#6B7280] text-base sm:text-lg leading-relaxed">
-            Traditional Indian real estate relies on offline brokers charging 1 to 2 months rent just for showing keys. OwnStay automates verification, touring, and legal Aadhaar e-signing.
+            Traditional Indian real estate relies on offline brokers charging 1 to 2 months rent just for showing keys. ApnaStay automates verification, touring, and legal Aadhaar e-signing.
           </p>
         </div>
 
         {/* BENTO GRID */}
-        <WhyOwnStayGrid />
+        <WhyApnaStayGrid />
 
-        {/* COMPARISON TABLE: TRADITIONAL BROKER vs OWNSTAY INDIA */}
+        {/* COMPARISON TABLE: TRADITIONAL BROKER vs APNASTAY INDIA */}
         <div className="my-20 bg-white rounded-3xl p-8 sm:p-12 border border-[#EDEDED] shadow-sm">
           <h3 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] mb-2 text-center">
-            Traditional Broker vs. OwnStay Direct
+            Traditional Broker vs. ApnaStay Direct
           </h3>
           <p className="text-sm text-[#6B7280] text-center mb-8">
             Why Indian renters and landlords are switching to digital verification
@@ -42,7 +42,7 @@ export default function WhyOwnStayPage() {
                 <tr className="border-b border-[#EDEDED] text-xs font-bold uppercase tracking-wider text-[#6B7280]">
                   <th className="py-4 px-4">Feature / Metric</th>
                   <th className="py-4 px-4 text-red-500">Traditional Broker / Middleman</th>
-                  <th className="py-4 px-4 text-[#E1224D] bg-rose-50/50 rounded-t-xl">OwnStay India Platform</th>
+                  <th className="py-4 px-4 text-[#E1224D] bg-rose-50/50 rounded-t-xl">ApnaStay India Platform</th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-[#EDEDED]">

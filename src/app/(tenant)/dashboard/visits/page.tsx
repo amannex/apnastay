@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'NFC Smart-Lock Visits | OwnStay India',
+  title: 'NFC Smart-Lock Visits | ApnaStay India',
   description: 'Manage your scheduled self-guided apartment tours and active NFC unlock tokens.',
 };
 

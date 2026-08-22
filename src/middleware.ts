@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Next.js Edge Middleware for OwnStay India
+ * Next.js Edge Middleware for ApnaStay India
  * Protects authenticated areas (/dashboard, /owner) on the server before rendering UI.
  */
 export function middleware(request: NextRequest) {
@@ -13,8 +13,8 @@ export function middleware(request: NextRequest) {
   const isOwnerProtected = pathname.startsWith('/owner');
 
   if (isTenantProtected || isOwnerProtected) {
-    // Check for authoritative OwnStay session cookie or WordPress login cookie
-    const sessionCookie = request.cookies.get('ownstay_session');
+    // Check for authoritative ApnaStay session cookie or WordPress login cookie
+    const sessionCookie = request.cookies.get('apnastay_session');
     const wpCookie = request.cookies.getAll().find(c => c.name.startsWith('wordpress_logged_in_'));
 
     if (!sessionCookie && !wpCookie) {

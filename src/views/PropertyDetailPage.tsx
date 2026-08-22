@@ -37,7 +37,7 @@ export default function PropertyDetailPage({ property }: PropertyDetailPageProps
   const isWishlisted = wishlistIds.includes(property.id);
   const [isBooked, setIsBooked] = useState(false);
 
-  const title = property.title || 'OwnStay Verified Residence';
+  const title = property.title || 'ApnaStay Verified Residence';
   const neighborhood = property.neighborhood || property.location || 'Indore';
   const city = property.city || 'Indore';
   const price = Number(property.price || 16500);
@@ -113,7 +113,7 @@ export default function PropertyDetailPage({ property }: PropertyDetailPageProps
                 if (navigator.share) {
                   navigator.share({
                     title: title,
-                    text: `Check out ${title} on OwnStay — India's Zero-Brokerage Platform!`,
+                    text: `Check out ${title} on ApnaStay — India's Zero-Brokerage Platform!`,
                     url: window.location.href,
                   });
                 }

@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Owner & Support Messages | OwnStay India',
-  description: 'Communicate securely with verified property owners and OwnStay support.',
+  title: 'Owner & Support Messages | ApnaStay India',
+  description: 'Communicate securely with verified property owners and ApnaStay support.',
 };
 
 export default function MessagesPage() {

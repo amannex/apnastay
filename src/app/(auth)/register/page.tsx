@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import RegisterPage from '@/views/RegisterPage';
 
 export const metadata: Metadata = {
-  title: 'Create Account | OwnStay India',
-  description: 'Create your OwnStay account as a Tenant or Property Owner and enjoy zero-brokerage rentals across India.'
+  title: 'Create Account | ApnaStay India',
+  description: 'Create your ApnaStay account as a Tenant or Property Owner and enjoy zero-brokerage rentals across India.'
 };
 
 export default function Page() {

@@ -18,7 +18,7 @@ export interface CanProps {
  * Optional fallback prop is rendered if permission check fails.
  *
  * Example:
- * <Can user={user} capability="ownstay_create_property">
+ * <Can user={user} capability="apnastay_create_property">
  *   <AddPropertyButton />
  * </Can>
  */

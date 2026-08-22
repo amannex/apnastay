@@ -44,7 +44,7 @@ export default function Navbar({
               O
             </div>
             <span className="font-bold text-base sm:text-lg tracking-tight text-[#1A1A1A]">
-              OwnStay<span className="text-[#E1224D]">.</span>
+              ApnaStay<span className="text-[#E1224D]">.</span>
             </span>
           </Link>
 
@@ -72,8 +72,8 @@ export default function Navbar({
               Tier-2 Cities
             </Link>
             <Link
-              href="/why-ownstay"
-              className={`whitespace-nowrap transition-colors ${isActiveRoute('/why-ownstay') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+              href="/why-apnastay"
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/why-apnastay') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
               Why ₹0 Brokerage
@@ -83,7 +83,7 @@ export default function Navbar({
               className={`whitespace-nowrap transition-colors ${isActiveRoute('/journal') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
-              OwnStay Journal
+              ApnaStay Journal
             </Link>
           </div>
 
@@ -177,7 +177,7 @@ export default function Navbar({
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-apple-lg border border-[#EDEDED] p-2 z-50 animate-slide-up">
                   <div className="px-3 py-2 border-b border-[#EDEDED] mb-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      OwnStay User Type Switcher
+                      ApnaStay User Type Switcher
                     </p>
                     <p className="text-xs text-[#1A1A1A] mt-0.5">
                       Switch views to test Tenant, Owner & Field Engineer tools.
@@ -225,7 +225,7 @@ export default function Navbar({
             <div className="glass-panel rounded-3xl p-4 shadow-apple-lg border border-white/90 flex flex-col gap-1.5">
               <div className="flex items-center justify-between pb-2 border-b border-[#EDEDED] px-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
-                  OwnStay Navigation
+                  ApnaStay Navigation
                 </span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -263,9 +263,9 @@ export default function Navbar({
               </Link>
 
               <Link
-                href="/why-ownstay"
+                href="/why-apnastay"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/why-ownstay') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
+                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/why-apnastay') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
                   }`}
               >
                 <span>Why ₹0 Brokerage</span>
@@ -277,7 +277,7 @@ export default function Navbar({
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${isActiveRoute('/journal') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
                   }`}
               >
-                <span>OwnStay Journal</span>
+                <span>ApnaStay Journal</span>
               </Link>
 
               <div className="pt-2 mt-1 border-t border-[#EDEDED] flex flex-col gap-2">

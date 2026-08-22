@@ -75,7 +75,7 @@ export default function RegisterPage() {
         handleRoleRedirect(res.data, redirectParam, router);
       }, 600);
     } catch (err: any) {
-      console.error('[OwnStay RegisterPage] Error:', err);
+      console.error('[ApnaStay RegisterPage] Error:', err);
       setErrorMessage(err?.message || 'An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
     }
@@ -93,7 +93,7 @@ export default function RegisterPage() {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1D1D1F]">
-            Create your OwnStay account
+            Create your ApnaStay account
           </h1>
           <p className="text-sm text-[#86868B] mt-2 max-w-sm mx-auto">
             Choose your role and start your zero-brokerage rental journey today.
@@ -227,7 +227,7 @@ export default function RegisterPage() {
             <input
               type="email"
               required
-              placeholder="aman@ownstay.in"
+              placeholder="aman@apnastay.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-transparent focus:border-[#1D1D1F] focus:bg-white text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium"

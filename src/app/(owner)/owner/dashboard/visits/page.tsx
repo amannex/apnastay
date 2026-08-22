@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'NFC Tour Logs & Visits | OwnStay India',
+  title: 'NFC Tour Logs & Visits | ApnaStay India',
   description: 'Monitor NFC self-guided tour logs and scheduled prospective tenant visits.',
 };
 

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Tenant Messages & Chat | OwnStay India',
+  title: 'Tenant Messages & Chat | ApnaStay India',
   description: 'Communicate directly with verified prospective tenants.',
 };
 

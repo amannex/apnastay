@@ -62,7 +62,7 @@ export default function LoginPage() {
         handleRoleRedirect(res.data, redirectParam, router);
       }, 500);
     } catch (err: any) {
-      console.error('[OwnStay LoginPage] Error:', err);
+      console.error('[ApnaStay LoginPage] Error:', err);
       setErrorMessage(err?.message || 'An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
     }
@@ -80,7 +80,7 @@ export default function LoginPage() {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1D1D1F]">
-            Log in to OwnStay
+            Log in to ApnaStay
           </h1>
           <p className="text-sm text-[#86868B] mt-2">
             Sign in to access your verified rentals, agreements, and tours.
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <input
               type="email"
               required
-              placeholder="aman@ownstay.in"
+              placeholder="aman@apnastay.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border border-transparent focus:border-[#1D1D1F] focus:bg-white text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium"
@@ -127,7 +127,7 @@ export default function LoginPage() {
                 href="#forgot"
                 onClick={(e) => {
                   e.preventDefault();
-                  alert('Please contact OwnStay Support at support@ownstay.in to reset your password.');
+                  alert('Please contact ApnaStay Support at support@apnastay.in to reset your password.');
                 }}
                 className="text-xs text-[#86868B] hover:text-[#1D1D1F] font-medium transition-colors"
               >

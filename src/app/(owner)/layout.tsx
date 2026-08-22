@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation';
  */
 export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const session = cookieStore.get('ownstay_session');
+  const session = cookieStore.get('apnastay_session');
   const wpCookie = cookieStore.getAll().find(c => c.name.startsWith('wordpress_logged_in_'));
 
   if (!session && !wpCookie) {

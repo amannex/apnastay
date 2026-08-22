@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'My Property Listings | OwnStay India',
+  title: 'My Property Listings | ApnaStay India',
   description: 'Manage your verified residential properties across Tier-2 Indian hubs.',
 };
 

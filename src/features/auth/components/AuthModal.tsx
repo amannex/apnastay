@@ -34,9 +34,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     setErrorMessage(null);
     setIsSubmitting(true);
 
-    const email = emailOrPhone.trim() || 'aman@ownstay.in';
+    const email = emailOrPhone.trim() || 'aman@apnastay.in';
     const userName = name.trim() || 'Aman Saifi';
-    const userPass = password || 'ownstay123';
+    const userPass = password || 'apnastay123';
 
     try {
       if (isRegister) {
@@ -76,7 +76,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
       setIsSubmitting(false);
       onClose();
     } catch (err: any) {
-      console.error('[OwnStay AuthModal] Auth error:', err);
+      console.error('[ApnaStay AuthModal] Auth error:', err);
       setErrorMessage(err?.message || 'An unexpected error occurred. Please try again.');
       setIsSubmitting(false);
     }
@@ -90,16 +90,16 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
       const mockUser = {
         id: 24,
         name: `Aman (${provider})`,
-        email: `aman.${provider.toLowerCase()}@ownstay.in`,
-        role: selectedRole === 'owner' ? 'ownstay_owner' : 'ownstay_tenant',
+        email: `aman.${provider.toLowerCase()}@apnastay.in`,
+        role: selectedRole === 'owner' ? 'apnastay_owner' : 'apnastay_tenant',
         roleTitle: roleObj?.title || 'Tenant / Renter',
         avatar: 'A',
         capabilities: [
           'read',
-          'ownstay_manage_wishlist',
-          'ownstay_book_visit',
-          'ownstay_request_booking',
-          'ownstay_make_payment'
+          'apnastay_manage_wishlist',
+          'apnastay_book_visit',
+          'apnastay_request_booking',
+          'apnastay_make_payment'
         ],
         verification_status: 'VERIFIED' as const,
         profile: {
@@ -199,7 +199,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
             </label>
             <input
               type="text"
-              placeholder="aman@ownstay.in"
+              placeholder="aman@apnastay.in"
               value={emailOrPhone}
               onChange={(e) => setEmailOrPhone(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl bg-[#F5F5F7] border border-transparent focus:border-[#1D1D1F] focus:bg-white text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium"

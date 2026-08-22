@@ -99,7 +99,7 @@ export default function PropertyModal({
         ...prev,
         {
           sender: 'owner',
-          text: `Thanks for asking! Yes, the 25-point OwnStay audit verified ${property.amenities[0]?.name || 'gigabit fiber'} and a soundproof rating of 32 dB. Feel free to book an instant NFC smart-lock tour anytime!`
+          text: `Thanks for asking! Yes, the 25-point ApnaStay audit verified ${property.amenities[0]?.name || 'gigabit fiber'} and a soundproof rating of 32 dB. Feel free to book an instant NFC smart-lock tour anytime!`
         }
       ]);
     }, 1000);
@@ -223,7 +223,7 @@ export default function PropertyModal({
                 <div className="p-5 rounded-2xl bg-rose-50/60 border border-rose-100">
                   <div className="flex items-center gap-2 text-xs font-bold text-[#E1224D] uppercase tracking-wider mb-2">
                     <Sparkles className="w-4 h-4" />
-                    OwnStay AI Match Report ({property.aiAttributes.matchScore}% Match)
+                    ApnaStay AI Match Report ({property.aiAttributes.matchScore}% Match)
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-medium text-[#1A1A1A]">
                     {property.aiAttributes.reasons?.map((r, i) => (
@@ -269,7 +269,7 @@ export default function PropertyModal({
                 <div className="flex items-center justify-between pb-4 border-b border-[#EDEDED]">
                   <div>
                     <span className="text-sm font-bold text-emerald-600">Brokerage Fee</span>
-                    <p className="text-xs text-emerald-600">Saved instantly with OwnStay Direct</p>
+                    <p className="text-xs text-emerald-600">Saved instantly with ApnaStay Direct</p>
                   </div>
                   <span className="text-sm font-bold text-emerald-600">₹0</span>
                 </div>
@@ -338,7 +338,7 @@ export default function PropertyModal({
           {activeTab === 'timeline' && (
             <div className="max-w-2xl mx-auto space-y-6">
               <h3 className="text-xl font-bold text-[#1A1A1A]">
-                OwnStay 25-Point Verification Audit
+                ApnaStay 25-Point Verification Audit
               </h3>
               <div className="space-y-4">
                 {property.timeline.map((item, idx) => (
