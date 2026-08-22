@@ -45,7 +45,7 @@ export default function OwnerDashboardPage() {
       const res = await submitOwnerVerification();
       if (res.success && res.data) {
         setUser(res.data);
-        setKycSuccessMsg('KYC Verification submitted successfully! Status transitions to Pending for OwnStay Admin review.');
+        setKycSuccessMsg('KYC Verification submitted successfully! Status transitions to Pending for ApnaStay Admin review.');
       } else {
         setKycErrorMsg(res.error || 'Failed to submit KYC verification.');
       }
@@ -101,12 +101,12 @@ export default function OwnerDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {can(user, 'ownstay_create_property') && (
+            {can(user, 'apnastay_create_property') && (
               <button
                 onClick={() => {
                   const check = canPublishProperty(user);
                   if (!check.allowed) {
-                    alert(`Business Rule Violation: ${check.reason}\n\nNote: You possess the RBAC capability (ownstay_create_property), but publication requires fulfilling domain business rules.`);
+                    alert(`Business Rule Violation: ${check.reason}\n\nNote: You possess the RBAC capability (apnastay_create_property), but publication requires fulfilling domain business rules.`);
                     return;
                   }
                   alert('Opening Property Lister Wizard...');
@@ -140,8 +140,8 @@ export default function OwnerDashboardPage() {
                 </h3>
                 <p className="text-xs text-[#6E6E73] mt-1 leading-relaxed">
                   {verificationStatus === 'pending'
-                    ? 'Your verification documents have been submitted and are currently in Pending state. An OwnStay Administrator can review and approve your account in WP Admin → OwnStay → Owner Verification.'
-                    : 'Even with RBAC capability (ownstay_create_property), business rules require verified KYC status before publishing properties. Click below to submit your verification to WordPress Admin.'}
+                    ? 'Your verification documents have been submitted and are currently in Pending state. An ApnaStay Administrator can review and approve your account in WP Admin → ApnaStay → Owner Verification.'
+                    : 'Even with RBAC capability (apnastay_create_property), business rules require verified KYC status before publishing properties. Click below to submit your verification to WordPress Admin.'}
                 </p>
 
                 {kycSuccessMsg && (
@@ -275,7 +275,7 @@ export default function OwnerDashboardPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                {can(user, 'ownstay_manage_visits') && (
+                {can(user, 'apnastay_manage_visits') && (
                   <button
                     onClick={() => alert('Viewing 3 BHK Pinnacle Residenza visits...')}
                     className="px-4 py-2 rounded-xl bg-white hover:bg-[#EDEDED] text-[#1D1D1F] text-xs font-bold transition-all border border-[#EDEDED]"
@@ -283,7 +283,7 @@ export default function OwnerDashboardPage() {
                     Manage Tours (3)
                   </button>
                 )}
-                {can(user, 'ownstay_edit_own_property') && (
+                {can(user, 'apnastay_edit_own_property') && (
                   <button
                     onClick={() => alert('Opening Property Editor...')}
                     className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all"
@@ -315,7 +315,7 @@ export default function OwnerDashboardPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                {can(user, 'ownstay_manage_visits') && (
+                {can(user, 'apnastay_manage_visits') && (
                   <button
                     onClick={() => alert('Viewing 2 BHK Koregaon Park visits...')}
                     className="px-4 py-2 rounded-xl bg-white hover:bg-[#EDEDED] text-[#1D1D1F] text-xs font-bold transition-all border border-[#EDEDED]"
@@ -323,7 +323,7 @@ export default function OwnerDashboardPage() {
                     Manage Tours (0)
                   </button>
                 )}
-                {can(user, 'ownstay_edit_own_property') && (
+                {can(user, 'apnastay_edit_own_property') && (
                   <button
                     onClick={() => alert('Opening Property Editor...')}
                     className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all"

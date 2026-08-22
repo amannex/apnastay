@@ -33,7 +33,7 @@ export default function PropertiesPage(props: any = {}) {
               Browse Verified Rooms Across India.
             </h1>
             <p className="text-[#6B7280] text-sm sm:text-base mt-2 max-w-2xl">
-              Every room listed here has undergone a 25-point physical acoustic and Wi-Fi inspection by OwnStay field engineers.
+              Every room listed here has undergone a 25-point physical acoustic and Wi-Fi inspection by ApnaStay field engineers.
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 // ============================================================================
-// OWNSTAY AUTHENTICATION API CLIENT
-// Communicates with WordPress ownstay-core REST API (/wp-json/ownstay/v1)
+// APNASTAY AUTHENTICATION API CLIENT
+// Communicates with WordPress apnastay-core REST API (/wp-json/apnastay/v1)
 // Uses HttpOnly secure session cookies (credentials: 'include')
 // ============================================================================
 
@@ -13,12 +13,12 @@ import type {
 import { TENANT_CAPABILITIES, OWNER_CAPABILITIES, ADMIN_CAPABILITIES } from './permissions';
 
 const WP_API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WP_API_URL) || 'http://localhost:8888/wp-json';
-const OWNSTAY_API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_OWNSTAY_API_URL) || `${WP_API_BASE}/ownstay/v1`;
+const APNASTAY_API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_APNASTAY_API_URL) || `${WP_API_BASE}/apnastay/v1`;
 
 /**
  * Helper to get default fallback user profiles for local development when CMS is unreachable.
  */
-function getFallbackProfile(role: string = 'ownstay_tenant', name: string = 'Aman Saifi', email: string = 'aman@ownstay.in'): UserProfile {
+function getFallbackProfile(role: string = 'apnastay_tenant', name: string = 'Aman Saifi', email: string = 'aman@apnastay.in'): UserProfile {
   const normalizedRole = role.toLowerCase();
   let capabilities = TENANT_CAPABILITIES;
   let verificationStatus: 'VERIFIED' | 'UNVERIFIED' = 'VERIFIED';
@@ -38,7 +38,7 @@ function getFallbackProfile(role: string = 'ownstay_tenant', name: string = 'Ama
     id: 24,
     name,
     email,
-    role: normalizedRole.startsWith('ownstay_') ? normalizedRole : `ownstay_${normalizedRole}`,
+    role: normalizedRole.startsWith('apnastay_') ? normalizedRole : `apnastay_${normalizedRole}`,
     capabilities,
     verification_status: verificationStatus,
     profile: {
@@ -53,11 +53,11 @@ function getFallbackProfile(role: string = 'ownstay_tenant', name: string = 'Ama
 
 /**
  * Register a new Tenant or Property Owner account.
- * Endpoint: POST /wp-json/ownstay/v1/auth/register
+ * Endpoint: POST /wp-json/apnastay/v1/auth/register
  */
 export async function registerUser(payload: RegisterPayload): Promise<AuthResponse<UserProfile>> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/auth/register`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -83,8 +83,8 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthRespon
       message: data?.message || 'Registration successful.'
     };
   } catch (error) {
-    console.warn('[OwnStay Auth] CMS unreachable during registerUser, falling back to local simulation:', error);
-    const fallbackUser = getFallbackProfile(payload.account_type === 'owner' ? 'ownstay_owner' : 'ownstay_tenant', payload.name, payload.email);
+    console.warn('[ApnaStay Auth] CMS unreachable during registerUser, falling back to local simulation:', error);
+    const fallbackUser = getFallbackProfile(payload.account_type === 'owner' ? 'apnastay_owner' : 'apnastay_tenant', payload.name, payload.email);
     return {
       success: true,
       status: 201,
@@ -96,11 +96,11 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthRespon
 
 /**
  * Login an existing user and establish HttpOnly secure cookie session.
- * Endpoint: POST /wp-json/ownstay/v1/auth/login
+ * Endpoint: POST /wp-json/apnastay/v1/auth/login
  */
 export async function loginUser(payload: LoginPayload): Promise<AuthResponse<UserProfile>> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/auth/login`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -126,8 +126,8 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse<Use
       message: data?.message || 'Login successful.'
     };
   } catch (error) {
-    console.warn('[OwnStay Auth] CMS unreachable during loginUser, falling back to local simulation:', error);
-    const fallbackUser = getFallbackProfile('ownstay_tenant', 'Aman Saifi', payload.email);
+    console.warn('[ApnaStay Auth] CMS unreachable during loginUser, falling back to local simulation:', error);
+    const fallbackUser = getFallbackProfile('apnastay_tenant', 'Aman Saifi', payload.email);
     return {
       success: true,
       status: 200,
@@ -139,30 +139,30 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse<Use
 
 /**
  * Logout user and clear HttpOnly session cookies.
- * Endpoint: POST /wp-json/ownstay/v1/auth/logout
+ * Endpoint: POST /wp-json/apnastay/v1/auth/logout
  */
 export async function logoutUser(): Promise<AuthResponse<null>> {
   try {
-    await fetch(`${OWNSTAY_API_BASE}/auth/logout`, {
+    await fetch(`${APNASTAY_API_BASE}/auth/logout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
     return { success: true, message: 'Logged out successfully.' };
   } catch (error) {
-    console.warn('[OwnStay Auth] Logout fallback:', error);
+    console.warn('[ApnaStay Auth] Logout fallback:', error);
     return { success: true, message: 'Logged out.' };
   }
 }
 
 /**
  * Authoritative Current User Source.
- * Endpoint: GET /wp-json/ownstay/v1/me
+ * Endpoint: GET /wp-json/apnastay/v1/me
  * Next.js uses /me as the authoritative current-user source.
  */
 export async function getCurrentUser(): Promise<UserProfile | null> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/me`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/me`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       credentials: 'include'
@@ -188,12 +188,12 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
 }
 
 /**
- * Switch primary role within allowed RBAC roles ('ownstay_tenant', 'ownstay_owner', 'administrator').
- * Endpoint: POST /wp-json/ownstay/v1/auth/switch-role
+ * Switch primary role within allowed RBAC roles ('apnastay_tenant', 'apnastay_owner', 'administrator').
+ * Endpoint: POST /wp-json/apnastay/v1/auth/switch-role
  */
 export async function switchRole(role: string): Promise<AuthResponse<UserProfile>> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/auth/switch-role`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/auth/switch-role`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -218,7 +218,7 @@ export async function switchRole(role: string): Promise<AuthResponse<UserProfile
       message: data?.message || 'Role switched successfully.'
     };
   } catch (error) {
-    const fallbackUser = getFallbackProfile(role, 'Aman Saifi', 'aman@ownstay.in');
+    const fallbackUser = getFallbackProfile(role, 'Aman Saifi', 'aman@apnastay.in');
     return {
       success: true,
       status: 200,
@@ -230,17 +230,17 @@ export async function switchRole(role: string): Promise<AuthResponse<UserProfile
 
 /**
  * Fetch capabilities dictionary for a specific role slug.
- * Endpoint: GET /wp-json/ownstay/v1/auth/capabilities?role=slug
+ * Endpoint: GET /wp-json/apnastay/v1/auth/capabilities?role=slug
  */
 export async function getRoleCapabilities(role?: string): Promise<string[]> {
   try {
-    const url = role ? `${OWNSTAY_API_BASE}/auth/capabilities?role=${encodeURIComponent(role)}` : `${OWNSTAY_API_BASE}/auth/capabilities`;
+    const url = role ? `${APNASTAY_API_BASE}/auth/capabilities?role=${encodeURIComponent(role)}` : `${APNASTAY_API_BASE}/auth/capabilities`;
     const res = await fetch(url, { credentials: 'include' });
     if (!res.ok) return TENANT_CAPABILITIES;
     const data = await res.json();
     return data?.data || TENANT_CAPABILITIES;
   } catch (error) {
-    if (role === 'owner' || role === 'ownstay_owner') return OWNER_CAPABILITIES;
+    if (role === 'owner' || role === 'apnastay_owner') return OWNER_CAPABILITIES;
     if (role === 'admin' || role === 'administrator') return ADMIN_CAPABILITIES;
     return TENANT_CAPABILITIES;
   }
@@ -248,11 +248,11 @@ export async function getRoleCapabilities(role?: string): Promise<string[]> {
 
 /**
  * Submit owner KYC verification request to transition status to 'pending'.
- * Endpoint: POST /wp-json/ownstay/v1/users/profile/verify
+ * Endpoint: POST /wp-json/apnastay/v1/users/profile/verify
  */
 export async function submitOwnerVerification(): Promise<AuthResponse<UserProfile>> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/users/profile/verify`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/users/profile/verify`, {
       method: 'POST',
       credentials: 'include'
     });
@@ -271,7 +271,7 @@ export async function submitOwnerVerification(): Promise<AuthResponse<UserProfil
       message: data?.message || 'Verification submitted successfully.'
     };
   } catch (error) {
-    const fallbackUser = getFallbackProfile('ownstay_owner', 'Aman Saifi', 'aman@ownstay.in');
+    const fallbackUser = getFallbackProfile('apnastay_owner', 'Aman Saifi', 'aman@apnastay.in');
     fallbackUser.verification_status = 'VERIFIED';
     return {
       success: true,
@@ -284,11 +284,11 @@ export async function submitOwnerVerification(): Promise<AuthResponse<UserProfil
 
 /**
  * Administrative update of a user's verification status.
- * Endpoint: PUT /wp-json/ownstay/v1/users/<id>/verification
+ * Endpoint: PUT /wp-json/apnastay/v1/users/<id>/verification
  */
 export async function adminUpdateOwnerVerification(userId: number, status: 'verified' | 'rejected' | 'pending' | 'unverified' | 'suspended'): Promise<AuthResponse<UserProfile>> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/users/${userId}/verification`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/users/${userId}/verification`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -350,7 +350,7 @@ export interface PermissionMatrixResponse {
 
 export async function fetchPermissionMatrix(): Promise<PermissionMatrixResponse> {
   try {
-    const res = await fetch(`${OWNSTAY_API_BASE}/permissions/matrix`, {
+    const res = await fetch(`${APNASTAY_API_BASE}/permissions/matrix`, {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': 'application/json' },

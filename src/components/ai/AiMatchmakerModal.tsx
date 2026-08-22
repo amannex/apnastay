@@ -57,7 +57,7 @@ export default function AiMatchmakerModal({
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">
-                OwnStay AI Matchmaker
+                ApnaStay AI Matchmaker
               </h2>
               <p className="text-xs text-[#6B7280]">
                 Algorithmically matched to your commute, acoustics & lifestyle
@@ -246,7 +246,7 @@ export default function AiMatchmakerModal({
             <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-100 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#E1224D]">
-                  OwnStay AI Recommendation Report
+                  ApnaStay AI Recommendation Report
                 </span>
                 <p className="text-xs font-semibold text-[#1A1A1A] mt-0.5">
                   Targeting {targetCity} • Budget ₹{budget}/mo • {commuteTarget} • {lifestyle}

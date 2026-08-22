@@ -72,7 +72,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('ownstay_wishlist');
+      const saved = localStorage.getItem('apnastay_wishlist');
       if (saved) {
         setWishlistIds(JSON.parse(saved));
       }
@@ -86,7 +86,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined' && isWishlistLoaded.current) {
       try {
-        localStorage.setItem('ownstay_wishlist', JSON.stringify(wishlistIds));
+        localStorage.setItem('apnastay_wishlist', JSON.stringify(wishlistIds));
       } catch (e) {
         console.error('Failed to save wishlist to localStorage', e);
       }

@@ -96,7 +96,7 @@ export default function TenantSubPagePlaceholder({
             {title} — Tenant Module Ready
           </h3>
           <p className="text-xs text-[#86868B] max-w-md mx-auto mb-6 leading-relaxed">
-            This module is securely authenticated for <span className="font-bold">ownstay_tenant</span> capabilities. You have full access to manage your zero-brokerage rental journey.
+            This module is securely authenticated for <span className="font-bold">apnastay_tenant</span> capabilities. You have full access to manage your zero-brokerage rental journey.
           </p>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F5F5F7] text-[#6E6E73] text-xs font-semibold">
             <Lock className="w-3.5 h-3.5" />

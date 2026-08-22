@@ -131,7 +131,7 @@ export default function PermissionMatrixPage() {
                   </h3>
                 </div>
                 <span className="text-[11px] font-mono text-[#86868B]">
-                  GET /wp-json/ownstay/v1/permissions/matrix
+                  GET /wp-json/apnastay/v1/permissions/matrix
                 </span>
               </div>
 

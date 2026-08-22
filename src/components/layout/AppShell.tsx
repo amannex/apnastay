@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { useApp } from '../../context/AppContext';
@@ -52,20 +53,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     onCloseBookingConfirmation
   } = useApp();
 
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/owner') || pathname?.startsWith('/admin');
+
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A] font-sans">
-      <Navbar
-        wishlistCount={wishlistIds.length}
-        compareCount={compareIds.length}
-        activeRole={activeRole}
-        currentUser={currentUser}
-        onRoleChange={onRoleChange}
-        onOpenCompare={onOpenCompare}
-        onOpenWishlist={onOpenWishlist}
-        onOpenRoleModal={onOpenRoleModal}
-        onOpenAiMatchmaker={onOpenAiMatchmaker}
-        onOpenAuthModal={onOpenAuthModal}
-      />
+      {!isDashboard && (
+        <Navbar
+          wishlistCount={wishlistIds.length}
+          compareCount={compareIds.length}
+          activeRole={activeRole}
+          currentUser={currentUser}
+          onRoleChange={onRoleChange}
+          onOpenCompare={onOpenCompare}
+          onOpenWishlist={onOpenWishlist}
+          onOpenRoleModal={onOpenRoleModal}
+          onOpenAiMatchmaker={onOpenAiMatchmaker}
+          onOpenAuthModal={onOpenAuthModal}
+        />
+      )}
 
       {/* Auth Celebration Toast */}
       {authToast && (
@@ -78,7 +84,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Route Content */}
       <main>{children}</main>
 
-      <Footer onExploreClick={() => { }} />
+      {!isDashboard && <Footer onExploreClick={() => { }} />}
 
       {/* Shared Modals & Drawers */}
       <AuthModal

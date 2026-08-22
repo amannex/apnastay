@@ -38,7 +38,7 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
                 O
               </div>
               <span className="font-bold text-xl tracking-tight text-white">
-                OwnStay<span className="text-[#E1224D]">.</span>
+                ApnaStay<span className="text-[#E1224D]">.</span>
               </span>
             </Link>
             <p className="text-white/70 text-sm max-w-sm leading-relaxed mb-6">
@@ -68,13 +68,13 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
           {/* Links Col 2 */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-4">
-              OwnStay Platform
+              ApnaStay Platform
             </h4>
             <ul className="space-y-2.5 text-sm text-white/80">
-              <li><Link href="/why-ownstay" className="hover:text-white transition-colors">₹0 Brokerage Promise</Link></li>
+              <li><Link href="/why-apnastay" className="hover:text-white transition-colors">₹0 Brokerage Promise</Link></li>
               <li><Link href="/properties" className="hover:text-white transition-colors">Verified Indian Listings</Link></li>
-              <li><Link href="/why-ownstay" className="hover:text-white transition-colors">Aadhaar / PAN E-Sign</Link></li>
-              <li><Link href="/why-ownstay" className="hover:text-white transition-colors">Instant NFC Self-Tour</Link></li>
+              <li><Link href="/why-apnastay" className="hover:text-white transition-colors">Aadhaar / PAN E-Sign</Link></li>
+              <li><Link href="/why-apnastay" className="hover:text-white transition-colors">Instant NFC Self-Tour</Link></li>
               <li><Link href="/permission-matrix" className="hover:text-white transition-colors text-emerald-400 font-semibold">🔒 Phase 24 RBAC Matrix Suite</Link></li>
               <li><Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
@@ -86,8 +86,8 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
               Company
             </h4>
             <ul className="space-y-2.5 text-sm text-white/80">
-              <li><Link href="/journal" className="hover:text-white transition-colors">OwnStay Journal</Link></li>
-              <li><a href="#" className="hover:text-white transition-colors">Partner with OwnStay</a></li>
+              <li><Link href="/journal" className="hover:text-white transition-colors">ApnaStay Journal</Link></li>
+              <li><a href="#" className="hover:text-white transition-colors">Partner with ApnaStay</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
             </ul>
@@ -96,7 +96,7 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
 
         {/* BOTTOM COPYRIGHT */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
-          <p>© 2026 OwnStay Technologies India Pvt Ltd. All rights reserved.</p>
+          <p>© 2026 ApnaStay Technologies India Pvt Ltd. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span>Made for Indian Renters & Owners</span>
           </div>

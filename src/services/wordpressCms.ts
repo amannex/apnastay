@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY STATIC & CMS LAYER — INDIA'S ZERO-BROKERAGE RENTAL PLATFORM
+// APNASTAY STATIC & CMS LAYER — INDIA'S ZERO-BROKERAGE RENTAL PLATFORM
 // Connects to headless CMS endpoints with rich Indian rental fallback data
 // ============================================================================
 
@@ -11,7 +11,7 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
     slug: 'the-death-of-brokerage-fees-india',
-    title: 'The End of 1-Month Brokerage in India: Why Tenants Are Moving to OwnStay',
+    title: 'The End of 1-Month Brokerage in India: Why Tenants Are Moving to ApnaStay',
     excerpt: 'For decades, Indian brokers charged 1 to 2 months rent just for unlocking an apartment door. Here is how NFC smart-locks and digital e-agreements are saving renters lakhs of rupees.',
     date: 'July 28, 2026',
     readTime: '4 min read',
@@ -40,8 +40,8 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
   },
   {
     id: 3,
-    slug: 'how-ownstay-25-point-audit-works',
-    title: 'How OwnStay Inspects Every Property: From Acoustic Soundproofing to Wi-Fi Speeds',
+    slug: 'how-apnastay-25-point-audit-works',
+    title: 'How ApnaStay Inspects Every Property: From Acoustic Soundproofing to Wi-Fi Speeds',
     excerpt: 'Take a technical deep-dive into our 25-point physical audit where engineers test decibel insulation, water pressure, and legal title deed authenticity before listing.',
     date: 'July 18, 2026',
     readTime: '5 min read',
@@ -58,18 +58,18 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
 export const STATIC_FAQS = [
   {
     id: 'f1',
-    question: 'How is OwnStay able to guarantee ₹0 brokerage fees across India?',
-    answer: 'OwnStay connects verified property owners directly with screened tenants using automated Aadhaar/PAN e-signing and NFC smart-lock self-touring. Because we eliminate traditional property brokers and offline middlemen, you pay ₹0 brokerage—saving a full month of rent.'
+    question: 'How is ApnaStay able to guarantee ₹0 brokerage fees across India?',
+    answer: 'ApnaStay connects verified property owners directly with screened tenants using automated Aadhaar/PAN e-signing and NFC smart-lock self-touring. Because we eliminate traditional property brokers and offline middlemen, you pay ₹0 brokerage—saving a full month of rent.'
   },
   {
     id: 'f2',
-    question: 'What does "100% Verified by OwnStay Engineers" mean?',
-    answer: 'Before any home is listed in Indore, Jaipur, Coimbatore, Kochi, Chandigarh, or Pune, an OwnStay field engineer visits the property for a 25-point inspection. We verify sound insulation (dB testing), Wi-Fi fiber speed, inverter power backup, water pressure, and legal property deed authenticity.'
+    question: 'What does "100% Verified by ApnaStay Engineers" mean?',
+    answer: 'Before any home is listed in Indore, Jaipur, Coimbatore, Kochi, Chandigarh, or Pune, an ApnaStay field engineer visits the property for a 25-point inspection. We verify sound insulation (dB testing), Wi-Fi fiber speed, inverter power backup, water pressure, and legal property deed authenticity.'
   },
   {
     id: 'f3',
     question: 'How do instant NFC smart-lock self-tours work?',
-    answer: 'Once you select a time slot on the OwnStay app, you receive an ephemeral encrypted NFC token. When you arrive at the property, tap your phone on the smart-lock to enter and tour the apartment at your own pace without any broker hovering.'
+    answer: 'Once you select a time slot on the ApnaStay app, you receive an ephemeral encrypted NFC token. When you arrive at the property, tap your phone on the smart-lock to enter and tour the apartment at your own pace without any broker hovering.'
   },
   {
     id: 'f4',
@@ -79,7 +79,7 @@ export const STATIC_FAQS = [
   {
     id: 'f5',
     question: 'Is the security deposit 100% refundable without unfair deductions?',
-    answer: 'Yes! OwnStay records an automated 360-degree digital inventory check on move-in day. When you vacate, your security deposit is refunded directly to your bank account within 48 hours without arbitrary painting or wear-and-tear cuts.'
+    answer: 'Yes! ApnaStay records an automated 360-degree digital inventory check on move-in day. When you vacate, your security deposit is refunded directly to your bank account within 48 hours without arbitrary painting or wear-and-tear cuts.'
   }
 ];
 
@@ -140,7 +140,7 @@ export async function fetchBlogPosts() {
       image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || STATIC_BLOG_POSTS[0].image,
       author: {
         name: 'Rajat Verma',
-        role: 'OwnStay Editor',
+        role: 'ApnaStay Editor',
         avatar: (STATIC_BLOG_POSTS[0]?.author as any)?.avatar || ''
       }
     }));

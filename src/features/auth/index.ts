@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY AUTHENTICATION FEATURE EXPORTS
+// APNASTAY AUTHENTICATION FEATURE EXPORTS
 // ============================================================================
 
 export * from './types';

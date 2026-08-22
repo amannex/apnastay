@@ -29,10 +29,10 @@ export default function BlogSection() {
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-[#E1224D] text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              OwnStay Journal & Urban Living Guide
+              ApnaStay Journal & Urban Living Guide
             </div>
             <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1A1A1A]">
-              The OwnStay Journal
+              The ApnaStay Journal
             </h2>
             <p className="text-[#6B7280] text-base mt-2">
               Perspectives on zero-brokerage rentals, smart-lock security, and living peacefully in India's Tier-2 hubs.
@@ -40,7 +40,7 @@ export default function BlogSection() {
           </div>
 
           <div className="text-xs font-semibold text-[#6B7280]">
-            <span>Curated by OwnStay India Economists & Engineers</span>
+            <span>Curated by ApnaStay India Economists & Engineers</span>
           </div>
         </div>
 

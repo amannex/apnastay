@@ -4,7 +4,7 @@ import React from 'react';
 import AppleSimpleHero from '../components/hero/AppleSimpleHero';
 import SearchBar from '../components/search/SearchBar';
 import CitiesCarousel from '../components/sections/CitiesCarousel';
-import WhyOwnStayGrid from '../components/sections/WhyOwnStayGrid';
+import WhyApnaStayGrid from '../components/sections/WhyApnaStayGrid';
 import PropertiesSection from '../components/properties/PropertiesSection';
 import BlogSection from '../components/sections/BlogSection';
 import FAQSection from '../components/sections/FaqSection';
@@ -49,8 +49,8 @@ export default function HomePage(props: any = {}) {
       {/* 3.5. INDIAN RENTAL STAY CATEGORIES */}
       <RentalCategoriesShowcase />
 
-      {/* 4. WHY OWNSTAY ZERO-BROKERAGE PROMISE */}
-      <WhyOwnStayGrid />
+      {/* 4. WHY APNASTAY ZERO-BROKERAGE PROMISE */}
+      <WhyApnaStayGrid />
 
       {/* 5. FEATURED VERIFIED ROOMS WITH LINK TO MULTI-PAGE EXPLORER */}
       <section className="pt-16 pb-12 bg-[#FAFAFA] border-b border-[#EDEDED]">
@@ -80,7 +80,7 @@ export default function HomePage(props: any = {}) {
       {/* 5.5. MANAGED LIVING SERVICES & TRUST (bg-[#FAFAFA]) */}
       <ManagedServicesShowcase />
 
-      {/* 6. OWNSTAY JOURNAL & URBAN LIVING GUIDE */}
+      {/* 6. APNASTAY JOURNAL & URBAN LIVING GUIDE */}
       <BlogSection />
 
       {/* 6.5. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}

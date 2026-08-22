@@ -6,7 +6,7 @@ import { ChevronDown, Sparkles, HelpCircle } from 'lucide-react';
 const STATIC_FAQS = [
   {
     id: 1,
-    question: 'How does OwnStay guarantee ₹0 Brokerage across India?',
+    question: 'How does ApnaStay guarantee ₹0 Brokerage across India?',
     answer:
       'We connect verified Indian landlords directly with renters. By cutting out offline middlemen and traditional realtors in Indore, Jaipur, Coimbatore, Kochi, Chandigarh, and Pune, you save 1 to 2 months of rent.'
   },
@@ -46,7 +46,7 @@ export default function FaqSection() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-[#E1224D] text-xs font-bold uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            OwnStay Tenant FAQ & Legal Rights
+            ApnaStay Tenant FAQ & Legal Rights
           </div>
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1A1A1A]">
             Frequently Asked Questions

@@ -95,7 +95,7 @@ export default function OwnerSubPagePlaceholder({
             {title} — Landlord Module Ready
           </h3>
           <p className="text-xs text-[#86868B] max-w-md mx-auto mb-6 leading-relaxed">
-            This module is securely restricted to <span className="font-bold">ownstay_owner</span> and <span className="font-bold">administrator</span> accounts. Tenants attempting to access this route receive a 403 Forbidden interceptor and are redirected.
+            This module is securely restricted to <span className="font-bold">apnastay_owner</span> and <span className="font-bold">administrator</span> accounts. Tenants attempting to access this route receive a 403 Forbidden interceptor and are redirected.
           </p>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F5F5F7] text-[#6E6E73] text-xs font-semibold">
             <Lock className="w-3.5 h-3.5" />

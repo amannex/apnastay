@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/', '/_next/'],
     },
-    sitemap: 'https://ownstay-eight.vercel.app/sitemap.xml',
-    host: 'https://ownstay-eight.vercel.app',
+    sitemap: 'https://apnastay-eight.vercel.app/sitemap.xml',
+    host: 'https://apnastay-eight.vercel.app',
   };
 }

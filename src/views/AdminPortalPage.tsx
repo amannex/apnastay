@@ -68,7 +68,7 @@ export default function AdminPortalPage() {
                 <span>WordPress Headless Administrator</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-                OwnStay Platform Command Center
+                ApnaStay Platform Command Center
               </h1>
               <p className="text-xs text-[#86868B] mt-1">
                 Authoritative RBAC oversight for Indian zero-brokerage rentals & engineering KYC.

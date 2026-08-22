@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
 
   if (!property) {
     return {
-      title: 'Property Not Found | OwnStay',
+      title: 'Property Not Found | ApnaStay',
       description: 'The requested rental property could not be found.',
     };
   }
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
 
   const title = `${titleText} - ₹${priceNum.toLocaleString()}/mo in ${neighborhoodText}`;
   const description = `Rent ${roomTypeText} in ${neighborhoodText}, ${cityText} with zero brokerage. Verified NFC smart-lock self-tour, high-speed fiber Wi-Fi, and ₹0 commission.`;
-  const canonicalUrl = `https://ownstay-eight.vercel.app/properties/${property.id}`;
+  const canonicalUrl = `https://apnastay-eight.vercel.app/properties/${property.id}`;
 
   return {
     title,
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
       `${cityText.toLowerCase()} rentals`,
       `${neighborhoodText.toLowerCase()} apartments`,
       'zero brokerage flat india',
-      'ownstay property',
+      'apnastay property',
       roomTypeText.toLowerCase(),
     ],
     alternates: {
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
       title,
       description,
       url: canonicalUrl,
-      siteName: 'OwnStay India',
+      siteName: 'ApnaStay India',
       type: 'article',
       images: [
         {
@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
       title,
       description,
       images: [imageSrc],
-      creator: '@ownstayindia',
+      creator: '@apnastayindia',
     },
   };
 }
@@ -93,7 +93,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     '@type': 'RealEstateListing',
     name: titleText,
     description: `Zero-brokerage rental residence located in ${neighborhoodText}, ${cityText}.`,
-    url: `https://ownstay-eight.vercel.app/properties/${property.id}`,
+    url: `https://apnastay-eight.vercel.app/properties/${property.id}`,
     datePosted: '2026-07-01',
     offers: {
       '@type': 'Offer',

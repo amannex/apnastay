@@ -2,7 +2,7 @@ import React from 'react';
 import PermissionMatrixPage from '../../views/PermissionMatrixPage';
 
 export const metadata = {
-  title: 'RBAC Permission Matrix Test Suite | OwnStay',
+  title: 'RBAC Permission Matrix Test Suite | ApnaStay',
   description: 'Systematic verification of Phase 24 capability matrix and direct REST API security assertions.',
 };
 

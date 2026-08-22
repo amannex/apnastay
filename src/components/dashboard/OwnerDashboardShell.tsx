@@ -111,7 +111,7 @@ function OwnerDashboardShellInner({
             Owner Portal Access Denied
           </h1>
           <p className="text-xs text-[#6E6E73] leading-relaxed mb-6">
-            Your attempt to access an Owner route (<code className="font-mono bg-rose-50 text-rose-800 px-1 py-0.5 rounded">/owner/dashboard</code>) was blocked. Your account role is <span className="font-bold underline">ownstay_tenant</span>. Tenants cannot view landlord or property management resources.
+            Your attempt to access an Owner route (<code className="font-mono bg-rose-50 text-rose-800 px-1 py-0.5 rounded">/owner/dashboard</code>) was blocked. Your account role is <span className="font-bold underline">apnastay_tenant</span>. Tenants cannot view landlord or property management resources.
           </p>
           <div className="p-3 rounded-xl bg-[#F5F5F7] border border-[#EDEDED] text-[11px] text-[#86868B] mb-6">
             Redirecting you automatically to your Tenant Dashboard...
@@ -277,7 +277,7 @@ function OwnerDashboardShellInner({
                 </span>
               </div>
               <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                Your attempt to access the Tenant Dashboard (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/dashboard</code>) was intercepted. As an Owner (<span className="font-bold underline">ownstay_owner</span>), you have been redirected to your authoritative Owner Portal.
+                Your attempt to access the Tenant Dashboard (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/dashboard</code>) was intercepted. As an Owner (<span className="font-bold underline">apnastay_owner</span>), you have been redirected to your authoritative Owner Portal.
               </p>
             </div>
           </div>
@@ -298,7 +298,7 @@ function OwnerDashboardShellInner({
                 </span>
               </div>
               <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                Your attempt to access the WordPress backend (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/wp-admin/</code>) was intercepted. Landlord accounts interact exclusively through the OwnStay Next.js application.
+                Your attempt to access the WordPress backend (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/wp-admin/</code>) was intercepted. Landlord accounts interact exclusively through the ApnaStay Next.js application.
               </p>
             </div>
           </div>

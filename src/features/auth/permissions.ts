@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY RBAC PERMISSIONS MODULE
+// APNASTAY RBAC PERMISSIONS MODULE
 // Centralized capability checks — Never rely only on role === 'owner'
 // ============================================================================
 
@@ -10,43 +10,43 @@ import type { UserProfile, Capability } from './types';
  */
 export const TENANT_CAPABILITIES: Capability[] = [
   'read',
-  'ownstay_manage_wishlist',
-  'ownstay_book_visit',
-  'ownstay_cancel_own_visit',
-  'ownstay_request_booking',
-  'ownstay_make_payment',
-  'ownstay_view_agreement',
-  'ownstay_create_review',
-  'ownstay_chat'
+  'apnastay_manage_wishlist',
+  'apnastay_book_visit',
+  'apnastay_cancel_own_visit',
+  'apnastay_request_booking',
+  'apnastay_make_payment',
+  'apnastay_view_agreement',
+  'apnastay_create_review',
+  'apnastay_chat'
 ];
 
 export const OWNER_CAPABILITIES: Capability[] = [
   'read',
-  'ownstay_create_property',
-  'ownstay_edit_own_property',
-  'ownstay_delete_own_property',
-  'ownstay_upload_property_media',
-  'ownstay_manage_rooms',
-  'ownstay_manage_availability',
-  'ownstay_manage_visits',
-  'ownstay_manage_bookings',
-  'ownstay_view_owner_payments',
-  'ownstay_chat'
+  'apnastay_create_property',
+  'apnastay_edit_own_property',
+  'apnastay_delete_own_property',
+  'apnastay_upload_property_media',
+  'apnastay_manage_rooms',
+  'apnastay_manage_availability',
+  'apnastay_manage_visits',
+  'apnastay_manage_bookings',
+  'apnastay_view_owner_payments',
+  'apnastay_chat'
 ];
 
 export const ADMIN_CAPABILITIES: Capability[] = [
   'read',
   ...TENANT_CAPABILITIES,
   ...OWNER_CAPABILITIES,
-  'ownstay_verify_owner',
-  'ownstay_verify_property',
-  'ownstay_manage_users',
-  'ownstay_manage_properties',
-  'ownstay_manage_complaints',
-  'ownstay_manage_payments',
-  'ownstay_view_analytics',
-  'ownstay_view_revenue',
-  'ownstay_moderate_reviews'
+  'apnastay_verify_owner',
+  'apnastay_verify_property',
+  'apnastay_manage_users',
+  'apnastay_manage_properties',
+  'apnastay_manage_complaints',
+  'apnastay_manage_payments',
+  'apnastay_view_analytics',
+  'apnastay_view_revenue',
+  'apnastay_moderate_reviews'
 ];
 
 /**
@@ -64,7 +64,7 @@ export function can(user: UserProfile | null | undefined, capability: string): b
   }
 
   // Admin automatically possesses all platform capabilities
-  const roleSlug = (user.role || '').toLowerCase().replace(/^ownstay_/, '');
+  const roleSlug = (user.role || '').toLowerCase().replace(/^apnastay_/, '');
   if (roleSlug === 'administrator' || roleSlug === 'admin') {
     return true;
   }
@@ -108,12 +108,12 @@ export function hasAllCapabilities(user: UserProfile | null | undefined, capabil
 }
 
 /**
- * Check if user matches a specific role slug ('ownstay_tenant', 'ownstay_owner', 'administrator', 'guest').
+ * Check if user matches a specific role slug ('apnastay_tenant', 'apnastay_owner', 'administrator', 'guest').
  */
 export function isRole(user: UserProfile | null | undefined, roleSlug: string): boolean {
   if (!user || !user.role) return false;
-  const normalizedUserRole = user.role.toLowerCase().replace(/^ownstay_/, '');
-  const normalizedTargetRole = roleSlug.toLowerCase().replace(/^ownstay_/, '');
+  const normalizedUserRole = user.role.toLowerCase().replace(/^apnastay_/, '');
+  const normalizedTargetRole = roleSlug.toLowerCase().replace(/^apnastay_/, '');
   return normalizedUserRole === normalizedTargetRole || user.role.toLowerCase() === roleSlug.toLowerCase();
 }
 
@@ -126,7 +126,7 @@ export function isResourceOwner(user: UserProfile | null | undefined, ownerId: n
   }
 
   // Admin can bypass ownership where appropriate
-  const roleSlug = (user.role || '').toLowerCase().replace(/^ownstay_/, '');
+  const roleSlug = (user.role || '').toLowerCase().replace(/^apnastay_/, '');
   if (roleSlug === 'administrator' || roleSlug === 'admin') {
     return true;
   }
@@ -139,43 +139,43 @@ export function isResourceOwner(user: UserProfile | null | undefined, ownerId: n
 // ----------------------------------------------------------------------------
 
 export function canManageWishlist(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_manage_wishlist');
+  return userCan(user, 'apnastay_manage_wishlist');
 }
 
 export function canBookVisit(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_book_visit');
+  return userCan(user, 'apnastay_book_visit');
 }
 
 export function canRequestBooking(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_request_booking');
+  return userCan(user, 'apnastay_request_booking');
 }
 
 export function canMakePayment(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_make_payment');
+  return userCan(user, 'apnastay_make_payment');
 }
 
 export function canCreateProperty(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_create_property');
+  return userCan(user, 'apnastay_create_property');
 }
 
 export function canEditProperty(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_edit_own_property');
+  return userCan(user, 'apnastay_edit_own_property');
 }
 
 export function canManageBookings(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_manage_bookings');
+  return userCan(user, 'apnastay_manage_bookings');
 }
 
 export function canVerifyOwner(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_verify_owner');
+  return userCan(user, 'apnastay_verify_owner');
 }
 
 export function canVerifyProperty(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_verify_property');
+  return userCan(user, 'apnastay_verify_property');
 }
 
 export function canViewAnalytics(user?: UserProfile | null): boolean {
-  return userCan(user, 'ownstay_view_analytics');
+  return userCan(user, 'apnastay_view_analytics');
 }
 
 /**
@@ -192,7 +192,7 @@ export function getOwnerVerificationStatus(user?: UserProfile | null): 'unverifi
     return status as 'unverified' | 'pending' | 'verified' | 'rejected' | 'suspended';
   }
 
-  const roleSlug = (user.role || '').toLowerCase().replace(/^ownstay_/, '');
+  const roleSlug = (user.role || '').toLowerCase().replace(/^apnastay_/, '');
   if (roleSlug === 'administrator' || roleSlug === 'admin' || roleSlug === 'tenant') {
     return 'verified';
   }
@@ -206,7 +206,7 @@ export function getOwnerVerificationStatus(user?: UserProfile | null): 'unverifi
  */
 export function isOwnerVerified(user?: UserProfile | null): boolean {
   if (!user) return false;
-  const roleSlug = (user.role || '').toLowerCase().replace(/^ownstay_/, '');
+  const roleSlug = (user.role || '').toLowerCase().replace(/^apnastay_/, '');
   if (roleSlug === 'administrator' || roleSlug === 'admin') {
     return true;
   }
@@ -214,7 +214,7 @@ export function isOwnerVerified(user?: UserProfile | null): boolean {
 }
 
 export function isOwnerOrAdmin(user?: UserProfile | null): boolean {
-  return hasAnyCapability(user, ['ownstay_create_property', 'ownstay_verify_property']);
+  return hasAnyCapability(user, ['apnastay_create_property', 'apnastay_verify_property']);
 }
 
 export interface PropertyPublicationValidationResult {
@@ -239,7 +239,7 @@ export interface PropertyPublicationInput {
 
 /**
  * Combine RBAC + domain business rules to determine if a user can publish a property.
- * RBAC answers: "What is this user allowed to do?" (userCan(user, 'ownstay_create_property'))
+ * RBAC answers: "What is this user allowed to do?" (userCan(user, 'apnastay_create_property'))
  * Business Rules answer: "Under what conditions can they do it?" (KYC verified, valid property invariants)
  */
 export function canPublishProperty(
@@ -255,8 +255,8 @@ export function canPublishProperty(
     };
   }
 
-  // 2. RBAC Capability check: ownstay_create_property
-  if (!userCan(user, 'ownstay_create_property')) {
+  // 2. RBAC Capability check: apnastay_create_property
+  if (!userCan(user, 'apnastay_create_property')) {
     return {
       allowed: false,
       reason: 'You do not have permission to publish property listings.',

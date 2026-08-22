@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Room Inventory & Pricing | OwnStay India',
+  title: 'Room Inventory & Pricing | ApnaStay India',
   description: 'Manage rooms, occupancy status, and zero-brokerage rental pricing.',
 };
 

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import TenantSubPagePlaceholder from '@/views/TenantSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Rent Payments & Autopay | OwnStay India',
+  title: 'Rent Payments & Autopay | ApnaStay India',
   description: 'Manage your monthly zero-brokerage rent transfers, security deposits, and UPI Autopay.',
 };
 

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import OwnerSubPagePlaceholder from '@/views/OwnerSubPagePlaceholder';
 
 export const metadata: Metadata = {
-  title: 'Tenant Applications & Bookings | OwnStay India',
+  title: 'Tenant Applications & Bookings | ApnaStay India',
   description: 'Review prospective tenant rental applications and approve zero-brokerage bookings.',
 };
 

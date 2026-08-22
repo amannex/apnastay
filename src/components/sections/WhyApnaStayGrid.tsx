@@ -10,15 +10,15 @@ const ICON_MAP = {
   Zap: Zap
 };
 
-export default function WhyOwnStayGrid() {
+export default function WhyApnaStayGrid() {
   return (
-    <section id="why-ownstay" className="py-24 bg-white border-b border-[#EDEDED]">
+    <section id="why-apnastay" className="py-24 bg-white border-b border-[#EDEDED]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* SECTION HEADER WITH RELEVANT CONTEXTUAL TAG */}
         <div className="max-w-2xl mx-auto text-center mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-[#E1224D] text-xs font-bold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            OwnStay Zero-Brokerage Promise
+            ApnaStay Zero-Brokerage Promise
           </div>
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1A1A1A] mb-4">
             Real Rental Transparency That Matters More Than Fancy UI.
@@ -59,7 +59,7 @@ export default function WhyOwnStayGrid() {
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-[#FAFAFA] flex items-center justify-between text-xs font-semibold text-[#6B7280]">
-                  <span>OwnStay Standard Guarantee</span>
+                  <span>ApnaStay Standard Guarantee</span>
                   <span className="text-[#E1224D] group-hover:translate-x-1 transition-transform">
                     Learn more →
                   </span>

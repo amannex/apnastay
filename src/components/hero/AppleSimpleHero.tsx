@@ -45,7 +45,7 @@ export default function AppleSimpleHero() {
           </Link>
 
           <Link
-            href="/why-ownstay"
+            href="/why-apnastay"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-[#FAFAFA] text-[#1A1A1A] border border-[#EDEDED] hover:border-[#D1D5DB] text-sm font-semibold shadow-sm transition-all active:scale-[0.98]"
           >
             <Sparkles className="w-4 h-4 text-[#E1224D]" />

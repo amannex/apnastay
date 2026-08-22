@@ -1,5 +1,5 @@
 // ============================================================================
-// OWNSTAY SESSION MANAGEMENT MODULE
+// APNASTAY SESSION MANAGEMENT MODULE
 // Synchronizes client-side session with authoritative /me endpoint
 // ============================================================================
 
@@ -39,7 +39,7 @@ export async function syncSessionUser(onUserUpdate: (user: UserProfile | null) =
     const user = await fetchSession(true);
     onUserUpdate(user);
   } catch (err) {
-    console.error('[OwnStay Session] Error syncing session:', err);
+    console.error('[ApnaStay Session] Error syncing session:', err);
     onUserUpdate(null);
   }
 }
@@ -71,7 +71,7 @@ export async function clearClientSession(): Promise<void> {
  */
 export function getSessionRole(user: UserProfile | null | undefined): string {
   if (!user || !user.role) return 'guest';
-  return user.role.toLowerCase().replace(/^ownstay_/, '');
+  return user.role.toLowerCase().replace(/^apnastay_/, '');
 }
 
 /**
