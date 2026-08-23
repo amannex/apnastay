@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchBlogPosts } from '../../services/wordpressCms';
 import { BookOpen, ArrowUpRight, Clock, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export default function BlogSection() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -84,9 +85,11 @@ export default function BlogSection() {
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2">
-                      {post.title}
-                    </h3>
+                    <Link href={`/journal/${post.slug}`}>
+                      <h3 className="text-lg font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2 cursor-pointer hover:underline decoration-wavy decoration-1 decoration-[#E1224D]/30">
+                        {post.title}
+                      </h3>
+                    </Link>
                     <p className="text-xs text-[#6B7280] mt-2 line-clamp-3 leading-relaxed">
                       {post.excerpt}
                     </p>
@@ -107,12 +110,12 @@ export default function BlogSection() {
                     </div>
                   </div>
 
-                  <a
-                    href="#"
+                  <Link
+                    href={`/journal/${post.slug}`}
                     className="w-8 h-8 rounded-full bg-[#FAFAFA] group-hover:bg-[#E1224D] group-hover:text-white text-[#1A1A1A] flex items-center justify-center transition-colors"
                   >
                     <ArrowUpRight className="w-4 h-4" />
-                  </a>
+                  </Link>
                 </div>
               </article>
             ))}
