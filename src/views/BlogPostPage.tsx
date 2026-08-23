@@ -197,31 +197,6 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               />
             )}
 
-            {/* AUTHOR BRIEF BOX (MOVED FROM SIDEBAR TO BOTTOM OF CONTENT) */}
-            <div className="mt-12 bg-white rounded-3xl border border-[#EDEDED] p-6 sm:p-8 shadow-sm">
-              <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
-                About the Author
-              </h3>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <img
-                  src={typeof post.author === 'object' ? post.author.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
-                  alt={typeof post.author === 'object' ? post.author.name : 'Author'}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-rose-50 shadow-sm"
-                />
-                <div>
-                  <h4 className="text-sm font-bold text-[#1A1A1A]">
-                    {typeof post.author === 'object' ? post.author.name : post.author}
-                  </h4>
-                  <p className="text-xs text-[#E1224D] font-semibold mb-1">
-                    {typeof post.author === 'object' ? post.author.role : 'Contributor'}
-                  </p>
-                  <p className="text-xs text-[#6B7280] leading-relaxed max-w-xl">
-                    Covers housing economics, regulatory compliance, property verification standards, and urban migration patterns in India's emerging Tier-2 smart cities.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* SHARE FOOTER */}
             <div className="mt-8 pt-8 border-t border-[#EDEDED] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
@@ -274,6 +249,31 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
                     <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                   </svg>
                 </a>
+              </div>
+            </div>
+
+            {/* AUTHOR BRIEF BOX (REPLACED AFTER THE SHARE FOOTER) */}
+            <div className="mt-12 bg-white rounded-3xl border border-[#EDEDED] p-6 sm:p-8 shadow-sm">
+              <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
+                About the Author
+              </h3>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <img
+                  src={typeof post.author === 'object' ? post.author.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
+                  alt={typeof post.author === 'object' ? post.author.name : 'Author'}
+                  className="w-14 h-14 rounded-full object-cover border-2 border-rose-50 shadow-sm"
+                />
+                <div>
+                  <h4 className="text-sm font-bold text-[#1A1A1A]">
+                    {typeof post.author === 'object' ? post.author.name : post.author}
+                  </h4>
+                  <p className="text-xs text-[#E1224D] font-semibold mb-1">
+                    {typeof post.author === 'object' ? post.author.role : 'Contributor'}
+                  </p>
+                  <p className="text-xs text-[#6B7280] leading-relaxed max-w-xl">
+                    Covers housing economics, regulatory compliance, property verification standards, and urban migration patterns in India's emerging Tier-2 smart cities.
+                  </p>
+                </div>
               </div>
             </div>
 
