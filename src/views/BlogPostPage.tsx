@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { BlogPost } from '../types';
 import { ArrowLeft, Clock, Calendar, Share2, Link2, BookOpen, Sparkles, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ interface BlogPostPageProps {
 export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) {
   const [copied, setCopied] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,46 +39,87 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
   const shareUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : '';
 
   // Extract headings for Table of Contents
-  const headings: { id: string; text: string }[] = [];
-  const rawContent = post.content || '';
-  
-  // Simple regex parser to extract text and generate IDs from <h3> tags
-  const regex = /<h3[^>]*>(.*?)<\/h3>/g;
-  let match;
-  while ((match = regex.exec(rawContent)) !== null) {
-    const text = match[1].replace(/<[^>]*>/g, ''); // strip inline tags
-    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    headings.push({ id, text });
-  }
+  const headings = useMemo(() => {
+    const list: { id: string; text: string }[] = [];
+    const rawContent = post.content || '';
+    const regex = /<h3[^>]*>(.*?)<\/h3>/g;
+    let match;
+    while ((match = regex.exec(rawContent)) !== null) {
+      const text = match[1].replace(/<[^>]*>/g, ''); // strip inline tags
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      list.push({ id, text });
+    }
+    return list;
+  }, [post.content]);
+
+  // Intersection Observer for highlighting active section in TOC
+  useEffect(() => {
+    if (headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find which headings are currently intersecting
+        const visibleHeadings = entries.filter((entry) => entry.isIntersecting);
+        if (visibleHeadings.length > 0) {
+          // Sort by bounding client rect to find the one closest to the top of viewport
+          visibleHeadings.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          setActiveId(visibleHeadings[0].target.id);
+        }
+      },
+      {
+        rootMargin: '-80px 0px -70% 0px', // trigger active states when headings reach upper 30% of viewport
+        threshold: 0.1,
+      }
+    );
+
+    headings.forEach((heading) => {
+      const el = document.getElementById(heading.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      headings.forEach((heading) => {
+        const el = document.getElementById(heading.id);
+        if (el) observer.unobserve(el);
+      });
+    };
+  }, [headings]);
 
   // Inject ID attributes into original content headings for anchor scroll alignment
-  let contentWithIds = rawContent;
-  headings.forEach(heading => {
-    const escapedText = heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const searchRegex = new RegExp(`(<h3[^>]*>)(${escapedText})(<\/h3>)`, 'i');
-    contentWithIds = contentWithIds.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-xl font-bold text-gray-900 mt-8 mb-4">$2</h3>`);
-  });
+  const contentWithIds = useMemo(() => {
+    let content = post.content || '';
+    headings.forEach(heading => {
+      const escapedText = heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const searchRegex = new RegExp(`(<h3[^>]*>)(${escapedText})(<\/h3>)`, 'i');
+      content = content.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-xl font-bold text-gray-900 mt-8 mb-4">$2</h3>`);
+    });
+    return content;
+  }, [post.content, headings]);
 
   // Split content for inline CTA placement (split at the second h3 or first h3)
-  let firstHalf = contentWithIds;
-  let secondHalf = '';
+  const { firstHalf, secondHalf } = useMemo(() => {
+    let fHalf = contentWithIds;
+    let sHalf = '';
 
-  const h3Indices: number[] = [];
-  let idx = 0;
-  while ((idx = contentWithIds.indexOf('<h3', idx)) !== -1) {
-    h3Indices.push(idx);
-    idx += 3;
-  }
+    const h3Indices: number[] = [];
+    let idx = 0;
+    while ((idx = contentWithIds.indexOf('<h3', idx)) !== -1) {
+      h3Indices.push(idx);
+      idx += 3;
+    }
 
-  if (h3Indices.length >= 2) {
-    const splitIndex = h3Indices[1];
-    firstHalf = contentWithIds.slice(0, splitIndex);
-    secondHalf = contentWithIds.slice(splitIndex);
-  } else if (h3Indices.length === 1) {
-    const splitIndex = h3Indices[0];
-    firstHalf = contentWithIds.slice(0, splitIndex);
-    secondHalf = contentWithIds.slice(splitIndex);
-  }
+    if (h3Indices.length >= 2) {
+      const splitIndex = h3Indices[1];
+      fHalf = contentWithIds.slice(0, splitIndex);
+      sHalf = contentWithIds.slice(splitIndex);
+    } else if (h3Indices.length === 1) {
+      const splitIndex = h3Indices[0];
+      fHalf = contentWithIds.slice(0, splitIndex);
+      sHalf = contentWithIds.slice(splitIndex);
+    }
+
+    return { firstHalf: fHalf, secondHalf: sHalf };
+  }, [contentWithIds]);
 
   return (
     <main className="min-h-screen bg-white pt-24 pb-20 relative">
@@ -168,7 +210,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               dangerouslySetInnerHTML={{ __html: firstHalf }}
             />
 
-            {/* INLINE CTA BANNER (PLACED IN BETWEEN THE BLOG CONTENT) */}
+            {/* INLINE CTA BANNER */}
             <div className="my-10 bg-gradient-to-br from-rose-50 to-pink-50 rounded-3xl border border-[#FFE4EA] p-6 sm:p-8">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white text-[#E1224D] text-[10px] font-bold uppercase tracking-wider mb-3">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -252,7 +294,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               </div>
             </div>
 
-            {/* AUTHOR BRIEF BOX (REPLACED AFTER THE SHARE FOOTER) */}
+            {/* AUTHOR BRIEF BOX */}
             <div className="mt-12 bg-white rounded-3xl border border-[#EDEDED] p-6 sm:p-8 shadow-sm">
               <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
                 About the Author
@@ -282,7 +324,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
           {/* SIDEBAR */}
           <aside className="lg:col-span-4 space-y-8 sticky top-28 self-start">
             
-            {/* DYNAMIC TABLE OF CONTENTS */}
+            {/* DYNAMIC TABLE OF CONTENTS (INTERACTIVE VIEWPORT OBSERVER) */}
             {headings.length > 0 && (
               <div className="bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6">
                 <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA] flex items-center gap-2">
@@ -290,15 +332,22 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
                   Table of Contents
                 </h3>
                 <nav className="space-y-3">
-                  {headings.map((heading) => (
-                    <a
-                      key={heading.id}
-                      href={`#${heading.id}`}
-                      className="block text-xs font-semibold text-[#6B7280] hover:text-[#E1224D] transition-colors leading-relaxed hover:underline decoration-[#E1224D]/30"
-                    >
-                      {heading.text}
-                    </a>
-                  ))}
+                  {headings.map((heading) => {
+                    const isActive = heading.id === activeId;
+                    return (
+                      <a
+                        key={heading.id}
+                        href={`#${heading.id}`}
+                        className={`block text-xs font-semibold leading-relaxed transition-all duration-300 pl-3 border-l-2 ${
+                          isActive 
+                            ? 'text-[#E1224D] border-[#E1224D] translate-x-1.5 font-bold' 
+                            : 'text-[#6B7280] border-[#EDEDED] hover:text-[#1A1A1A] hover:border-[#CCCCCC]'
+                        }`}
+                      >
+                        {heading.text}
+                      </a>
+                    );
+                  })}
                 </nav>
               </div>
             )}
