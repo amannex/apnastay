@@ -79,35 +79,35 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
     return () => window.removeEventListener('scroll', handleActiveHighlight);
   }, [headings]);
 
-  // Inject ID attributes into original content headings for anchor scroll alignment
+  // Inject ID attributes into original content headings for anchor scroll alignment (translating h3 to semantic h2)
   const contentWithIds = useMemo(() => {
     let content = post.content || '';
     headings.forEach(heading => {
       const escapedText = heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
       const searchRegex = new RegExp(`(<h3[^>]*>)(${escapedText})(<\/h3>)`, 'i');
-      content = content.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] mt-12 mb-5 tracking-tight">$2</h3>`);
+      content = content.replace(searchRegex, `<h2 id="${heading.id}" class="scroll-mt-28 text-xl sm:text-2xl font-extrabold text-[#1A1A1A] mt-12 mb-5 tracking-tight">$2</h2>`);
     });
     return content;
   }, [post.content, headings]);
 
-  // Split content for inline CTA placement (split at the second h3 or first h3)
+  // Split content for inline CTA placement (split at the second h2 or first h2)
   const { firstHalf, secondHalf } = useMemo(() => {
     let fHalf = contentWithIds;
     let sHalf = '';
 
-    const h3Indices: number[] = [];
+    const h2Indices: number[] = [];
     let idx = 0;
-    while ((idx = contentWithIds.indexOf('<h3', idx)) !== -1) {
-      h3Indices.push(idx);
+    while ((idx = contentWithIds.indexOf('<h2', idx)) !== -1) {
+      h2Indices.push(idx);
       idx += 3;
     }
 
-    if (h3Indices.length >= 2) {
-      const splitIndex = h3Indices[1];
+    if (h2Indices.length >= 2) {
+      const splitIndex = h2Indices[1];
       fHalf = contentWithIds.slice(0, splitIndex);
       sHalf = contentWithIds.slice(splitIndex);
-    } else if (h3Indices.length === 1) {
-      const splitIndex = h3Indices[0];
+    } else if (h2Indices.length === 1) {
+      const splitIndex = h2Indices[0];
       fHalf = contentWithIds.slice(0, splitIndex);
       sHalf = contentWithIds.slice(splitIndex);
     }
