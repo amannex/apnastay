@@ -52,37 +52,31 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
     return list;
   }, [post.content]);
 
-  // Intersection Observer for highlighting active section in TOC
+  // Track active heading position on scroll
   useEffect(() => {
     if (headings.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Find which headings are currently intersecting
-        const visibleHeadings = entries.filter((entry) => entry.isIntersecting);
-        if (visibleHeadings.length > 0) {
-          // Sort by bounding client rect to find the one closest to the top of viewport
-          visibleHeadings.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-          setActiveId(visibleHeadings[0].target.id);
+    const handleActiveHighlight = () => {
+      const scrollPosition = window.scrollY + 160; // 160px offset from viewport top
+      let currentActive = headings[0]?.id || '';
+
+      for (let i = 0; i < headings.length; i++) {
+        const el = document.getElementById(headings[i].id);
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          if (scrollPosition >= top) {
+            currentActive = headings[i].id;
+          }
         }
-      },
-      {
-        rootMargin: '-80px 0px -70% 0px', // trigger active states when headings reach upper 30% of viewport
-        threshold: 0.1,
       }
-    );
-
-    headings.forEach((heading) => {
-      const el = document.getElementById(heading.id);
-      if (el) observer.observe(el);
-    });
-
-    return () => {
-      headings.forEach((heading) => {
-        const el = document.getElementById(heading.id);
-        if (el) observer.unobserve(el);
-      });
+      setActiveId(currentActive);
     };
+
+    window.addEventListener('scroll', handleActiveHighlight);
+    // Trigger once on layout stable
+    setTimeout(handleActiveHighlight, 100);
+
+    return () => window.removeEventListener('scroll', handleActiveHighlight);
   }, [headings]);
 
   // Inject ID attributes into original content headings for anchor scroll alignment
