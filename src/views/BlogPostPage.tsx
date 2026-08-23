@@ -205,11 +205,11 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
           </article>
 
           {/* SIDEBAR */}
-          <aside className="lg:col-span-4 space-y-8">
+          <aside className="lg:col-span-4 space-y-8 sticky top-28 self-start">
             
-            {/* DYNAMIC TABLE OF CONTENTS (STICKY FOR SUPERIOR SCROLL INTERACTION) */}
+            {/* DYNAMIC TABLE OF CONTENTS */}
             {headings.length > 0 && (
-              <div className="bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6 sticky top-24">
+              <div className="bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6">
                 <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA] flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#E1224D]" />
                   Table of Contents
