@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { BlogPost } from '../types';
 import { ArrowLeft, Clock, Calendar, Share2, Link2, BookOpen, Sparkles, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -12,6 +12,19 @@ interface BlogPostPageProps {
 
 export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) {
   const [copied, setCopied] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const progress = (window.scrollY / totalHeight) * 100;
+        setScrollProgress(progress);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleCopyLink = () => {
     if (typeof window !== 'undefined') {
@@ -24,8 +37,35 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
   const shareTitle = encodeURIComponent(post.title);
   const shareUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : '';
 
+  // Extract headings for Table of Contents
+  const headings: { id: string; text: string }[] = [];
+  const rawContent = post.content || '';
+  
+  // Simple regex parser to extract text and generate IDs from <h3> tags
+  const regex = /<h3[^>]*>(.*?)<\/h3>/g;
+  let match;
+  while ((match = regex.exec(rawContent)) !== null) {
+    const text = match[1].replace(/<[^>]*>/g, ''); // strip inline tags
+    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    headings.push({ id, text });
+  }
+
+  // Inject ID attributes into original content headings for anchor scroll alignment
+  let contentWithIds = rawContent;
+  headings.forEach(heading => {
+    const escapedText = heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const searchRegex = new RegExp(`(<h3[^>]*>)(${escapedText})(<\/h3>)`, 'i');
+    contentWithIds = contentWithIds.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-xl font-bold text-gray-900 mt-8 mb-4">$2</h3>`);
+  });
+
   return (
-    <main className="min-h-screen bg-[#FAFAFA] pt-24 pb-20">
+    <main className="min-h-screen bg-white pt-24 pb-20 relative">
+      {/* READING TIMELINE ON THE HEADER */}
+      <div 
+        className="fixed top-0 left-0 right-0 h-1 bg-[#E1224D] z-[100] transition-all duration-75 origin-left"
+        style={{ transform: `scaleX(${scrollProgress / 100})` }}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* BREADCRUMB AND BACK ACTION */}
@@ -48,8 +88,8 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* ARTICLE CONTENT */}
-          <article className="lg:col-span-8 bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6 sm:p-10 overflow-hidden">
+          {/* ARTICLE CONTENT (NO CARD CONTAINER/BACKGROUND) */}
+          <article className="lg:col-span-8 overflow-hidden bg-transparent p-0">
             
             {/* BADGE & DATE */}
             <div className="flex items-center gap-3 mb-4">
@@ -104,7 +144,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
             {/* BODY TEXT */}
             <div 
               className="prose prose-rose max-w-none text-[#333333] text-sm sm:text-base leading-relaxed space-y-6"
-              dangerouslySetInnerHTML={{ __html: post.content || `<p>${post.excerpt}</p>` }}
+              dangerouslySetInnerHTML={{ __html: contentWithIds || `<p>${post.excerpt}</p>` }}
             />
 
             {/* SHARE FOOTER */}
@@ -167,6 +207,27 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
           {/* SIDEBAR */}
           <aside className="lg:col-span-4 space-y-8">
             
+            {/* DYNAMIC TABLE OF CONTENTS (STICKY FOR SUPERIOR SCROLL INTERACTION) */}
+            {headings.length > 0 && (
+              <div className="bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6 sticky top-24">
+                <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#E1224D]" />
+                  Table of Contents
+                </h3>
+                <nav className="space-y-3">
+                  {headings.map((heading) => (
+                    <a
+                      key={heading.id}
+                      href={`#${heading.id}`}
+                      className="block text-xs font-semibold text-[#6B7280] hover:text-[#E1224D] transition-colors leading-relaxed hover:underline decoration-[#E1224D]/30"
+                    >
+                      {heading.text}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            )}
+
             {/* AUTHOR BRIEF CARD */}
             <div className="bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6">
               <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
