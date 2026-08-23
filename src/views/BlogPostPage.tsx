@@ -85,7 +85,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
     headings.forEach(heading => {
       const escapedText = heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
       const searchRegex = new RegExp(`(<h3[^>]*>)(${escapedText})(<\/h3>)`, 'i');
-      content = content.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-xl font-bold text-gray-900 mt-8 mb-4">$2</h3>`);
+      content = content.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] mt-12 mb-5 tracking-tight">$2</h3>`);
     });
     return content;
   }, [post.content, headings]);
@@ -200,7 +200,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
 
             {/* BODY TEXT - FIRST HALF */}
             <div 
-              className="prose prose-rose max-w-none text-[#333333] text-sm sm:text-base leading-relaxed space-y-6"
+              className="prose prose-rose max-w-none text-[#333333] text-[15px] sm:text-[17px] leading-[1.8] space-y-6 prose-p:mb-6 prose-blockquote:border-l-4 prose-blockquote:border-l-[#E1224D] prose-blockquote:bg-rose-50/20 prose-blockquote:py-4 prose-blockquote:px-5 prose-blockquote:rounded-r-2xl prose-blockquote:italic prose-blockquote:text-gray-600 prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-6 prose-li:mb-2 prose-li:text-[15px] prose-li:sm:text-[16px]"
               dangerouslySetInnerHTML={{ __html: firstHalf }}
             />
 
@@ -228,7 +228,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
             {/* BODY TEXT - SECOND HALF */}
             {secondHalf && (
               <div 
-                className="prose prose-rose max-w-none text-[#333333] text-sm sm:text-base leading-relaxed space-y-6"
+                className="prose prose-rose max-w-none text-[#333333] text-[15px] sm:text-[17px] leading-[1.8] space-y-6 prose-p:mb-6 prose-blockquote:border-l-4 prose-blockquote:border-l-[#E1224D] prose-blockquote:bg-rose-50/20 prose-blockquote:py-4 prose-blockquote:px-5 prose-blockquote:rounded-r-2xl prose-blockquote:italic prose-blockquote:text-gray-600 prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-6 prose-li:mb-2 prose-li:text-[15px] prose-li:sm:text-[16px]"
                 dangerouslySetInnerHTML={{ __html: secondHalf }}
               />
             )}
