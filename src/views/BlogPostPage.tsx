@@ -38,16 +38,17 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
   const shareTitle = encodeURIComponent(post.title);
   const shareUrl = typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : '';
 
-  // Extract headings for Table of Contents
+  // Extract headings for Table of Contents (supports Gutenberg h2 and h3 blocks)
   const headings = useMemo(() => {
-    const list: { id: string; text: string }[] = [];
+    const list: { id: string; text: string; tag: string }[] = [];
     const rawContent = post.content || '';
-    const regex = /<h3[^>]*>(.*?)<\/h3>/g;
+    const regex = /<(h2|h3)[^>]*>(.*?)<\/(h2|h3)>/g;
     let match;
     while ((match = regex.exec(rawContent)) !== null) {
-      const text = match[1].replace(/<[^>]*>/g, ''); // strip inline tags
+      const tag = match[1].toLowerCase();
+      const text = match[2].replace(/<[^>]*>/g, ''); // strip inline tags
       const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      list.push({ id, text });
+      list.push({ id, text, tag });
     }
     return list;
   }, [post.content]);
@@ -79,35 +80,53 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
     return () => window.removeEventListener('scroll', handleActiveHighlight);
   }, [headings]);
 
-  // Inject ID attributes into original content headings for anchor scroll alignment (translating h3 to semantic h2)
+  // Inject ID attributes and responsive typography classes into content headings
   const contentWithIds = useMemo(() => {
     let content = post.content || '';
     headings.forEach(heading => {
       const escapedText = heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const searchRegex = new RegExp(`(<h3[^>]*>)(${escapedText})(<\/h3>)`, 'i');
-      content = content.replace(searchRegex, `<h2 id="${heading.id}" class="scroll-mt-28 text-xl sm:text-2xl font-extrabold text-[#1A1A1A] mt-12 mb-5 tracking-tight">$2</h2>`);
+      const searchRegex = new RegExp(`(<${heading.tag}[^>]*>)(${escapedText})(<\/${heading.tag}>)`, 'i');
+      
+      const classList = heading.tag === 'h2'
+        ? 'scroll-mt-28 text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] mt-12 mb-5 tracking-tight'
+        : 'scroll-mt-28 text-xl sm:text-2xl font-bold text-[#1A1A1A] mt-10 mb-4 tracking-tight';
+
+      content = content.replace(searchRegex, `<${heading.tag} id="${heading.id}" class="${classList}">$2</${heading.tag}>`);
     });
     return content;
   }, [post.content, headings]);
 
-  // Split content for inline CTA placement (split at the second h2 or first h2)
+  // Split content for inline CTA placement (scans for both h2 and h3 tags)
   const { firstHalf, secondHalf } = useMemo(() => {
     let fHalf = contentWithIds;
     let sHalf = '';
 
-    const h2Indices: number[] = [];
+    const headingIndices: number[] = [];
     let idx = 0;
-    while ((idx = contentWithIds.indexOf('<h2', idx)) !== -1) {
-      h2Indices.push(idx);
-      idx += 3;
+    while (idx < contentWithIds.length) {
+      const nextH2 = contentWithIds.indexOf('<h2', idx);
+      const nextH3 = contentWithIds.indexOf('<h3', idx);
+      
+      let nextTagIndex = -1;
+      if (nextH2 !== -1 && nextH3 !== -1) {
+        nextTagIndex = Math.min(nextH2, nextH3);
+      } else if (nextH2 !== -1) {
+        nextTagIndex = nextH2;
+      } else if (nextH3 !== -1) {
+        nextTagIndex = nextH3;
+      }
+
+      if (nextTagIndex === -1) break;
+      headingIndices.push(nextTagIndex);
+      idx = nextTagIndex + 3;
     }
 
-    if (h2Indices.length >= 2) {
-      const splitIndex = h2Indices[1];
+    if (headingIndices.length >= 2) {
+      const splitIndex = headingIndices[1];
       fHalf = contentWithIds.slice(0, splitIndex);
       sHalf = contentWithIds.slice(splitIndex);
-    } else if (h2Indices.length === 1) {
-      const splitIndex = h2Indices[0];
+    } else if (headingIndices.length === 1) {
+      const splitIndex = headingIndices[0];
       fHalf = contentWithIds.slice(0, splitIndex);
       sHalf = contentWithIds.slice(splitIndex);
     }
@@ -328,11 +347,14 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
                 <nav className="space-y-3">
                   {headings.map((heading) => {
                     const isActive = heading.id === activeId;
+                    const isH3 = heading.tag === 'h3';
                     return (
                       <a
                         key={heading.id}
                         href={`#${heading.id}`}
-                        className={`block text-xs font-semibold leading-relaxed transition-all duration-300 pl-3 border-l-2 ${
+                        className={`block text-xs font-semibold leading-relaxed transition-all duration-300 border-l-2 ${
+                          isH3 ? 'pl-6 font-medium text-[11px]' : 'pl-3'
+                        } ${
                           isActive 
                             ? 'text-[#E1224D] border-[#E1224D] translate-x-1.5 font-bold' 
                             : 'text-[#6B7280] border-[#EDEDED] hover:text-[#1A1A1A] hover:border-[#CCCCCC]'
