@@ -58,6 +58,27 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
     contentWithIds = contentWithIds.replace(searchRegex, `<h3 id="${heading.id}" class="scroll-mt-28 text-xl font-bold text-gray-900 mt-8 mb-4">$2</h3>`);
   });
 
+  // Split content for inline CTA placement (split at the second h3 or first h3)
+  let firstHalf = contentWithIds;
+  let secondHalf = '';
+
+  const h3Indices: number[] = [];
+  let idx = 0;
+  while ((idx = contentWithIds.indexOf('<h3', idx)) !== -1) {
+    h3Indices.push(idx);
+    idx += 3;
+  }
+
+  if (h3Indices.length >= 2) {
+    const splitIndex = h3Indices[1];
+    firstHalf = contentWithIds.slice(0, splitIndex);
+    secondHalf = contentWithIds.slice(splitIndex);
+  } else if (h3Indices.length === 1) {
+    const splitIndex = h3Indices[0];
+    firstHalf = contentWithIds.slice(0, splitIndex);
+    secondHalf = contentWithIds.slice(splitIndex);
+  }
+
   return (
     <main className="min-h-screen bg-white pt-24 pb-20 relative">
       {/* READING TIMELINE ON THE HEADER */}
@@ -88,7 +109,7 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* ARTICLE CONTENT (NO CARD CONTAINER/BACKGROUND) */}
+          {/* ARTICLE CONTENT */}
           <article className="lg:col-span-8 overflow-hidden bg-transparent p-0">
             
             {/* BADGE & DATE */}
@@ -141,14 +162,68 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               </div>
             )}
 
-            {/* BODY TEXT */}
+            {/* BODY TEXT - FIRST HALF */}
             <div 
               className="prose prose-rose max-w-none text-[#333333] text-sm sm:text-base leading-relaxed space-y-6"
-              dangerouslySetInnerHTML={{ __html: contentWithIds || `<p>${post.excerpt}</p>` }}
+              dangerouslySetInnerHTML={{ __html: firstHalf }}
             />
 
+            {/* INLINE CTA BANNER (PLACED IN BETWEEN THE BLOG CONTENT) */}
+            <div className="my-10 bg-gradient-to-br from-rose-50 to-pink-50 rounded-3xl border border-[#FFE4EA] p-6 sm:p-8">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white text-[#E1224D] text-[10px] font-bold uppercase tracking-wider mb-3">
+                <Sparkles className="w-3.5 h-3.5" />
+                ApnaStay Certified
+              </div>
+              <h4 className="text-lg sm:text-xl font-bold text-[#1A1A1A] mb-2">
+                100% Zero Brokerage. Verified Renting.
+              </h4>
+              <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed mb-4 max-w-2xl">
+                No third party brokers. Self-tour with ephemeral encrypted NFC digital keys and PAN/Aadhaar e-sign agreements directly with verified homeowners in under 15 minutes.
+              </p>
+              <Link 
+                href="/why-apnastay" 
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#E1224D] hover:underline"
+              >
+                Learn about our 25-point audit
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {/* BODY TEXT - SECOND HALF */}
+            {secondHalf && (
+              <div 
+                className="prose prose-rose max-w-none text-[#333333] text-sm sm:text-base leading-relaxed space-y-6"
+                dangerouslySetInnerHTML={{ __html: secondHalf }}
+              />
+            )}
+
+            {/* AUTHOR BRIEF BOX (MOVED FROM SIDEBAR TO BOTTOM OF CONTENT) */}
+            <div className="mt-12 bg-white rounded-3xl border border-[#EDEDED] p-6 sm:p-8 shadow-sm">
+              <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
+                About the Author
+              </h3>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <img
+                  src={typeof post.author === 'object' ? post.author.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
+                  alt={typeof post.author === 'object' ? post.author.name : 'Author'}
+                  className="w-14 h-14 rounded-full object-cover border-2 border-rose-50 shadow-sm"
+                />
+                <div>
+                  <h4 className="text-sm font-bold text-[#1A1A1A]">
+                    {typeof post.author === 'object' ? post.author.name : post.author}
+                  </h4>
+                  <p className="text-xs text-[#E1224D] font-semibold mb-1">
+                    {typeof post.author === 'object' ? post.author.role : 'Contributor'}
+                  </p>
+                  <p className="text-xs text-[#6B7280] leading-relaxed max-w-xl">
+                    Covers housing economics, regulatory compliance, property verification standards, and urban migration patterns in India's emerging Tier-2 smart cities.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* SHARE FOOTER */}
-            <div className="mt-12 pt-8 border-t border-[#EDEDED] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mt-8 pt-8 border-t border-[#EDEDED] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-2">
                 <Share2 className="w-4 h-4 text-[#E1224D]" />
                 Share this post
@@ -227,52 +302,6 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
                 </nav>
               </div>
             )}
-
-            {/* AUTHOR BRIEF CARD */}
-            <div className="bg-white rounded-3xl border border-[#EDEDED] shadow-sm p-6">
-              <h3 className="text-sm font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
-                About the Author
-              </h3>
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src={typeof post.author === 'object' ? post.author.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
-                  alt={typeof post.author === 'object' ? post.author.name : 'Author'}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-rose-55 shadow-sm"
-                />
-                <div>
-                  <h4 className="text-sm font-bold text-[#1A1A1A]">
-                    {typeof post.author === 'object' ? post.author.name : post.author}
-                  </h4>
-                  <p className="text-xs text-[#6B7280]">
-                    {typeof post.author === 'object' ? post.author.role : 'Contributor'}
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs text-[#6B7280] leading-relaxed">
-                Covers housing economics, regulatory compliance, property verification standards, and urban migration patterns in India's emerging Tier-2 smart cities.
-              </p>
-            </div>
-
-            {/* TRUST & AUDIT ACCENT CARD */}
-            <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-3xl border border-[#FFE4EA] p-6">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white text-[#E1224D] text-[10px] font-bold uppercase tracking-wider mb-3">
-                <Sparkles className="w-3 h-3" />
-                ApnaStay Certified
-              </div>
-              <h4 className="text-base font-bold text-[#1A1A1A] mb-2">
-                100% Zero Brokerage
-              </h4>
-              <p className="text-xs text-[#6B7280] leading-relaxed mb-4">
-                No third party brokers. Self tour and sign agreements directly with verified homeowners in under 15 minutes.
-              </p>
-              <Link 
-                href="/why-apnastay" 
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#E1224D] hover:underline"
-              >
-                Learn about our 25-point audit
-                <ChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
 
             {/* RELATED POSTS / READ NEXT */}
             {relatedPosts.length > 0 && (
