@@ -293,20 +293,20 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
               <h3 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider mb-4 pb-2 border-b border-[#FAFAFA]">
                 About the Author
               </h3>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                 <img
                   src={typeof post.author === 'object' ? post.author.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
                   alt={typeof post.author === 'object' ? post.author.name : 'Author'}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-rose-50 shadow-sm"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-rose-50 shadow-sm shrink-0"
                 />
                 <div>
-                  <h4 className="text-sm font-bold text-[#1A1A1A]">
+                  <h4 className="text-base sm:text-lg font-bold text-[#1A1A1A]">
                     {typeof post.author === 'object' ? post.author.name : post.author}
                   </h4>
-                  <p className="text-xs text-[#E1224D] font-semibold mb-1">
+                  <p className="text-xs sm:text-sm text-[#E1224D] font-semibold mb-2">
                     {typeof post.author === 'object' ? post.author.role : 'Contributor'}
                   </p>
-                  <p className="text-xs text-[#6B7280] leading-relaxed max-w-xl">
+                  <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed max-w-2xl">
                     Covers housing economics, regulatory compliance, property verification standards, and urban migration patterns in India's emerging Tier-2 smart cities.
                   </p>
                 </div>
@@ -360,9 +360,9 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
                       href={`/journal/${rPost.slug}`}
                       className="group block"
                     >
-                      <div className="flex gap-3">
+                      <div className="flex gap-4 items-center">
                         {rPost.image && (
-                          <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#FAFAFA]">
+                          <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 bg-[#FAFAFA]">
                             <img
                               src={rPost.image}
                               alt={rPost.title}
@@ -371,10 +371,10 @@ export default function BlogPostPage({ post, relatedPosts }: BlogPostPageProps) 
                           </div>
                         )}
                         <div>
-                          <span className="text-[10px] font-bold text-[#E1224D] uppercase tracking-wide">
+                          <span className="text-[10px] sm:text-[11px] font-bold text-[#E1224D] uppercase tracking-wider block mb-1">
                             {rPost.category}
                           </span>
-                          <h4 className="text-xs font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2 mt-0.5 leading-snug">
+                          <h4 className="text-xs sm:text-sm font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2 leading-snug">
                             {rPost.title}
                           </h4>
                         </div>
