@@ -61,7 +61,7 @@ export default function BlogSection() {
               >
                 <div>
                   {/* IMAGE */}
-                  <div className="relative h-56 overflow-hidden bg-[#FAFAFA]">
+                  <Link href={`/journal/${post.slug}`} className="block relative h-56 overflow-hidden bg-[#FAFAFA] cursor-pointer">
                     <img
                       src={post.image}
                       alt={post.title}
@@ -72,7 +72,7 @@ export default function BlogSection() {
                         {post.category}
                       </span>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* CONTENT */}
                   <div className="p-6">
@@ -86,11 +86,11 @@ export default function BlogSection() {
                     </div>
 
                     <Link href={`/journal/${post.slug}`}>
-                      <h3 className="text-lg font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2 cursor-pointer hover:underline decoration-wavy decoration-1 decoration-[#E1224D]/30">
+                      <h3 className="text-xl font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2 cursor-pointer leading-snug">
                         {post.title}
                       </h3>
                     </Link>
-                    <p className="text-xs text-[#6B7280] mt-2 line-clamp-3 leading-relaxed">
+                    <p className="text-sm text-[#4B5563] mt-3 line-clamp-3 leading-relaxed">
                       {post.excerpt}
                     </p>
                   </div>
