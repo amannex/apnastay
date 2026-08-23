@@ -4,7 +4,11 @@ import React from 'react';
 import BlogSection from '../components/sections/BlogSection';
 import { Sparkles, BookOpen, Mail } from 'lucide-react';
 
-export default function JournalPage() {
+interface JournalPageProps {
+  initialPosts: any[];
+}
+
+export default function JournalPage({ initialPosts }: JournalPageProps) {
   return (
     <main className="min-h-screen bg-[#FAFAFA] pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +27,7 @@ export default function JournalPage() {
         </div>
 
         {/* ARTICLES GRID */}
-        <BlogSection />
+        <BlogSection initialPosts={initialPosts} />
 
         {/* NEWSLETTER SUBSCRIBE BANNER */}
         <div className="mt-16 bg-white rounded-3xl p-8 sm:p-12 border border-[#EDEDED] shadow-sm max-w-3xl mx-auto text-center">

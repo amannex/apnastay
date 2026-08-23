@@ -5,11 +5,16 @@ import { fetchBlogPosts } from '../../services/wordpressCms';
 import { BookOpen, ArrowUpRight, Clock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-export default function BlogSection() {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+interface BlogSectionProps {
+  initialPosts?: any[];
+}
+
+export default function BlogSection({ initialPosts }: BlogSectionProps) {
+  const [posts, setPosts] = useState<any[]>(initialPosts || []);
+  const [loading, setLoading] = useState(!initialPosts);
 
   useEffect(() => {
+    if (initialPosts) return;
     let active = true;
     fetchBlogPosts().then((data) => {
       if (active) {
@@ -20,7 +25,7 @@ export default function BlogSection() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialPosts]);
 
   return (
     <section id="blog" className="py-24 bg-[#FAFAFA] border-b border-[#EDEDED]">
