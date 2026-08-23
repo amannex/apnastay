@@ -21,7 +21,30 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
       name: 'Rajat Verma',
       role: 'Principal Urban Economist',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
-    }
+    },
+    content: `
+      <p class="lead text-lg text-gray-700 mb-6 font-medium">For decades, the Indian rental market has been gatekept by an archaic middleman system. To find a decent flat in any major Indian hub, tenants have had to pay a mandatory "1-month brokerage fee"—often amounting to tens of thousands or even lakhs of rupees—simply for a broker to unlock a door and hand over a template agreement.</p>
+      
+      <p class="mb-4">At ApnaStay, we believe this model is not just obsolete; it is actively holding back the mobility of India's professional workforce. As tech talent increasingly moves to Tier-2 hubs like Indore, Jaipur, and Coimbatore, the friction of paying heavy upfront costs is becoming a major bottleneck.</p>
+      
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">The Real Cost of Traditional Brokerage</h3>
+      <p class="mb-4">When a tenant relocates, the financial load is already immense: packing and moving charges, security deposits (often spanning 3 to 6 months in many cities), and the initial month's rent. Adding a 1-month brokerage fee on top of this creates an artificial barrier to relocation.</p>
+      
+      <blockquote class="border-l-4 border-rose-500 pl-4 my-6 italic text-gray-600">
+        "I was asked to pay ₹35,000 as brokerage for a flat in Indore where the broker spent exactly 5 minutes showing me the place and did not even help with the registration. That is when I looked for zero-brokerage alternatives." — Ankit S., Software Engineer
+      </blockquote>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">How Technology Eliminates the Middleman</h3>
+      <p class="mb-4">ApnaStay eliminates the need for brokers entirely by automating the search, touring, and legal processes:</p>
+      <ul class="list-disc pl-6 mb-6 space-y-2">
+        <li><strong>NFC-Enabled Self Tours:</strong> No more waiting for brokers. Tenants get an ephemeral digital key on their smartphones to unlock and inspect properties independently.</li>
+        <li><strong>Instant Aadhaar-linked e-Signatures:</strong> Legal agreements are digitally stamped and e-signed under the Indian Registration Act in under 10 minutes.</li>
+        <li><strong>Automated Inventories:</strong> Digital, high-resolution condition logs are taken at check-in and check-out, leaving no room for arbitrary deposit deductions.</li>
+      </ul>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">The Financial Impact</h3>
+      <p class="mb-4">By bringing brokerage fees down to absolute zero, ApnaStay has saved renters over ₹2.84 crores in the last few quarters alone. This capital is instead staying in the pockets of young professionals and families, boosting urban consumption and making relocation frictionless.</p>
+    `
   },
   {
     id: 2,
@@ -36,7 +59,23 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
       name: 'Neelam Kulkarni',
       role: 'Head of Field Inspections',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80'
-    }
+    },
+    content: `
+      <p class="lead text-lg text-gray-700 mb-6 font-medium">The geographical center of India's tech workforce is shifting. While Bengaluru, Pune, and Hyderabad remain massive tech clusters, the rise of remote-first policies, hybrid models, and localized office hubs has triggered a mass migration to Tier-2 cities.</p>
+
+      <p class="mb-4">Indore, Jaipur, Coimbatore, Kochi, and Chandigarh are no longer just tourist destinations or retirement towns. They are thriving, high-tech urban centers that offer a standard of living that traditional tier-1 hubs struggle to match.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">1. The Rents are 40% to 50% Lower</h3>
+      <p class="mb-4">The primary driver for relocation remains financial health. A premium 2BHK in a high-end society in Indore or Jaipur costs between ₹18,000 and ₹25,000 per month. In comparison, a similar configuration in Bengaluru's Outer Ring Road or Mumbai's suburban corridor easily commands ₹45,000 to ₹65,000, often alongside astronomical security deposit demands.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">2. Infrastructure That Rivals Tier-1</h3>
+      <p class="mb-4">With high-speed gigabit fiber internet widely available and major co-working brands establishing outposts, Tier-2 cities easily support remote engineering workflows. ApnaStay verifies Wi-Fi fiber speeds and power backup on all its properties to ensure professionals never miss a sprint planning call.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">3. Better Livability Metrics</h3>
+      <p class="mb-4">Shorter commute times mean professionals regain 2 to 3 hours of their day. Clean air, green spaces, and a lower cost of organic groceries create a healthier environment for families and young professionals alike.</p>
+
+      <p class="mb-4">ApnaStay is building the rental infrastructure for this new migration wave, ensuring that finding a premium verified flat in Jaipur or Coimbatore is as easy as booking a cab.</p>
+    `
   },
   {
     id: 3,
@@ -51,7 +90,24 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
       name: 'Vikramaditya Rao',
       role: 'Staff IoT Security Engineer',
       avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=200&q=80'
-    }
+    },
+    content: `
+      <p class="lead text-lg text-gray-700 mb-6 font-medium">When you rent an apartment online, the biggest risk is the delta between the pictures and reality. Low water pressure, noisy neighbors, fake landlords, and spotty internet are issues that you only discover after you have paid the deposit and moved in.</p>
+
+      <p class="mb-4">At ApnaStay, we solve this by executing a rigorous <strong>25-point engineering audit</strong> on every single property before it is activated on our platform. Here is how our field engineering team audits homes to guarantee peak livability.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">1. Acoustic Decibel Testing</h3>
+      <p class="mb-4">We use professional decibel meters to test sound insulation during peak traffic hours. We measure the ambient noise inside the master bedroom and living room with windows closed, ensuring noise levels do not exceed 45dB. This ensures a peaceful environment for deep focus and sleep.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">2. Connectivity and Power Inspections</h3>
+      <p class="mb-4">We test internet routing stability and verify that the property has active, functional backup power. Our engineers run speed tests to ensure gigabit fibers actually deliver the promised speeds and test automatic cut-over times for inverters.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">3. Water Pressure & Plumb Audits</h3>
+      <p class="mb-4">Using pressure gauges, we verify that showers and taps maintain a minimum of 1.5 bar pressure. We check for hidden water seepage, pipeline scaling, and verify that Geysers are fully functional and safe.</p>
+
+      <h3 class="text-xl font-bold text-gray-900 mt-8 mb-4">4. Structural and Legal Sanity Checks</h3>
+      <p class="mb-4">Finally, our legal team runs background verification on the property title deeds to confirm ownership authenticity, preventing sub-letting scams and illegal tenant contracts.</p>
+    `
   }
 ];
 
@@ -113,15 +169,20 @@ export const STATIC_ADMIN_ANALYTICS = {
   ]
 };
 
-export async function fetchBlogPosts() {
+export async function fetchBlogPosts(perPage: number = 10) {
   if (!process.env.NEXT_PUBLIC_WP_API_URL) {
     return STATIC_BLOG_POSTS;
   }
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
-    const res = await fetch(`${WP_API_BASE}/posts?_embed&per_page=3`, {
+    const apiBase = WP_API_BASE.includes('wp/v2') ? WP_API_BASE : `${WP_API_BASE}/wp/v2`;
+    const res = await fetch(`${apiBase}/posts?_embed&per_page=${perPage}`, {
       signal: controller.signal,
+      next: { 
+        revalidate: 60, // Fallback revalidation window
+        tags: ['blog']  // Cache tag for on-demand WordPress purge
+      }
     }).catch(() => null);
     clearTimeout(timeoutId);
 
@@ -129,23 +190,76 @@ export async function fetchBlogPosts() {
       return STATIC_BLOG_POSTS;
     }
     const data = await res.json();
-    return data.map((post: any) => ({
+    return data.map((post: any) => {
+      const staticMatch = STATIC_BLOG_POSTS.find(sp => sp.slug === post.slug);
+      const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || 'Indian Rentals';
+      return {
+        id: post.id,
+        slug: post.slug,
+        title: post.title.rendered,
+        excerpt: post.excerpt.rendered.replace(/<[^>]+>/g, '').slice(0, 140) + '...',
+        content: post.content?.rendered || staticMatch?.content || '',
+        date: new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        readTime: '5 min read',
+        category: categoryName,
+        image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || (staticMatch?.image || STATIC_BLOG_POSTS[0].image),
+        author: {
+          name: post._embedded?.['author']?.[0]?.name || 'Rajat Verma',
+          role: 'ApnaStay Editor',
+          avatar: post._embedded?.['author']?.[0]?.avatar_urls?.['96'] || ((staticMatch?.author as any)?.avatar || '')
+        }
+      };
+    });
+  } catch (err) {
+    return STATIC_BLOG_POSTS;
+  }
+}
+
+export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  const staticPost = STATIC_BLOG_POSTS.find(p => p.slug === slug);
+  if (!process.env.NEXT_PUBLIC_WP_API_URL) {
+    return staticPost || null;
+  }
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const apiBase = WP_API_BASE.includes('wp/v2') ? WP_API_BASE : `${WP_API_BASE}/wp/v2`;
+    const res = await fetch(`${apiBase}/posts?slug=${slug}&_embed`, {
+      signal: controller.signal,
+      next: { 
+        revalidate: 60, // Fallback revalidation window
+        tags: ['blog', `blog-${slug}`] // Cache tags for slug-specific purge
+      }
+    }).catch(() => null);
+    clearTimeout(timeoutId);
+
+    if (!res || !res.ok) {
+      return staticPost || null;
+    }
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      return staticPost || null;
+    }
+    const post = data[0];
+    const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || 'Indian Rentals';
+    return {
       id: post.id,
       slug: post.slug,
       title: post.title.rendered,
       excerpt: post.excerpt.rendered.replace(/<[^>]+>/g, '').slice(0, 140) + '...',
+      content: post.content.rendered,
       date: new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       readTime: '5 min read',
-      category: 'Indian Rentals',
-      image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || STATIC_BLOG_POSTS[0].image,
+      category: categoryName,
+      image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || (staticPost?.image || STATIC_BLOG_POSTS[0].image),
       author: {
-        name: 'Rajat Verma',
+        name: post._embedded?.['author']?.[0]?.name || 'Rajat Verma',
         role: 'ApnaStay Editor',
-        avatar: (STATIC_BLOG_POSTS[0]?.author as any)?.avatar || ''
+        avatar: post._embedded?.['author']?.[0]?.avatar_urls?.['96'] || ((staticPost?.author as any)?.avatar || '')
       }
-    }));
+    };
   } catch (err) {
-    return STATIC_BLOG_POSTS;
+    return staticPost || null;
   }
 }
 
@@ -156,3 +270,4 @@ export async function fetchFaqItems() {
 export async function fetchAdminAnalytics() {
   return STATIC_ADMIN_ANALYTICS;
 }
+

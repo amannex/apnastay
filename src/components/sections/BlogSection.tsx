@@ -3,14 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { fetchBlogPosts } from '../../services/wordpressCms';
 import { BookOpen, ArrowUpRight, Clock, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
-export default function BlogSection() {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+interface BlogSectionProps {
+  initialPosts?: any[];
+  limit?: number;
+}
+
+export default function BlogSection({ initialPosts, limit = 3 }: BlogSectionProps) {
+  const [posts, setPosts] = useState<any[]>(initialPosts || []);
+  const [loading, setLoading] = useState(!initialPosts);
 
   useEffect(() => {
+    if (initialPosts) return;
     let active = true;
-    fetchBlogPosts().then((data) => {
+    fetchBlogPosts(limit).then((data) => {
       if (active) {
         setPosts(data);
         setLoading(false);
@@ -19,7 +26,7 @@ export default function BlogSection() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialPosts]);
 
   return (
     <section id="blog" className="py-24 bg-[#FAFAFA] border-b border-[#EDEDED]">
@@ -60,7 +67,7 @@ export default function BlogSection() {
               >
                 <div>
                   {/* IMAGE */}
-                  <div className="relative h-56 overflow-hidden bg-[#FAFAFA]">
+                  <Link href={`/journal/${post.slug}`} className="block relative h-56 overflow-hidden bg-[#FAFAFA] cursor-pointer">
                     <img
                       src={post.image}
                       alt={post.title}
@@ -71,7 +78,7 @@ export default function BlogSection() {
                         {post.category}
                       </span>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* CONTENT */}
                   <div className="p-6">
@@ -84,10 +91,12 @@ export default function BlogSection() {
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2">
-                      {post.title}
-                    </h3>
-                    <p className="text-xs text-[#6B7280] mt-2 line-clamp-3 leading-relaxed">
+                    <Link href={`/journal/${post.slug}`}>
+                      <h3 className="text-xl font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-2 cursor-pointer leading-snug">
+                        {post.title}
+                      </h3>
+                    </Link>
+                    <p className="text-sm text-[#4B5563] mt-3 line-clamp-3 leading-relaxed">
                       {post.excerpt}
                     </p>
                   </div>
@@ -107,12 +116,12 @@ export default function BlogSection() {
                     </div>
                   </div>
 
-                  <a
-                    href="#"
+                  <Link
+                    href={`/journal/${post.slug}`}
                     className="w-8 h-8 rounded-full bg-[#FAFAFA] group-hover:bg-[#E1224D] group-hover:text-white text-[#1A1A1A] flex items-center justify-center transition-colors"
                   >
                     <ArrowUpRight className="w-4 h-4" />
-                  </a>
+                  </Link>
                 </div>
               </article>
             ))}
