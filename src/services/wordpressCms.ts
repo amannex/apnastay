@@ -169,14 +169,15 @@ export const STATIC_ADMIN_ANALYTICS = {
   ]
 };
 
-export async function fetchBlogPosts() {
+export async function fetchBlogPosts(perPage: number = 10) {
   if (!process.env.NEXT_PUBLIC_WP_API_URL) {
     return STATIC_BLOG_POSTS;
   }
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
-    const res = await fetch(`${WP_API_BASE}/posts?_embed&per_page=3`, {
+    const apiBase = WP_API_BASE.includes('wp/v2') ? WP_API_BASE : `${WP_API_BASE}/wp/v2`;
+    const res = await fetch(`${apiBase}/posts?_embed&per_page=${perPage}`, {
       signal: controller.signal,
       next: { 
         revalidate: 60, // Fallback revalidation window
@@ -191,6 +192,7 @@ export async function fetchBlogPosts() {
     const data = await res.json();
     return data.map((post: any) => {
       const staticMatch = STATIC_BLOG_POSTS.find(sp => sp.slug === post.slug);
+      const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || 'Indian Rentals';
       return {
         id: post.id,
         slug: post.slug,
@@ -199,7 +201,7 @@ export async function fetchBlogPosts() {
         content: post.content?.rendered || staticMatch?.content || '',
         date: new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         readTime: '5 min read',
-        category: 'Indian Rentals',
+        category: categoryName,
         image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || (staticMatch?.image || STATIC_BLOG_POSTS[0].image),
         author: {
           name: post._embedded?.['author']?.[0]?.name || 'Rajat Verma',
@@ -239,6 +241,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null
       return staticPost || null;
     }
     const post = data[0];
+    const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || 'Indian Rentals';
     return {
       id: post.id,
       slug: post.slug,
@@ -247,7 +250,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null
       content: post.content.rendered,
       date: new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       readTime: '5 min read',
-      category: 'Indian Rentals',
+      category: categoryName,
       image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || (staticPost?.image || STATIC_BLOG_POSTS[0].image),
       author: {
         name: post._embedded?.['author']?.[0]?.name || 'Rajat Verma',

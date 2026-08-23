@@ -7,16 +7,17 @@ import Link from 'next/link';
 
 interface BlogSectionProps {
   initialPosts?: any[];
+  limit?: number;
 }
 
-export default function BlogSection({ initialPosts }: BlogSectionProps) {
+export default function BlogSection({ initialPosts, limit = 3 }: BlogSectionProps) {
   const [posts, setPosts] = useState<any[]>(initialPosts || []);
   const [loading, setLoading] = useState(!initialPosts);
 
   useEffect(() => {
     if (initialPosts) return;
     let active = true;
-    fetchBlogPosts().then((data) => {
+    fetchBlogPosts(limit).then((data) => {
       if (active) {
         setPosts(data);
         setLoading(false);
