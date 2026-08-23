@@ -178,6 +178,7 @@ export async function fetchBlogPosts() {
     const timeoutId = setTimeout(() => controller.abort(), 3500);
     const res = await fetch(`${WP_API_BASE}/posts?_embed&per_page=3`, {
       signal: controller.signal,
+      next: { revalidate: 10 } // Revalidate cache every 10 seconds for fresh CMS content
     }).catch(() => null);
     clearTimeout(timeoutId);
 
@@ -220,6 +221,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null
     const apiBase = WP_API_BASE.includes('wp/v2') ? WP_API_BASE : `${WP_API_BASE}/wp/v2`;
     const res = await fetch(`${apiBase}/posts?slug=${slug}&_embed`, {
       signal: controller.signal,
+      next: { revalidate: 10 } // Revalidate cache every 10 seconds for dynamic posts
     }).catch(() => null);
     clearTimeout(timeoutId);
 
