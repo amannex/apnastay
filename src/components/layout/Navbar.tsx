@@ -17,7 +17,7 @@ export default function Navbar({
   onOpenAiMatchmaker,
   onOpenAuthModal
 }: any) {
-  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -88,7 +88,7 @@ export default function Navbar({
           </div>
 
           {/* RIGHT ACTION BUTTONS: SINGLE LINE, NO WRAPPING, PROPER SPACE */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 whitespace-nowrap">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 whitespace-nowrap">
             {/* AI Matchmaker Trigger (Single-line pill) */}
             <button
               onClick={onOpenAiMatchmaker}
@@ -98,19 +98,19 @@ export default function Navbar({
               <span>AI Matchmaker</span>
             </button>
 
-            {/* Compare Counter Button (hidden on mobile header, available in mobile hamburger menu) */}
+            {/* Compare Counter Button (Symmetrical with Wishlist icon button) */}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenCompare?.();
               }}
-              className="relative hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-colors shrink-0"
+              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
               title="Compare Properties"
+              aria-label="Compare Properties"
             >
-              <Scale className="w-3.5 h-3.5 text-[#E1224D]" />
-              <span className="hidden sm:inline">Compare</span>
+              <Scale className="w-4 h-4" />
               {compareCount > 0 && (
-                <span suppressHydrationWarning={true} className="w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
+                <span suppressHydrationWarning={true} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                   {compareCount}
                 </span>
               )}
@@ -119,7 +119,7 @@ export default function Navbar({
             {/* Wishlist Counter Button */}
             <button
               onClick={onOpenWishlist}
-              className="relative p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
+              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
               title="Saved Residences"
               aria-label="View Saved Residences"
             >
@@ -131,56 +131,61 @@ export default function Navbar({
               )}
             </button>
 
-            {/* LOGIN / REGISTER USER TYPE BUTTON (Single line, no wrapping) */}
-            <button
-              onClick={onOpenAuthModal}
-              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap shrink-0"
-            >
-              {currentUser ? (
-                <>
-                  <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
-                  <span>{currentUser.name.split(' ')[0]}</span>
-                  <span className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold">
-                    {currentUser.role}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
-                  <span className="sm:hidden">Login</span>
-                  <span className="hidden sm:inline">Login / Register</span>
-                </>
-              )}
-            </button>
-
-            {/* MOBILE HAMBURGER MENU ICON (md:hidden) */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-[#1A1A1A] transition-all flex items-center justify-center shrink-0"
-              aria-label="Toggle navigation menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-[#E1224D]" /> : <Menu className="w-5 h-5 text-[#1A1A1A]" />}
-            </button>
-
-            {/* USER ROLE SWITCHER DROPDOWN (Single line, no wrapping) */}
-            <div className="relative hidden lg:block shrink-0">
+            {/* UNIFIED USER PROFILE & ROLE SWITCHER DROPDOWN */}
+            <div className="relative hidden md:block shrink-0">
               <button
-                onClick={() => setRoleMenuOpen(!roleMenuOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F5F5F7] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap"
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap"
               >
-                <CurrentRoleIcon className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
-                <span>{currentRoleObj.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[#6B7280] shrink-0 transition-transform ${roleMenuOpen ? 'rotate-180' : ''}`} />
+                {currentUser ? (
+                  <>
+                    <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
+                    <span>{currentUser.name.split(' ')[0]}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold">
+                      {currentRoleObj.label.split(' ')[0]}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-3.5 h-3.5 text-[#6B7280] shrink-0" />
+                    <span>Account</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 uppercase font-medium">
+                      {currentRoleObj.label.split(' ')[0]}
+                    </span>
+                  </>
+                )}
+                <ChevronDown className={`w-3 h-3 text-[#6B7280] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {roleMenuOpen && (
+              {profileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-apple-lg border border-[#EDEDED] p-2 z-50 animate-slide-up">
+                  {/* Account Header */}
                   <div className="px-3 py-2 border-b border-[#EDEDED] mb-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
-                      ApnaStay User Type Switcher
-                    </p>
-                    <p className="text-xs text-[#1A1A1A] mt-0.5">
-                      Switch views to test Tenant, Owner & Field Engineer tools.
+                    {currentUser ? (
+                      <>
+                        <p className="text-xs font-bold text-[#1A1A1A]">{currentUser.name}</p>
+                        <p className="text-[10px] text-[#6B7280] mt-0.5">{currentUser.email}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs font-bold text-[#1A1A1A]">Welcome Guest</p>
+                        <button
+                          onClick={() => {
+                            setProfileMenuOpen(false);
+                            onOpenAuthModal?.();
+                          }}
+                          className="mt-2 w-full text-center py-1.5 rounded-lg bg-[#E1224D] text-white text-[11px] font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
+                        >
+                          Sign In / Register
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Role Switcher Section */}
+                  <div className="px-3 py-1.5">
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-[#6B7280] mb-1">
+                      Choose View / Role
                     </p>
                   </div>
 
@@ -192,10 +197,10 @@ export default function Navbar({
                         key={role.id}
                         onClick={() => {
                           onRoleChange(role.id);
-                          setRoleMenuOpen(false);
+                          setProfileMenuOpen(false);
                           onOpenRoleModal(role.id);
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-colors ${isActive
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs font-medium transition-colors ${isActive
                             ? 'bg-rose-50 text-[#E1224D] font-semibold'
                             : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
                           }`}
@@ -207,15 +212,26 @@ export default function Navbar({
                             <p className="text-[10px] text-[#6B7280]">{role.badge}</p>
                           </div>
                         </div>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#EDEDED] text-[#6B7280]">
-                          Active
-                        </span>
+                        {isActive && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white border border-[#EDEDED] text-[#E1224D] font-medium">
+                            Active
+                          </span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
               )}
             </div>
+
+            {/* MOBILE HAMBURGER MENU ICON (md:hidden) */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-[#1A1A1A] transition-all flex items-center justify-center shrink-0"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#E1224D]" /> : <Menu className="w-5 h-5 text-[#1A1A1A]" />}
+            </button>
           </div>
         </nav>
 
@@ -233,6 +249,36 @@ export default function Navbar({
                 >
                   Close
                 </button>
+              </div>
+
+              {/* Mobile Account Profile or Login */}
+              <div className="px-2 py-3 border-b border-[#EDEDED]">
+                {currentUser ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-[#E1224D]">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#1A1A1A]">{currentUser.name}</p>
+                        <p className="text-[10px] text-[#6B7280]">{currentUser.email}</p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold shrink-0">
+                      {currentRoleObj.label.split(' ')[0]}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenAuthModal?.();
+                    }}
+                    className="w-full py-2 rounded-xl bg-[#E1224D] text-white text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
+                  >
+                    Sign In / Register
+                  </button>
+                )}
               </div>
 
               <Link
