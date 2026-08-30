@@ -39,11 +39,13 @@ export default function Navbar({
         <nav className="glass-panel rounded-full px-3.5 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 shadow-apple border border-white/90">
 
           {/* BRAND LOGO (NEVER WRAPS) */}
-          <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0 whitespace-nowrap">
-            <div className="w-8 h-8 rounded-full bg-[#E1224D] flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:scale-105 transition-transform">
-              O
-            </div>
-            <span className="font-bold text-base sm:text-lg tracking-tight text-[#1A1A1A]">
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0 whitespace-nowrap">
+            <img
+              src="/logo-icon.png"
+              alt="ApnaStay Logo"
+              className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+            />
+            <span className="font-gotham-black text-lg sm:text-xl tracking-tighter text-[#1A1A1A]">
               ApnaStay<span className="text-[#E1224D]">.</span>
             </span>
           </Link>

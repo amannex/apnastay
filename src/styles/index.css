@@ -87,3 +87,9 @@
 .animate-ken-burns {
   animation: ken-burns 16s ease-in-out infinite alternate;
 }
+
+.font-gotham-black {
+  font-family: "Gotham Black", "Montserrat", "Arial Black", sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}

@@ -33,13 +33,20 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
         <div className="grid grid-cols-1 md:grid-cols-5 gap-10 pb-16 border-b border-white/10">
           {/* Brand Col */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-[#E1224D] flex items-center justify-center text-white font-bold text-sm">
-                O
+            <Link href="/" className="flex items-center gap-3.5 mb-4 group">
+              <img
+                src="/logo-icon.png"
+                alt="ApnaStay"
+                className="h-14 w-auto group-hover:scale-105 transition-transform object-contain brightness-0 invert"
+              />
+              <div className="flex flex-col justify-center select-none">
+                <div className="text-[28px] font-gotham-black leading-none tracking-tighter text-white">
+                  ApnaStay
+                </div>
+                <span className="text-[10px] text-[#E1224D] font-semibold tracking-wide mt-1">
+                  Good Stay. Good Vibes.
+                </span>
               </div>
-              <span className="font-bold text-xl tracking-tight text-white">
-                ApnaStay<span className="text-[#E1224D]">.</span>
-              </span>
             </Link>
             <p className="text-white/70 text-sm max-w-sm leading-relaxed mb-6">
               India's premium Apple, Airbnb, and Linear inspired rental platform. Built with interactive 3D storytelling, ₹0 brokerage guarantees, and instant NFC smart-lock tours across Tier-2 and Tier-1 hubs.
