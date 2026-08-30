@@ -67,6 +67,14 @@ export const metadata: Metadata = {
     images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'],
     creator: '@apnastayindia',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.ico', type: 'image/x-icon' }
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
@@ -79,7 +87,7 @@ export default function RootLayout({
     '@type': 'RealEstateAgent',
     name: 'ApnaStay India',
     url: 'https://apnastay-eight.vercel.app',
-    logo: 'https://apnastay-eight.vercel.app/favicon.ico',
+    logo: 'https://apnastay-eight.vercel.app/logo.png',
     description:
       "India's premier verified zero-brokerage residential rental platform serving Tier-1 & Tier-2 cities including Indore, Jaipur, Coimbatore, Kochi, Chandigarh, and Pune.",
     address: {
