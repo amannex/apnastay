@@ -167,10 +167,15 @@ export default function RegisterPage() {
 
       // Success: User registered and centrally stored in AuthContext
       const registeredUser = res.data;
-      setSuccessMessage('Account created successfully! Redirecting...');
+      const isOwner = registeredUser.role === 'apnastay_owner' || registeredUser.role === 'owner';
+      setSuccessMessage(
+        isOwner
+          ? 'Account created successfully! Redirecting to your owner dashboard...'
+          : 'Account created successfully! Redirecting to properties...'
+      );
 
       if (handleLoginSuccess) {
-        handleLoginSuccess(registeredUser);
+        handleLoginSuccess(registeredUser, redirectParam, router);
       } else {
         setTimeout(() => {
           handleRoleRedirect(registeredUser, redirectParam, router);

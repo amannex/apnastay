@@ -68,7 +68,7 @@ export interface AppContextType {
   onCloseAuthModal: () => void;
   onBookVisit: (prop: Property | null) => void;
   onCloseBookingConfirmation: () => void;
-  handleLoginSuccess: (user: any) => void;
+  handleLoginSuccess: (user: any, customRedirect?: string | null, router?: any) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -185,11 +185,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRoomType('all');
   };
 
-  const handleLoginSuccess = (loggedInUser: any) => {
+  const handleLoginSuccess = (loggedInUser: any, customRedirect?: string | null, router?: any) => {
     setActiveRole(loggedInUser.role || 'tenant');
     setAuthToast(`Logged in as ${loggedInUser.name} (${loggedInUser.roleTitle || loggedInUser.role})`);
     setTimeout(() => setAuthToast(null), 4000);
-    handleRoleRedirect(loggedInUser);
+    handleRoleRedirect(loggedInUser, customRedirect, router);
   };
 
   const handleLogout = async () => {

@@ -25,7 +25,7 @@ import type { RegisterPayload } from '../types';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (user: any) => void;
+  onLoginSuccess: (user: any, customRedirect?: string | null, router?: any) => void;
   initialMode?: 'login' | 'register';
 }
 
@@ -192,10 +192,9 @@ export default function AuthModal({
           return;
         }
 
-        onLoginSuccess(res.data);
+        onLoginSuccess(res.data, undefined, router);
         setIsSubmitting(false);
         onClose();
-        handleRoleRedirect(res.data, undefined, router);
       } catch (err: any) {
         console.error('[ApnaStay AuthModal] Register error:', err);
         setGeneralError(err?.message || 'An unexpected error occurred during registration.');
@@ -223,10 +222,9 @@ export default function AuthModal({
           return;
         }
 
-        onLoginSuccess(res.data);
+        onLoginSuccess(res.data, undefined, router);
         setIsSubmitting(false);
         onClose();
-        handleRoleRedirect(res.data, undefined, router);
       } catch (err: any) {
         console.error('[ApnaStay AuthModal] Login error:', err);
         setGeneralError(err?.message || 'An unexpected error occurred during login.');

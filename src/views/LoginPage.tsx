@@ -134,11 +134,16 @@ export default function LoginPage() {
 
       // Successful login: User state is already stored centrally in AuthContext
       const authenticatedUser = res.data;
-      setSuccessMessage('Login successful! Redirecting to your dashboard...');
+      const isOwner = authenticatedUser.role === 'apnastay_owner' || authenticatedUser.role === 'owner';
+      setSuccessMessage(
+        isOwner
+          ? 'Login successful! Redirecting to your owner dashboard...'
+          : 'Login successful! Redirecting to properties...'
+      );
 
       // Update AppContext and route based on backend role
       if (handleLoginSuccess) {
-        handleLoginSuccess(authenticatedUser);
+        handleLoginSuccess(authenticatedUser, redirectParam, router);
       } else {
         setTimeout(() => {
           handleRoleRedirect(authenticatedUser, redirectParam, router);
