@@ -48,7 +48,6 @@ export interface AppContextType {
   onOpenWishlist: () => void;
   onOpenModal: (prop: Property | null) => void;
   onOpenAiMatchmaker: () => void;
-  onOpenRoleModal: () => void;
   onOpenAuthModal: () => void;
   comparePropertiesList: Property[];
   wishlistPropertiesList: Property[];
@@ -56,7 +55,6 @@ export interface AppContextType {
   isAiMatchmakerOpen: boolean;
   isCompareOpen: boolean;
   isWishlistOpen: boolean;
-  isRoleModalOpen: boolean;
   isAuthModalOpen: boolean;
   bookingConfirmation: Property | null;
   authToast: string | null;
@@ -64,7 +62,6 @@ export interface AppContextType {
   onCloseAiMatchmaker: () => void;
   onCloseCompare: () => void;
   onCloseWishlist: () => void;
-  onCloseRoleModal: () => void;
   onCloseAuthModal: () => void;
   onBookVisit: (prop: Property | null) => void;
   onCloseBookingConfirmation: () => void;
@@ -132,7 +129,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAiMatchmakerOpen, setIsAiMatchmakerOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [bookingConfirmation, setBookingConfirmation] = useState<Property | null>(null);
   const [authToast, setAuthToast] = useState<string | null>(null);
@@ -249,7 +245,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     onOpenWishlist: () => setIsWishlistOpen(true),
     onOpenModal: (prop) => setSelectedPropertyModal(prop),
     onOpenAiMatchmaker: () => setIsAiMatchmakerOpen(true),
-    onOpenRoleModal: () => setIsRoleModalOpen(true),
     onOpenAuthModal: () => setIsAuthModalOpen(true),
     comparePropertiesList,
     wishlistPropertiesList,
@@ -257,7 +252,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isAiMatchmakerOpen,
     isCompareOpen,
     isWishlistOpen,
-    isRoleModalOpen,
     isAuthModalOpen,
     bookingConfirmation,
     authToast,
@@ -265,7 +259,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     onCloseAiMatchmaker: () => setIsAiMatchmakerOpen(false),
     onCloseCompare: () => setIsCompareOpen(false),
     onCloseWishlist: () => setIsWishlistOpen(false),
-    onCloseRoleModal: () => setIsRoleModalOpen(false),
     onCloseAuthModal: () => setIsAuthModalOpen(false),
     onBookVisit: (prop) => setBookingConfirmation(prop),
     onCloseBookingConfirmation: () => setBookingConfirmation(null),

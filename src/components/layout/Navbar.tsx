@@ -10,10 +10,8 @@ export default function Navbar({
   compareCount = 0,
   activeRole = 'tenant',
   currentUser = null as any,
-  onRoleChange,
   onOpenCompare,
   onOpenWishlist,
-  onOpenRoleModal,
   onOpenAiMatchmaker,
   onOpenAuthModal,
   onLogout

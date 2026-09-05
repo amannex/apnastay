@@ -23,7 +23,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     onRoleChange,
     onOpenCompare,
     onOpenWishlist,
-    onOpenRoleModal,
     onOpenAiMatchmaker,
     onOpenAuthModal,
     authToast,
@@ -47,8 +46,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     onRemoveCompare,
     onClearCompare,
     onSelectForCompare,
-    isRoleModalOpen,
-    onCloseRoleModal,
     bookingConfirmation,
     onCloseBookingConfirmation
   } = useApp();
@@ -64,10 +61,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           compareCount={compareIds.length}
           activeRole={activeRole}
           currentUser={currentUser}
-          onRoleChange={onRoleChange}
           onOpenCompare={onOpenCompare}
           onOpenWishlist={onOpenWishlist}
-          onOpenRoleModal={onOpenRoleModal}
           onOpenAiMatchmaker={onOpenAiMatchmaker}
           onOpenAuthModal={onOpenAuthModal}
           onLogout={handleLogout}
