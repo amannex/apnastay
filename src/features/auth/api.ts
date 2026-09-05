@@ -65,13 +65,13 @@ export function normalizeUserProfile(raw: any): UserProfile {
     [firstName, lastName].filter(Boolean).join(' ') ||
     raw.display_name ||
     (raw.email ? raw.email.split('@')[0] : 'User');
-  const rawRole = (raw.role || 'tenant').toLowerCase();
+  const rawRole = (raw.role || 'tenant').toLowerCase().replace(/^apnastay_/, '');
   const normalizedRole =
     rawRole === 'administrator' || rawRole === 'admin'
       ? 'administrator'
-      : rawRole.startsWith('apnastay_')
-      ? rawRole
-      : `apnastay_${rawRole}`;
+      : rawRole === 'owner' || rawRole === 'property_owner'
+      ? 'apnastay_owner'
+      : 'apnastay_tenant';
 
   return {
     ...raw,

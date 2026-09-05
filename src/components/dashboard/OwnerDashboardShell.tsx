@@ -218,26 +218,6 @@ function OwnerDashboardShellInner({
               );
             })}
           </nav>
-
-          {/* SECURITY PROOF CARD */}
-          <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-[#F5F5F7] to-white border border-[#EDEDED]">
-            <div className="flex items-center gap-2 text-[#1D1D1F] font-extrabold text-xs mb-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>RBAC Isolation Proof</span>
-            </div>
-            <p className="text-[11px] text-[#6E6E73] leading-relaxed mb-3">
-              Only verified owners can access this portal. Tenants are automatically intercepted with 403 Forbidden.
-            </p>
-            <button
-              onClick={() => {
-                router.push('/dashboard');
-              }}
-              className="w-full py-2 px-3 rounded-xl bg-[#F5F5F7] hover:bg-[#EDEDED] text-[#1D1D1F] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all"
-            >
-              <span>Test Tenant Route (/dashboard)</span>
-              <ExternalLink className="w-3 h-3" />
-            </button>
-          </div>
         </div>
 
         {/* BOTTOM LOGOUT BUTTON */}

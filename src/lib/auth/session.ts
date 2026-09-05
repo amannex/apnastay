@@ -79,7 +79,11 @@ export async function clearClientSession(): Promise<void> {
  */
 export function getSessionRole(user: UserProfile | null | undefined): string {
   if (!user || !user.role) return 'guest';
-  return user.role.toLowerCase().replace(/^apnastay_/, '');
+  const clean = user.role.toLowerCase().replace(/^apnastay_/, '');
+  if (clean === 'owner' || clean === 'property_owner') return 'owner';
+  if (clean === 'admin' || clean === 'administrator') return 'administrator';
+  if (clean === 'tenant') return 'tenant';
+  return clean;
 }
 
 /**
