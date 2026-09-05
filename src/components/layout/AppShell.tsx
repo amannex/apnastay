@@ -10,7 +10,6 @@ import PropertyModal from '../properties/PropertyModal';
 import AiMatchmakerModal from '../ai/AiMatchmakerModal';
 import CompareDrawer from '../properties/CompareDrawer';
 import WishlistDrawer from '../properties/WishlistDrawer';
-import RoleDashboardModal from '../dashboard/RoleDashboardModal';
 import { STATIC_CITIES, STATIC_PROPERTIES } from '../../data/staticProperties';
 import { CheckCircle2, Key, X } from 'lucide-react';
 
@@ -129,13 +128,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onOpenModal={onOpenModal}
         onOpenCompare={onOpenCompare}
         onSelectForCompare={onSelectForCompare}
-      />
-
-      <RoleDashboardModal
-        isOpen={isRoleModalOpen}
-        onClose={onCloseRoleModal}
-        activeRole={activeRole}
-        onRoleSelect={onRoleChange}
       />
 
       {/* Booking Confirmation Dialog */}
