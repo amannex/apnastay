@@ -2,6 +2,7 @@
 /* eslint-disable */
 
 import React, { createContext, useContext, useState, useMemo, useEffect, useRef, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { STATIC_PROPERTIES, STATIC_CITIES } from '../data/staticProperties';
 import type { Property, City } from '../types';
 import { handleRoleRedirect } from '../lib/auth/session';
@@ -71,6 +72,7 @@ export interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [selectedCity, setSelectedCity] = useState('all');
   const [maxPrice, setMaxPrice] = useState(50000);
   const [roomType, setRoomType] = useState('all');
@@ -245,21 +247,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     onOpenWishlist: () => setIsWishlistOpen(true),
     onOpenModal: (prop) => setSelectedPropertyModal(prop),
     onOpenAiMatchmaker: () => setIsAiMatchmakerOpen(true),
-    onOpenAuthModal: () => setIsAuthModalOpen(true),
+    onOpenAuthModal: () => router.push('/login'),
     comparePropertiesList,
     wishlistPropertiesList,
     selectedPropertyModal,
     isAiMatchmakerOpen,
     isCompareOpen,
     isWishlistOpen,
-    isAuthModalOpen,
+    isAuthModalOpen: false,
     bookingConfirmation,
     authToast,
     onCloseModal: () => setSelectedPropertyModal(null),
     onCloseAiMatchmaker: () => setIsAiMatchmakerOpen(false),
     onCloseCompare: () => setIsCompareOpen(false),
     onCloseWishlist: () => setIsWishlistOpen(false),
-    onCloseAuthModal: () => setIsAuthModalOpen(false),
+    onCloseAuthModal: () => {},
     onBookVisit: (prop) => setBookingConfirmation(prop),
     onCloseBookingConfirmation: () => setBookingConfirmation(null),
     handleLoginSuccess,

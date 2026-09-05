@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { useApp } from '../../context/AppContext';
-import AuthModal from '../auth/AuthModal';
 import PropertyModal from '../properties/PropertyModal';
 import AiMatchmakerModal from '../ai/AiMatchmakerModal';
 import CompareDrawer from '../properties/CompareDrawer';
@@ -26,8 +25,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     onOpenAiMatchmaker,
     onOpenAuthModal,
     authToast,
-    isAuthModalOpen,
-    onCloseAuthModal,
     handleLoginSuccess,
     selectedPropertyModal,
     onCloseModal,
@@ -52,6 +49,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/owner') || pathname?.startsWith('/admin');
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password';
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A] font-sans">
@@ -80,14 +78,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Route Content */}
       <main>{children}</main>
 
-      {!isDashboard && <Footer onExploreClick={() => { }} />}
+      {!isDashboard && !isAuthPage && <Footer onExploreClick={() => { }} />}
 
       {/* Shared Modals & Drawers */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={onCloseAuthModal}
-        onLoginSuccess={handleLoginSuccess}
-      />
 
       <PropertyModal
         property={selectedPropertyModal}

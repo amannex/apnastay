@@ -123,8 +123,8 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA]">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center pt-28 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA]">
+      <div className="w-full sm:max-w-md my-auto">
         {/* Brand Icon Header */}
         <div className="flex justify-center mb-6">
           <Link href="/" className="inline-flex items-center gap-2 group">
