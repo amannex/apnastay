@@ -545,8 +545,8 @@ export default function RegisterPage() {
 
         {/* SECURITY PROMISE FOOTER */}
         <div className="mt-6 pt-6 border-t border-[#EDEDED] flex items-center justify-center gap-2 text-xs text-[#86868B]">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>Your data is encrypted and protected under Indian privacy standards.</span>
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>End-to-end encrypted · Your data and privacy are always protected.</span>
         </div>
 
         {/* LINK TO LOGIN */}

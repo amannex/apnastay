@@ -290,8 +290,8 @@ export default function LoginPage() {
 
         {/* SECURITY PROMISE FOOTER */}
         <div className="mt-6 pt-6 border-t border-[#EDEDED] flex items-center justify-center gap-2 text-xs text-[#86868B]">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>Protected by 256-bit encryption & HttpOnly secure cookies.</span>
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>End-to-end encrypted · Your data and privacy are always protected.</span>
         </div>
 
         {/* LINK TO CREATE ACCOUNT */}
