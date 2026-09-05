@@ -54,6 +54,52 @@ function getFallbackProfile(role: string = 'apnastay_tenant', name: string = 'Am
 }
 
 /**
+ * Normalizes user objects from REST endpoints to guarantee non-null fields (name, first_name, role, etc.).
+ */
+export function normalizeUserProfile(raw: any): UserProfile {
+  if (!raw) return raw;
+  const firstName = raw.first_name || (raw.name ? raw.name.split(' ')[0] : '');
+  const lastName = raw.last_name || (raw.name ? raw.name.split(' ').slice(1).join(' ') : '');
+  const name =
+    raw.name ||
+    [firstName, lastName].filter(Boolean).join(' ') ||
+    raw.display_name ||
+    (raw.email ? raw.email.split('@')[0] : 'User');
+  const rawRole = (raw.role || 'tenant').toLowerCase();
+  const normalizedRole =
+    rawRole === 'administrator' || rawRole === 'admin'
+      ? 'administrator'
+      : rawRole.startsWith('apnastay_')
+      ? rawRole
+      : `apnastay_${rawRole}`;
+
+  return {
+    ...raw,
+    id: raw.id || 0,
+    name,
+    first_name: firstName,
+    last_name: lastName,
+    display_name: raw.display_name || name,
+    email: raw.email || null,
+    phone: raw.phone || null,
+    role: normalizedRole,
+    capabilities: Array.isArray(raw.capabilities) ? raw.capabilities : [],
+    verification_status: raw.verification_status || raw.owner_verification_status || 'VERIFIED',
+    owner_verification_status: raw.owner_verification_status || raw.verification_status || 'VERIFIED',
+    email_verified: Boolean(raw.email_verified),
+    phone_verified: Boolean(raw.phone_verified),
+    profile: {
+      avatar: raw.profile?.avatar || null,
+      phone: raw.phone || raw.profile?.phone || null,
+      first_name: firstName,
+      last_name: lastName,
+      verification_status: raw.verification_status || raw.profile?.verification_status || 'VERIFIED',
+      ...(raw.profile || {})
+    }
+  };
+}
+
+/**
  * Register a new Tenant or Property Owner account.
  * Endpoint: POST /wp-json/apnastay/v1/auth/register
  */
@@ -77,7 +123,8 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthRespon
       };
     }
 
-    const profile: UserProfile = data?.user || data?.data || data;
+    const rawUser = data?.user || data?.data || data;
+    const profile: UserProfile = normalizeUserProfile(rawUser);
     return {
       success: true,
       status: res.status,
@@ -127,7 +174,8 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse<Use
       };
     }
 
-    const profile: UserProfile = data?.user || data?.data || data;
+    const rawUser = data?.user || data?.data || data;
+    const profile: UserProfile = normalizeUserProfile(rawUser);
     return {
       success: true,
       status: res.status,
@@ -192,15 +240,15 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
     }
 
     const data = await res.json();
-    const profile: UserProfile = data?.user || data?.data || data;
-    if (!profile || !profile.id || data?.authenticated === false) {
+    const rawProfile = data?.user || data?.data || data;
+    if (!rawProfile || !rawProfile.id || data?.authenticated === false) {
       if (typeof document !== 'undefined') {
         document.cookie = 'apnastay_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         document.cookie = 'apnastay_session=deleted; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       }
       return null;
     }
-    return profile;
+    return normalizeUserProfile(rawProfile);
   } catch (error) {
     return null;
   }
@@ -229,7 +277,8 @@ export async function switchRole(role: string): Promise<AuthResponse<UserProfile
       };
     }
 
-    const profile: UserProfile = data?.data || data;
+    const rawUser = data?.data || data;
+    const profile: UserProfile = normalizeUserProfile(rawUser);
     return {
       success: true,
       status: res.status,

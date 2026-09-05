@@ -31,6 +31,12 @@ export default function Navbar({
   const currentRoleObj = roles.find((r) => r.id === activeRole) || roles[0];
   const CurrentRoleIcon = currentRoleObj.icon;
 
+  const userDisplayName = currentUser
+    ? (currentUser.name || [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || currentUser.email?.split('@')[0] || 'User')
+    : 'Account';
+  const userFirstName = userDisplayName.split(' ')[0] || 'User';
+  const roleLabel = (currentRoleObj?.label || 'Account').split(' ')[0];
+
   const isActiveRoute = (path) => pathname === path;
 
   return (
@@ -143,9 +149,9 @@ export default function Navbar({
                 {currentUser ? (
                   <>
                     <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
-                    <span>{currentUser.name.split(' ')[0]}</span>
+                    <span>{userFirstName}</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold">
-                      {currentRoleObj.label.split(' ')[0]}
+                      {roleLabel}
                     </span>
                   </>
                 ) : (
@@ -153,7 +159,7 @@ export default function Navbar({
                     <User className="w-3.5 h-3.5 text-[#6B7280] shrink-0" />
                     <span>Account</span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 uppercase font-medium">
-                      {currentRoleObj.label.split(' ')[0]}
+                      {roleLabel}
                     </span>
                   </>
                 )}
@@ -166,7 +172,7 @@ export default function Navbar({
                   <div className="px-3 py-2 border-b border-[#EDEDED] mb-1">
                     {currentUser ? (
                       <>
-                        <p className="text-xs font-bold text-[#1A1A1A]">{currentUser.name}</p>
+                        <p className="text-xs font-bold text-[#1A1A1A]">{userDisplayName}</p>
                         <p className="text-[10px] text-[#6B7280] mt-0.5">{currentUser.email}</p>
                         <div className="mt-2.5 flex items-center gap-1.5">
                           <Link
@@ -285,12 +291,12 @@ export default function Navbar({
                           <User className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-[#1A1A1A]">{currentUser.name}</p>
+                          <p className="text-xs font-bold text-[#1A1A1A]">{userDisplayName}</p>
                           <p className="text-[10px] text-[#6B7280]">{currentUser.email}</p>
                         </div>
                       </div>
                       <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold shrink-0">
-                        {currentRoleObj.label.split(' ')[0]}
+                        {roleLabel}
                       </span>
                     </div>
                     <div className="mt-2.5 flex items-center gap-2">
