@@ -22,8 +22,8 @@ import {
   ExternalLink,
   Loader2,
 } from 'lucide-react';
-import { fetchSession, getSessionRole } from '../../lib/auth/session';
-import { logoutUser } from '../../features/auth/api';
+import { getSessionRole } from '../../lib/auth/session';
+import { useAuth } from '../../context/AuthContext';
 import type { UserProfile } from '../../features/auth/types';
 
 export interface TenantDashboardShellProps {
@@ -41,27 +41,21 @@ function TenantDashboardShellInner({
   const rbacBlocked = searchParams.get('rbac_blocked') === 'owner_portal';
   const wpAdminBlocked = searchParams.get('wp_admin_blocked') === '1';
 
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const { user, loading: loadingAuth, logout, authenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    fetchSession().then((profile) => {
-      const role = getSessionRole(profile);
-      if (!profile || role === 'guest') {
-        router.replace('/login?redirect=/dashboard');
-      } else if (role === 'owner') {
-        router.replace('/owner/dashboard');
-      } else {
-        setUser(profile);
-        setLoadingAuth(false);
-      }
-    });
-  }, [router]);
+    if (loadingAuth) return;
+    const role = getSessionRole(user);
+    if (!user || !authenticated || role === 'guest') {
+      router.replace('/login?redirect=' + encodeURIComponent(pathname || '/dashboard'));
+    } else if (role === 'owner') {
+      router.replace('/owner/dashboard');
+    }
+  }, [user, authenticated, loadingAuth, router, pathname]);
 
   const handleLogout = async () => {
-    await logoutUser();
-    router.replace('/login');
+    await logout();
   };
 
   const navItems = [

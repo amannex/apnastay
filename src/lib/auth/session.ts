@@ -63,7 +63,15 @@ export function getCachedSession(): UserProfile | null {
  */
 export async function clearClientSession(): Promise<void> {
   cachedSessionUser = null;
-  await logoutUser();
+  sessionFetchPromise = null;
+  try {
+    await logoutUser();
+  } finally {
+    if (typeof document !== 'undefined') {
+      document.cookie = 'apnastay_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = 'apnastay_session=deleted; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+  }
 }
 
 /**

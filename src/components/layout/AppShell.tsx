@@ -20,6 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     compareIds,
     activeRole,
     currentUser,
+    handleLogout,
     onRoleChange,
     onOpenCompare,
     onOpenWishlist,
@@ -70,6 +71,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onOpenRoleModal={onOpenRoleModal}
           onOpenAiMatchmaker={onOpenAiMatchmaker}
           onOpenAuthModal={onOpenAuthModal}
+          onLogout={handleLogout}
         />
       )}
 

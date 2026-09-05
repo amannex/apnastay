@@ -80,14 +80,22 @@ export interface UserProfile {
 }
 
 export interface RegisterPayload {
-  name: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
+  phone?: string;
   password?: string;
-  account_type: AccountType;
+  confirm_password?: string;
+  role?: 'tenant' | 'property_owner' | 'owner';
+  account_type?: AccountType;
+  terms_accepted?: boolean;
+  name?: string; // backwards compatibility
 }
 
 export interface LoginPayload {
-  email: string;
+  identifier?: string;
+  email?: string;
+  phone?: string;
   password?: string;
 }
 
@@ -103,6 +111,7 @@ export interface ResetPasswordPayload {
   key: string;
   login: string;
   password: string;
+  confirm_password?: string;
 }
 
 export interface AuthResponse<T = UserProfile> {

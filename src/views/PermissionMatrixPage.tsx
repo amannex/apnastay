@@ -64,7 +64,7 @@ export default function PermissionMatrixPage() {
               Permission Matrix & API Assertions
             </h1>
             <p className="text-xs sm:text-sm text-[#6E6E73] mt-1 max-w-2xl">
-              Real-time programmatic verification of test accounts (tenant@test.com, owner@test.com, admin@test.com) across the Phase 24 Capability Matrix and REST API security boundaries.
+              Real-time programmatic verification of ApnaStay roles (Tenant, Property Owner, Administrator) across the RBAC Capability Matrix and REST API security boundaries.
             </p>
           </div>
 

@@ -11,7 +11,12 @@ export default async function TenantLayout({ children }: { children: React.React
   const session = cookieStore.get('apnastay_session');
   const wpCookie = cookieStore.getAll().find(c => c.name.startsWith('wordpress_logged_in_'));
 
-  if (!session && !wpCookie) {
+  const isAuthenticated = Boolean(
+    (session && session.value && session.value !== 'deleted') ||
+    (wpCookie && wpCookie.value && wpCookie.value !== 'deleted')
+  );
+
+  if (!isAuthenticated) {
     redirect('/login?redirect=/dashboard');
   }
 
