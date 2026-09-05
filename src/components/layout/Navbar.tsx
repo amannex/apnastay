@@ -3,32 +3,32 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Heart, Scale, UserCheck, Shield, BarChart3, ChevronDown, Sparkles, LogIn, User, Menu, X } from 'lucide-react';
+import { Heart, Scale, UserCheck, Shield, BarChart3, ChevronDown, Sparkles, LogIn, User, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
 
 export default function Navbar({
   wishlistCount = 0,
   compareCount = 0,
   activeRole = 'tenant',
   currentUser = null as any,
-  onRoleChange,
   onOpenCompare,
   onOpenWishlist,
-  onOpenRoleModal,
   onOpenAiMatchmaker,
-  onOpenAuthModal
+  onOpenAuthModal,
+  onLogout
 }: any) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  const roles = [
-    { id: 'tenant', label: 'Tenant View', icon: UserCheck, badge: 'Book & E-Sign' },
-    { id: 'owner', label: 'Owner Portal', icon: Shield, badge: 'Zero Brokerage' },
-    { id: 'admin', label: 'Field Auditor / Admin', icon: BarChart3, badge: '25-Point Inspections' }
-  ];
-
-  const currentRoleObj = roles.find((r) => r.id === activeRole) || roles[0];
-  const CurrentRoleIcon = currentRoleObj.icon;
+  const userDisplayName = currentUser
+    ? (currentUser.name || [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || currentUser.email?.split('@')[0] || 'User')
+    : 'Account';
+  const userFirstName = userDisplayName.split(' ')[0] || 'User';
+  const roleLabel = currentUser?.role?.includes('owner')
+    ? 'Owner'
+    : currentUser?.role?.includes('admin')
+    ? 'Admin'
+    : 'Tenant';
 
   const isActiveRoute = (path) => pathname === path;
 
@@ -134,97 +134,109 @@ export default function Navbar({
             </button>
 
             {/* UNIFIED USER PROFILE & ROLE SWITCHER DROPDOWN */}
-            <div className="relative hidden md:block shrink-0">
-              <button
-                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap"
-              >
-                {currentUser ? (
-                  <>
-                    <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
-                    <span>{currentUser.name.split(' ')[0]}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold">
-                      {currentRoleObj.label.split(' ')[0]}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <User className="w-3.5 h-3.5 text-[#6B7280] shrink-0" />
-                    <span>Account</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 uppercase font-medium">
-                      {currentRoleObj.label.split(' ')[0]}
-                    </span>
-                  </>
-                )}
-                <ChevronDown className={`w-3 h-3 text-[#6B7280] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
+            {currentUser ? (
+              <div className="relative hidden md:block shrink-0">
+                <button
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap"
+                >
+                  <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
+                  <span>{userFirstName}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold">
+                    {roleLabel}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 text-[#6B7280] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-              {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-apple-lg border border-[#EDEDED] p-2 z-50 animate-slide-up">
-                  {/* Account Header */}
-                  <div className="px-3 py-2 border-b border-[#EDEDED] mb-1">
-                    {currentUser ? (
-                      <>
-                        <p className="text-xs font-bold text-[#1A1A1A]">{currentUser.name}</p>
-                        <p className="text-[10px] text-[#6B7280] mt-0.5">{currentUser.email}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-xs font-bold text-[#1A1A1A]">Welcome Guest</p>
-                        <button
-                          onClick={() => {
-                            setProfileMenuOpen(false);
-                            onOpenAuthModal?.();
-                          }}
-                          className="mt-2 w-full text-center py-1.5 rounded-lg bg-[#E1224D] text-white text-[11px] font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
-                        >
-                          Sign In / Register
-                        </button>
-                      </>
-                    )}
-                  </div>
+                {profileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-apple-lg border border-[#EDEDED] p-2 z-50 animate-slide-up">
+                    {/* Account Header */}
+                    <div className="px-3 py-2.5 border-b border-[#EDEDED] mb-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-bold text-[#1A1A1A] truncate">{userDisplayName}</p>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold tracking-wide shrink-0">
+                          {roleLabel}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-[#6B7280] truncate">{currentUser.email}</p>
+                    </div>
 
-                  {/* Role Switcher Section */}
-                  <div className="px-3 py-1.5">
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-[#6B7280] mb-1">
-                      Choose View / Role
-                    </p>
-                  </div>
+                    {/* Navigation Links based on real authenticated role */}
+                    <div className="py-1 space-y-0.5">
+                      {currentUser?.role?.includes('owner') ? (
+                        <>
+                          <Link
+                            href="/owner/dashboard"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
+                          >
+                            <LayoutDashboard className="w-4 h-4 text-[#6B7280]" />
+                            <span>Owner Dashboard</span>
+                          </Link>
+                          <Link
+                            href="/owner/dashboard/properties"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
+                          >
+                            <Shield className="w-4 h-4 text-[#6B7280]" />
+                            <span>My Properties</span>
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
+                          >
+                            <LayoutDashboard className="w-4 h-4 text-[#6B7280]" />
+                            <span>Tenant Dashboard</span>
+                          </Link>
+                          <Link
+                            href="/favorites"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
+                          >
+                            <Heart className="w-4 h-4 text-[#6B7280]" />
+                            <span>Saved Wishlist</span>
+                          </Link>
+                          <Link
+                            href="/my-visits"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
+                          >
+                            <UserCheck className="w-4 h-4 text-[#6B7280]" />
+                            <span>Scheduled Visits</span>
+                          </Link>
+                        </>
+                      )}
+                    </div>
 
-                  {roles.map((role) => {
-                    const Icon = role.icon;
-                    const isActive = role.id === activeRole;
-                    return (
+                    {/* Logout Action */}
+                    <div className="pt-1 mt-1 border-t border-[#EDEDED]">
                       <button
-                        key={role.id}
                         onClick={() => {
-                          onRoleChange(role.id);
                           setProfileMenuOpen(false);
-                          onOpenRoleModal(role.id);
+                          onLogout?.();
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs font-medium transition-colors ${isActive
-                            ? 'bg-rose-50 text-[#E1224D] font-semibold'
-                            : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                          }`}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#E1224D] hover:bg-rose-50 transition-colors"
                       >
-                        <div className="flex items-center gap-2.5">
-                          <Icon className={`w-4 h-4 ${isActive ? 'text-[#E1224D]' : 'text-[#6B7280]'}`} />
-                          <div>
-                            <p className="font-semibold">{role.label}</p>
-                            <p className="text-[10px] text-[#6B7280]">{role.badge}</p>
-                          </div>
-                        </div>
-                        {isActive && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white border border-[#EDEDED] text-[#E1224D] font-medium">
-                            Active
-                          </span>
-                        )}
+                        <LogOut className="w-4 h-4 text-[#E1224D]" />
+                        <span>Logout</span>
                       </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden md:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs font-semibold transition-all shadow-sm shrink-0 whitespace-nowrap"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In / Register</span>
+              </Link>
+            )}
 
             {/* MOBILE HAMBURGER MENU ICON (md:hidden) */}
             <button
@@ -256,30 +268,49 @@ export default function Navbar({
               {/* Mobile Account Profile or Login */}
               <div className="px-2 py-3 border-b border-[#EDEDED]">
                 {currentUser ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-[#E1224D]">
-                        <User className="w-4 h-4" />
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-[#E1224D]">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#1A1A1A]">{userDisplayName}</p>
+                          <p className="text-[10px] text-[#6B7280]">{currentUser.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-[#1A1A1A]">{currentUser.name}</p>
-                        <p className="text-[10px] text-[#6B7280]">{currentUser.email}</p>
-                      </div>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold shrink-0">
+                        {roleLabel}
+                      </span>
                     </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold shrink-0">
-                      {currentRoleObj.label.split(' ')[0]}
-                    </span>
+                    <div className="mt-2.5 flex items-center gap-2">
+                      <Link
+                        href={currentUser?.role?.includes('owner') ? '/owner/dashboard' : '/dashboard'}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex-1 text-center py-2 rounded-xl bg-gray-100 text-xs font-semibold text-[#1A1A1A] hover:bg-gray-200 transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          onLogout?.();
+                        }}
+                        className="px-3 py-2 rounded-xl bg-rose-50 text-xs font-semibold text-[#E1224D] hover:bg-rose-100 transition-colors"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenAuthModal?.();
-                    }}
-                    className="w-full py-2 rounded-xl bg-[#E1224D] text-white text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#E1224D] text-white text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors text-center"
                   >
-                    Sign In / Register
-                  </button>
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Sign In / Register</span>
+                  </Link>
                 )}
               </div>
 
@@ -374,20 +405,6 @@ export default function Navbar({
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>AI Matchmaker</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenRoleModal(activeRole);
-                  }}
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#FAFAFA] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A]"
-                >
-                  <div className="flex items-center gap-2">
-                    <CurrentRoleIcon className="w-4 h-4 text-[#E1224D]" />
-                    <span>View: {currentRoleObj.label}</span>
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#6B7280]" />
                 </button>
               </div>
             </div>

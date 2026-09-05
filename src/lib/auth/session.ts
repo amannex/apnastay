@@ -63,7 +63,15 @@ export function getCachedSession(): UserProfile | null {
  */
 export async function clearClientSession(): Promise<void> {
   cachedSessionUser = null;
-  await logoutUser();
+  sessionFetchPromise = null;
+  try {
+    await logoutUser();
+  } finally {
+    if (typeof document !== 'undefined') {
+      document.cookie = 'apnastay_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = 'apnastay_session=deleted; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
+  }
 }
 
 /**
@@ -71,7 +79,11 @@ export async function clearClientSession(): Promise<void> {
  */
 export function getSessionRole(user: UserProfile | null | undefined): string {
   if (!user || !user.role) return 'guest';
-  return user.role.toLowerCase().replace(/^apnastay_/, '');
+  const clean = user.role.toLowerCase().replace(/^apnastay_/, '');
+  if (clean === 'owner' || clean === 'property_owner') return 'owner';
+  if (clean === 'admin' || clean === 'administrator') return 'administrator';
+  if (clean === 'tenant') return 'tenant';
+  return clean;
 }
 
 /**
@@ -85,16 +97,16 @@ export function isSessionVerified(user: UserProfile | null | undefined): boolean
 /**
  * Calculates the role-aware destination URL after login or registration.
  *
- * TENANT  → /dashboard
+ * TENANT  → /properties
  * OWNER   → /owner/dashboard
  * ADMIN   → WordPress /wp-admin/
- * Guest   → /login?redirect=/dashboard
+ * Guest   → /login?redirect=/properties
  */
 export function getRoleRedirectUrl(user: UserProfile | null | undefined, customRedirect?: string | null): string {
   const role = getSessionRole(user);
 
   if (!user || role === 'guest') {
-    const target = customRedirect && customRedirect.startsWith('/') ? customRedirect : '/dashboard';
+    const target = customRedirect && customRedirect.startsWith('/') ? customRedirect : '/properties';
     return `/login?redirect=${encodeURIComponent(target)}`;
   }
 
@@ -103,10 +115,22 @@ export function getRoleRedirectUrl(user: UserProfile | null | undefined, customR
     if (role === 'administrator' || role === 'admin') {
       return customRedirect;
     }
-    if (role === 'owner' && (customRedirect.startsWith('/owner') || customRedirect.startsWith('/dashboard'))) {
-      return customRedirect;
+    if (role === 'owner') {
+      if (customRedirect.startsWith('/owner') || customRedirect.startsWith('/dashboard')) {
+        return customRedirect;
+      }
+      return '/owner/dashboard';
     }
-    if (role === 'tenant' && customRedirect.startsWith('/dashboard') && !customRedirect.startsWith('/owner')) {
+    if (role === 'tenant') {
+      // Disallow owners paths for tenants
+      if (customRedirect.startsWith('/owner')) {
+        return '/properties';
+      }
+      // If the redirect was generic '/' or default '/dashboard', direct tenant to /properties
+      if (customRedirect === '/' || customRedirect === '/dashboard') {
+        return '/properties';
+      }
+      // Specific tenant deep links (e.g. /favorites, /dashboard/wishlist, /dashboard/profile) are preserved
       return customRedirect;
     }
   }
@@ -119,7 +143,8 @@ export function getRoleRedirectUrl(user: UserProfile | null | undefined, customR
     return '/owner/dashboard';
   }
 
-  return '/dashboard';
+  // Tenant / general user default
+  return '/properties';
 }
 
 /**

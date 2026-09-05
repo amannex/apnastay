@@ -2,9 +2,12 @@
 /* eslint-disable */
 
 import React, { createContext, useContext, useState, useMemo, useEffect, useRef, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { STATIC_PROPERTIES, STATIC_CITIES } from '../data/staticProperties';
 import type { Property, City } from '../types';
 import { handleRoleRedirect } from '../lib/auth/session';
+import { useAuth } from './AuthContext';
+import type { UserProfile, LoginPayload, RegisterPayload, AuthResponse } from '../features/auth/types';
 
 export interface SearchFilters {
   cities: City[];
@@ -24,7 +27,16 @@ export interface AppContextType {
   activeRole: string;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
-  currentUser: any;
+  user: UserProfile | null;
+  authenticated: boolean;
+  loading: boolean;
+  login: (payload: LoginPayload) => Promise<AuthResponse<UserProfile>>;
+  register: (payload: RegisterPayload) => Promise<AuthResponse<UserProfile>>;
+  logout: () => Promise<void>;
+  refreshUser: (force?: boolean) => Promise<UserProfile | null>;
+  currentUser: UserProfile | null;
+  isAuthLoading: boolean;
+  handleLogout: () => Promise<void>;
   [key: string]: any;
   onRoleChange: (role: string) => void;
   onToggleWishlist: (id: string) => void;
@@ -37,7 +49,6 @@ export interface AppContextType {
   onOpenWishlist: () => void;
   onOpenModal: (prop: Property | null) => void;
   onOpenAiMatchmaker: () => void;
-  onOpenRoleModal: () => void;
   onOpenAuthModal: () => void;
   comparePropertiesList: Property[];
   wishlistPropertiesList: Property[];
@@ -45,7 +56,6 @@ export interface AppContextType {
   isAiMatchmakerOpen: boolean;
   isCompareOpen: boolean;
   isWishlistOpen: boolean;
-  isRoleModalOpen: boolean;
   isAuthModalOpen: boolean;
   bookingConfirmation: Property | null;
   authToast: string | null;
@@ -53,16 +63,16 @@ export interface AppContextType {
   onCloseAiMatchmaker: () => void;
   onCloseCompare: () => void;
   onCloseWishlist: () => void;
-  onCloseRoleModal: () => void;
   onCloseAuthModal: () => void;
   onBookVisit: (prop: Property | null) => void;
   onCloseBookingConfirmation: () => void;
-  handleLoginSuccess: (user: any) => void;
+  handleLoginSuccess: (user: any, customRedirect?: string | null, router?: any) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [selectedCity, setSelectedCity] = useState('all');
   const [maxPrice, setMaxPrice] = useState(50000);
   const [roomType, setRoomType] = useState('all');
@@ -95,13 +105,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [compareIds, setCompareIds] = useState<string[]>(['prop-101', 'prop-102']);
   const [activeRole, setActiveRole] = useState('tenant');
-  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Consume centralized authentication state from AuthContext
+  const {
+    user,
+    authenticated,
+    loading: isAuthLoading,
+    login,
+    register,
+    logout,
+    refreshUser
+  } = useAuth();
+
+  // Synchronize active role whenever centralized user profile updates
+  useEffect(() => {
+    if (user && user.role) {
+      const cleanRole = user.role.toLowerCase().replace(/^apnastay_/, '');
+      setActiveRole(cleanRole);
+    } else {
+      setActiveRole('tenant');
+    }
+  }, [user]);
 
   const [selectedPropertyModal, setSelectedPropertyModal] = useState<Property | null>(null);
   const [isAiMatchmakerOpen, setIsAiMatchmakerOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [bookingConfirmation, setBookingConfirmation] = useState<Property | null>(null);
   const [authToast, setAuthToast] = useState<string | null>(null);
@@ -154,12 +183,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRoomType('all');
   };
 
-  const handleLoginSuccess = (user: any) => {
-    setCurrentUser(user);
-    setActiveRole(user.role || 'tenant');
-    setAuthToast(`Logged in as ${user.name} (${user.roleTitle || user.role})`);
+  const handleLoginSuccess = (loggedInUser: any, customRedirect?: string | null, router?: any) => {
+    setActiveRole(loggedInUser.role || 'tenant');
+    setAuthToast(`Logged in as ${loggedInUser.name} (${loggedInUser.roleTitle || loggedInUser.role})`);
     setTimeout(() => setAuthToast(null), 4000);
-    handleRoleRedirect(user);
+    handleRoleRedirect(loggedInUser, customRedirect, router);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setAuthToast('Logged out successfully.');
+    setTimeout(() => setAuthToast(null), 3000);
   };
 
   const comparePropertiesList = useMemo(() => {
@@ -194,7 +228,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     wishlistIds,
     compareIds,
     activeRole,
-    currentUser,
+    user,
+    authenticated,
+    loading: isAuthLoading,
+    login,
+    register,
+    logout: handleLogout,
+    refreshUser,
+    currentUser: user,
     onRoleChange: setActiveRole,
     onToggleWishlist: handleToggleWishlist,
     onClearWishlist: handleClearWishlist,
@@ -206,27 +247,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     onOpenWishlist: () => setIsWishlistOpen(true),
     onOpenModal: (prop) => setSelectedPropertyModal(prop),
     onOpenAiMatchmaker: () => setIsAiMatchmakerOpen(true),
-    onOpenRoleModal: () => setIsRoleModalOpen(true),
-    onOpenAuthModal: () => setIsAuthModalOpen(true),
+    onOpenAuthModal: () => router.push('/login'),
     comparePropertiesList,
     wishlistPropertiesList,
     selectedPropertyModal,
     isAiMatchmakerOpen,
     isCompareOpen,
     isWishlistOpen,
-    isRoleModalOpen,
-    isAuthModalOpen,
+    isAuthModalOpen: false,
     bookingConfirmation,
     authToast,
     onCloseModal: () => setSelectedPropertyModal(null),
     onCloseAiMatchmaker: () => setIsAiMatchmakerOpen(false),
     onCloseCompare: () => setIsCompareOpen(false),
     onCloseWishlist: () => setIsWishlistOpen(false),
-    onCloseRoleModal: () => setIsRoleModalOpen(false),
-    onCloseAuthModal: () => setIsAuthModalOpen(false),
+    onCloseAuthModal: () => {},
     onBookVisit: (prop) => setBookingConfirmation(prop),
     onCloseBookingConfirmation: () => setBookingConfirmation(null),
-    handleLoginSuccess
+    handleLoginSuccess,
+    isAuthLoading,
+    handleLogout
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

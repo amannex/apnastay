@@ -3,6 +3,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import '../styles/index.css';
 import { AppProvider } from '../context/AppContext';
+import { AuthProvider } from '../context/AuthContext';
 import AppShell from '../components/layout/AppShell';
 
 export const metadata: Metadata = {
@@ -117,9 +118,11 @@ export default function RootLayout({
         className="min-h-screen bg-white text-[#1A1A1A] font-sans antialiased"
         suppressHydrationWarning
       >
-        <AppProvider>
-          <AppShell>{children}</AppShell>
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider>
+            <AppShell>{children}</AppShell>
+          </AppProvider>
+        </AuthProvider>
       </body>
     </html>
   );

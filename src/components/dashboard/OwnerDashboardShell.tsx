@@ -23,8 +23,8 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { fetchSession, getSessionRole } from '../../lib/auth/session';
-import { logoutUser } from '../../features/auth/api';
+import { getSessionRole } from '../../lib/auth/session';
+import { useAuth } from '../../context/AuthContext';
 import { getOwnerVerificationStatus } from '../../features/auth/permissions';
 import type { UserProfile } from '../../features/auth/types';
 
@@ -43,34 +43,27 @@ function OwnerDashboardShellInner({
   const rbacBlocked = searchParams.get('rbac_blocked') === 'tenant_portal';
   const wpAdminBlocked = searchParams.get('wp_admin_blocked') === '1';
 
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const { user, loading: loadingAuth, logout, authenticated } = useAuth();
   const [isTenantForbidden, setIsTenantForbidden] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    fetchSession().then((profile) => {
-      const role = getSessionRole(profile);
-      if (!profile || role === 'guest') {
-        router.replace('/login?redirect=/owner/dashboard');
-      } else if (role === 'tenant') {
-        // TENANT -> /owner/dashboard MUST return redirect/forbidden!
-        setIsTenantForbidden(true);
-        setLoadingAuth(false);
-        // Automatically redirect to /dashboard?rbac_blocked=owner_portal after a brief moment
-        setTimeout(() => {
-          router.replace('/dashboard?rbac_blocked=owner_portal');
-        }, 1200);
-      } else {
-        setUser(profile);
-        setLoadingAuth(false);
-      }
-    });
-  }, [router]);
+    if (loadingAuth) return;
+    const role = getSessionRole(user);
+    if (!user || !authenticated || role === 'guest') {
+      router.replace('/login?redirect=' + encodeURIComponent(pathname || '/owner/dashboard'));
+    } else if (role === 'tenant') {
+      // TENANT -> /owner/dashboard MUST return redirect/forbidden!
+      setIsTenantForbidden(true);
+      // Automatically redirect to /dashboard?rbac_blocked=owner_portal after a brief moment
+      setTimeout(() => {
+        router.replace('/dashboard?rbac_blocked=owner_portal');
+      }, 1200);
+    }
+  }, [user, authenticated, loadingAuth, router, pathname]);
 
   const handleLogout = async () => {
-    await logoutUser();
-    router.replace('/login');
+    await logout();
   };
 
   const navItems = [
@@ -225,26 +218,6 @@ function OwnerDashboardShellInner({
               );
             })}
           </nav>
-
-          {/* SECURITY PROOF CARD */}
-          <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-[#F5F5F7] to-white border border-[#EDEDED]">
-            <div className="flex items-center gap-2 text-[#1D1D1F] font-extrabold text-xs mb-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>RBAC Isolation Proof</span>
-            </div>
-            <p className="text-[11px] text-[#6E6E73] leading-relaxed mb-3">
-              Only verified owners can access this portal. Tenants are automatically intercepted with 403 Forbidden.
-            </p>
-            <button
-              onClick={() => {
-                router.push('/dashboard');
-              }}
-              className="w-full py-2 px-3 rounded-xl bg-[#F5F5F7] hover:bg-[#EDEDED] text-[#1D1D1F] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all"
-            >
-              <span>Test Tenant Route (/dashboard)</span>
-              <ExternalLink className="w-3 h-3" />
-            </button>
-          </div>
         </div>
 
         {/* BOTTOM LOGOUT BUTTON */}

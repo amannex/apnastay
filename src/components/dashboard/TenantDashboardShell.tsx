@@ -22,8 +22,8 @@ import {
   ExternalLink,
   Loader2,
 } from 'lucide-react';
-import { fetchSession, getSessionRole } from '../../lib/auth/session';
-import { logoutUser } from '../../features/auth/api';
+import { getSessionRole } from '../../lib/auth/session';
+import { useAuth } from '../../context/AuthContext';
 import type { UserProfile } from '../../features/auth/types';
 
 export interface TenantDashboardShellProps {
@@ -41,27 +41,23 @@ function TenantDashboardShellInner({
   const rbacBlocked = searchParams.get('rbac_blocked') === 'owner_portal';
   const wpAdminBlocked = searchParams.get('wp_admin_blocked') === '1';
 
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const { user, loading: loadingAuth, logout, authenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isOwnerBlocked, setIsOwnerBlocked] = useState(false);
 
   useEffect(() => {
-    fetchSession().then((profile) => {
-      const role = getSessionRole(profile);
-      if (!profile || role === 'guest') {
-        router.replace('/login?redirect=/dashboard');
-      } else if (role === 'owner') {
-        router.replace('/owner/dashboard');
-      } else {
-        setUser(profile);
-        setLoadingAuth(false);
-      }
-    });
-  }, [router]);
+    if (loadingAuth) return;
+    const role = getSessionRole(user);
+    if (!user || !authenticated || role === 'guest') {
+      router.replace('/login?redirect=' + encodeURIComponent(pathname || '/dashboard'));
+    } else if (role === 'owner') {
+      setIsOwnerBlocked(true);
+      router.replace('/owner/dashboard');
+    }
+  }, [user, authenticated, loadingAuth, router, pathname]);
 
   const handleLogout = async () => {
-    await logoutUser();
-    router.replace('/login');
+    await logout();
   };
 
   const navItems = [
@@ -76,12 +72,12 @@ function TenantDashboardShellInner({
     { name: 'Profile', href: '/dashboard/profile', icon: User, slug: 'profile' },
   ];
 
-  if (loadingAuth) {
+  if (loadingAuth || isOwnerBlocked) {
     return (
       <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center bg-[#FAFAFA] gap-3">
         <Loader2 className="w-7 h-7 text-[#1D1D1F] animate-spin" />
         <span className="text-xs font-semibold uppercase tracking-wider text-[#86868B]">
-          Verifying Tenant Session & RBAC...
+          {isOwnerBlocked ? 'Redirecting to Owner Dashboard...' : 'Verifying Tenant Session & RBAC...'}
         </span>
       </div>
     );
@@ -177,26 +173,6 @@ function TenantDashboardShellInner({
               );
             })}
           </nav>
-
-          {/* SECURITY PROOF CARD */}
-          <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-200/60">
-            <div className="flex items-center gap-2 text-rose-800 font-extrabold text-xs mb-1">
-              <ShieldAlert className="w-4 h-4 text-rose-600" />
-              <span>RBAC Security Proof</span>
-            </div>
-            <p className="text-[11px] text-rose-700/90 leading-relaxed mb-3">
-              Tenants are restricted from accessing Owner routes. Test the security boundary below:
-            </p>
-            <button
-              onClick={() => {
-                router.push('/owner/dashboard');
-              }}
-              className="w-full py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 shadow-sm transition-all"
-            >
-              <span>Test Access /owner</span>
-              <ExternalLink className="w-3 h-3" />
-            </button>
-          </div>
         </div>
 
         {/* BOTTOM LOGOUT BUTTON */}

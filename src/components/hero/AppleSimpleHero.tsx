@@ -3,14 +3,37 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, ArrowRight, Sparkles, Key, CheckCircle2 } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function AppleSimpleHero() {
+  const { scrollY } = useScroll();
+
+  // Calculate different parallax speeds based on raw pixel scroll
+  const yBgSlow = useTransform(scrollY, [0, 600], [0, 100]);
+  const yBgMedium = useTransform(scrollY, [0, 600], [0, -150]);
+  const yBgFast = useTransform(scrollY, [0, 600], [0, -250]);
+  const opacityFade = useTransform(scrollY, [0, 450], [1, 0]);
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#FAFAFA]/40 to-white pt-32 pb-10 sm:pt-36 sm:pb-14 lg:pt-44 lg:pb-16">
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#FAFAFA]/40 to-white pt-32 pb-10 sm:pt-36 sm:pb-14 lg:pt-44 lg:pb-16 min-h-[80vh] flex items-center justify-center">
+      {/* 3D Parallax Floating Blur Blobs */}
+      <motion.div
+        style={{ y: yBgSlow, opacity: opacityFade }}
+        className="absolute top-10 left-10 w-[350px] h-[350px] bg-[#E1224D]/8 rounded-full blur-[80px] pointer-events-none -z-10"
+      />
+      <motion.div
+        style={{ y: yBgMedium, opacity: opacityFade }}
+        className="absolute top-20 right-10 w-[450px] h-[450px] bg-[#E1224D]/5 rounded-full blur-[100px] pointer-events-none -z-10"
+      />
+      <motion.div
+        style={{ y: yBgFast, opacity: opacityFade }}
+        className="absolute bottom-5 left-1/3 w-[300px] h-[300px] bg-blue-500/8 rounded-full blur-[90px] pointer-events-none -z-10"
+      />
+
       {/* Subtle Apple-style Top Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-b from-[#E1224D]/5 via-[#E1224D]/3 to-transparent blur-3xl pointer-events-none -z-10" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         {/* Apple Segment Pill Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#EDEDED] shadow-sm hover:border-[#D1D5DB] transition-all mb-6 sm:mb-8 group">
           <span className="w-2 h-2 rounded-full bg-[#E1224D] animate-pulse" />

@@ -1,16 +1,15 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { useApp } from '../../context/AppContext';
-import AuthModal from '../auth/AuthModal';
 import PropertyModal from '../properties/PropertyModal';
 import AiMatchmakerModal from '../ai/AiMatchmakerModal';
 import CompareDrawer from '../properties/CompareDrawer';
 import WishlistDrawer from '../properties/WishlistDrawer';
-import RoleDashboardModal from '../dashboard/RoleDashboardModal';
 import { STATIC_CITIES, STATIC_PROPERTIES } from '../../data/staticProperties';
 import { CheckCircle2, Key, X } from 'lucide-react';
 
@@ -20,15 +19,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     compareIds,
     activeRole,
     currentUser,
+    handleLogout,
     onRoleChange,
     onOpenCompare,
     onOpenWishlist,
-    onOpenRoleModal,
     onOpenAiMatchmaker,
     onOpenAuthModal,
     authToast,
-    isAuthModalOpen,
-    onCloseAuthModal,
     handleLoginSuccess,
     selectedPropertyModal,
     onCloseModal,
@@ -47,30 +44,44 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     onRemoveCompare,
     onClearCompare,
     onSelectForCompare,
-    isRoleModalOpen,
-    onCloseRoleModal,
     bookingConfirmation,
     onCloseBookingConfirmation
   } = useApp();
 
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/owner') || pathname?.startsWith('/admin');
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password';
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A] font-sans">
-      {!isDashboard && (
+      {!isDashboard && !isAuthPage && (
         <Navbar
           wishlistCount={wishlistIds.length}
           compareCount={compareIds.length}
           activeRole={activeRole}
           currentUser={currentUser}
-          onRoleChange={onRoleChange}
           onOpenCompare={onOpenCompare}
           onOpenWishlist={onOpenWishlist}
-          onOpenRoleModal={onOpenRoleModal}
           onOpenAiMatchmaker={onOpenAiMatchmaker}
           onOpenAuthModal={onOpenAuthModal}
+          onLogout={handleLogout}
         />
+      )}
+
+      {/* Auth Pages Minimal Header: Logo at top-left */}
+      {isAuthPage && (
+        <header className="absolute top-0 left-0 w-full p-4 sm:p-6 z-50 flex items-center">
+          <Link href="/" className="inline-flex items-center gap-2.5 group transition-transform">
+            <img
+              src="/logo-icon.png"
+              alt="ApnaStay Logo"
+              className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+            />
+            <span className="font-gotham-black text-xl tracking-tighter text-[#1A1A1A]">
+              ApnaStay<span className="text-[#E1224D]">.</span>
+            </span>
+          </Link>
+        </header>
       )}
 
       {/* Auth Celebration Toast */}
@@ -84,14 +95,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Route Content */}
       <main>{children}</main>
 
-      {!isDashboard && <Footer onExploreClick={() => { }} />}
+      {!isDashboard && !isAuthPage && <Footer onExploreClick={() => { }} />}
 
       {/* Shared Modals & Drawers */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={onCloseAuthModal}
-        onLoginSuccess={handleLoginSuccess}
-      />
 
       <PropertyModal
         property={selectedPropertyModal}
@@ -127,13 +133,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onOpenModal={onOpenModal}
         onOpenCompare={onOpenCompare}
         onSelectForCompare={onSelectForCompare}
-      />
-
-      <RoleDashboardModal
-        isOpen={isRoleModalOpen}
-        onClose={onCloseRoleModal}
-        activeRole={activeRole}
-        onRoleSelect={onRoleChange}
       />
 
       {/* Booking Confirmation Dialog */}
