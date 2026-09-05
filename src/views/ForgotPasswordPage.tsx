@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Mail, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, KeyRound, ShieldCheck } from 'lucide-react';
 import { forgotPassword } from '@/features/auth/api';
 
@@ -50,26 +49,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center pt-28 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA]">
+    <div className="min-h-screen flex flex-col items-center justify-center pt-20 sm:pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA]">
       <div className="w-full sm:max-w-md my-auto">
-        {/* Brand Icon Header */}
-        <div className="flex justify-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="w-12 h-12 rounded-2xl bg-[#1D1D1F] flex items-center justify-center shadow-apple-sm group-hover:scale-105 transition-transform overflow-hidden">
-              <Image
-                src="/icon.png"
-                alt="ApnaStay Logo"
-                width={36}
-                height={36}
-                className="object-contain"
-              />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-[#1D1D1F]">
-              Apna<span className="text-[#E1224D]">Stay</span>
-            </span>
-          </Link>
-        </div>
-
         {/* Main Card */}
         <div className="bg-white py-8 px-6 sm:px-10 rounded-3xl shadow-apple-sm border border-[#E5E5EA] transition-all">
           {!isSubmitted ? (

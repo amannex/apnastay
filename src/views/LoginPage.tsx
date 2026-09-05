@@ -163,7 +163,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#F5F5F7] via-white to-[#F5F5F7] flex flex-col items-center justify-center pt-28 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gradient-to-b from-[#F5F5F7] via-white to-[#F5F5F7] flex flex-col items-center justify-center pt-20 sm:pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-apple-lg border border-[#EDEDED] p-8 sm:p-10 transition-all my-auto">
         {/* HEADER */}
         <div className="text-center mb-8">
