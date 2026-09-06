@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { PropertyType, RentalStructure } from '../../types';
 import { getPropertyTemplate } from '../../templates';
+import HybridMapPicker, { DetectedAddressComponents } from './HybridMapPicker';
 
 export interface LocationFormData {
   addressLine1: string;
@@ -98,6 +99,9 @@ export default function StepLocation({
   const [hideExactAddress, setHideExactAddress] = useState<boolean>(
     initialValues?.hideExactAddress ?? false
   );
+
+  // Interactive Map State
+  const [showMap, setShowMap] = useState<boolean>(true);
 
   // Advanced Coordinates (Optional / Future map support)
   const [showCoordinates, setShowCoordinates] = useState<boolean>(
@@ -236,6 +240,28 @@ export default function StepLocation({
     }
   };
 
+  const handleAddressDetected = (detected: DetectedAddressComponents) => {
+    if (detected.locality) {
+      setLocality(detected.locality);
+      if (errors.locality) setErrors((prev) => ({ ...prev, locality: undefined }));
+    }
+    if (detected.city) {
+      setCity(detected.city);
+      if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
+    }
+    if (detected.state) {
+      setState(detected.state);
+      if (errors.state) setErrors((prev) => ({ ...prev, state: undefined }));
+    }
+    if (detected.pincode) {
+      const cleaned = detected.pincode.replace(/[^0-9]/g, '');
+      if (cleaned.length === 6) {
+        setPincode(cleaned);
+        if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: undefined }));
+      }
+    }
+  };
+
   const handleBackClick = () => {
     onBack(getCurrentFormData());
   };
@@ -275,6 +301,39 @@ export default function StepLocation({
       </div>
 
       <div className="space-y-6">
+        {/* 0. INTERACTIVE HYBRID MAP PICKER (OPENSTREETMAP + GOOGLE MAPS) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#1D1D1F] flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span>Interactive Map & GPS Pin Drop</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowMap(!showMap)}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              {showMap ? 'Hide Map' : 'Show Map'}
+            </button>
+          </div>
+
+          {showMap && (
+            <HybridMapPicker
+              initialLatitude={latitude ? parseFloat(latitude) : undefined}
+              initialLongitude={longitude ? parseFloat(longitude) : undefined}
+              onCoordinatesChange={(newLat, newLng) => {
+                setLatitude(String(newLat));
+                setLongitude(String(newLng));
+                setShowCoordinates(true);
+                if (errors.coordinates) setErrors((prev) => ({ ...prev, coordinates: undefined }));
+              }}
+              onAddressDetected={handleAddressDetected}
+              cityHint={city}
+              localityHint={locality}
+            />
+          )}
+        </div>
+
         {/* 1. ADDRESS LINE 1 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">

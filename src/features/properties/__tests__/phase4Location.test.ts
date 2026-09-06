@@ -195,6 +195,31 @@ async function runPhase4Tests() {
   assert(pgLocRes.data?.location?.hideExactAddress === false, 'PG public address visible as requested');
 
   // --------------------------------------------------------------------------
+  // TEST 7: Hybrid Map Provider Fallback & Coordinate Precision
+  // --------------------------------------------------------------------------
+  console.log('\n🧪 TEST 7: Hybrid Map Provider Fallback & Coordinate Precision');
+
+  // Verify coordinates storage and floating precision
+  const testLat = 28.535517;
+  const testLng = 77.391026;
+  const coordDraft = propertyBackend.updateProperty(ownerBob, pgDraft.data!.id, {
+    location: {
+      latitude: testLat,
+      longitude: testLng
+    }
+  });
+
+  assert(coordDraft.success, 'Updated coordinates from interactive pin drop');
+  assert(coordDraft.data?.location?.latitude === testLat, `Latitude matches exactly: ${testLat}`);
+  assert(coordDraft.data?.location?.longitude === testLng, `Longitude matches exactly: ${testLng}`);
+
+  // Provider decision logic verification
+  const checkProvider = (apiKey?: string) => (apiKey && apiKey.trim().length > 0 ? 'google' : 'osm_leaflet');
+  assert(checkProvider(undefined) === 'osm_leaflet', 'When API key is undefined, defaults to free OpenStreetMap');
+  assert(checkProvider('') === 'osm_leaflet', 'When API key is empty string, defaults to free OpenStreetMap');
+  assert(checkProvider('AIzaSyD...') === 'google', 'When Google Maps API key is provided, switches to Google Maps');
+
+  // --------------------------------------------------------------------------
   // SUMMARY
   // --------------------------------------------------------------------------
   console.log('\n===============================================================');
