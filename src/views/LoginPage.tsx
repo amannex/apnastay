@@ -16,6 +16,7 @@ import {
 import { handleRoleRedirect } from '../lib/auth/session';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import AuthVectorIllustration from '../components/auth/AuthVectorIllustration';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -310,27 +311,17 @@ export default function LoginPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* RIGHT HALF: SEAMLESS ARTWORK (FEATHERED EDGES BLENDED TO BACKGROUND)     */}
+      {/* RIGHT HALF: TRANSPARENT VECTOR ILLUSTRATION WITH MICRO-ANIMATIONS        */}
       {/* ========================================================================= */}
-      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen relative overflow-hidden bg-gradient-to-br from-[#FAF8F5] via-[#FCFBF9] to-[#F7F3EC] border-l border-gray-100/80 items-center justify-center p-8 lg:p-12 xl:p-16">
+      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen relative overflow-hidden bg-[#FAFAF9] border-l border-gray-100 items-center justify-center p-8 lg:p-12 xl:p-16">
         
-        {/* Soft Ambient Warm Glows */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-rose-100/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-amber-100/30 rounded-full blur-3xl pointer-events-none" />
+        {/* Subtle Ambient Light Glows */}
+        <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-rose-100/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-amber-100/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* The Illustration: Edges feathered & blended directly into background */}
-        <div className="relative z-10 w-full max-w-md xl:max-w-lg flex items-center justify-center">
-          <div className="relative w-[380px] h-[380px] xl:w-[480px] xl:h-[480px] max-w-full">
-            <img
-              src="/auth-vector-art.jpg"
-              alt="Person entering modern room illustration"
-              style={{
-                WebkitMaskImage: 'radial-gradient(ellipse closest-side at center, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 98%)',
-                maskImage: 'radial-gradient(ellipse closest-side at center, rgba(0, 0, 0, 1) 58%, rgba(0, 0, 0, 0) 98%)',
-              }}
-              className="w-full h-full object-contain pointer-events-none select-none"
-            />
-          </div>
+        {/* The Vector Illustration: 100% transparent, no image background, subtle floating & NFC pulse animation */}
+        <div className="relative z-10 flex items-center justify-center">
+          <AuthVectorIllustration />
         </div>
 
       </div>
