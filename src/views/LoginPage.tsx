@@ -153,9 +153,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white text-[#1A1A1A] flex flex-col lg:flex-row selection:bg-[#E1224D]/15 selection:text-[#E1224D]">
       
       {/* ========================================================================= */}
-      {/* LEFT HALF: MINIMAL, CLEAN CANVAS (NO CARD BOX, NO MULTI-STEP)             */}
+      {/* LEFT 60%: MINIMAL, CLEAN CANVAS (NO CARD BOX, NO MULTI-STEP)              */}
       {/* ========================================================================= */}
-      <div className="w-full lg:w-[46%] xl:w-[42%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-14 xl:p-20 z-10">
+      <div className="w-full lg:w-[60%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-16 xl:p-24 z-10">
         
         {/* Top: Logo */}
         <Link href="/" className="inline-flex items-center gap-2.5 group w-fit transition-transform">
@@ -310,9 +310,9 @@ export default function LoginPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* RIGHT HALF: FULL-BLEED BACKGROUND (DIRECTLY ON BG, NO CARD FRAMING)      */}
+      {/* RIGHT 40%: FULL-BLEED BACKGROUND (DIRECTLY ON BG, NO CARD FRAMING)       */}
       {/* ========================================================================= */}
-      <div className="hidden lg:block lg:w-[54%] xl:w-[58%] min-h-screen relative overflow-hidden bg-[#F5F2ED]">
+      <div className="hidden lg:block lg:w-[40%] min-h-screen relative overflow-hidden bg-[#F5F2ED]">
         <img
           src="/auth-vector-art.jpg"
           alt="Person entering modern room illustration"
