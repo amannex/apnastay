@@ -221,6 +221,30 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     ]
   },
 
+  commercial: {
+    id: 'commercial',
+    label: 'Commercial Property / Office',
+    description: 'Offices, retail shops, co-working studios, or commercial floors.',
+    structure: 'multi_unit',
+    defaultRentalStructure: 'individual_unit',
+    allowedRentalStructures: ['individual_unit', 'multiple_units', 'entire_property'],
+    unitTerminology: {
+      singular: 'Office / Unit',
+      plural: 'Offices / Units',
+      placeholder: 'Unit 201'
+    },
+    hasUnits: true,
+    hasBeds: false,
+    suggestedAmenities: [
+      'High-Speed Commercial Fiber',
+      'Central Air Conditioning',
+      '24/7 Power Backup',
+      'Conference Rooms',
+      'Security & Access Control',
+      'Basement Parking'
+    ]
+  },
+
   other: {
     id: 'other',
     label: 'Other / Custom Property',

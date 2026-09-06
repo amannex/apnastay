@@ -212,6 +212,7 @@ async function runVerificationSuite() {
     'building',
     'independent_floor',
     'room',
+    'commercial',
     'other'
   ];
 

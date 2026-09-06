@@ -13,6 +13,7 @@ export type PropertyType =
   | 'building'
   | 'independent_floor'
   | 'room'
+  | 'commercial'
   | 'other';
 
 export type RentalStructure =

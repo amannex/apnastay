@@ -9,7 +9,7 @@ const ALIAS_ROUTES: Record<string, string> = {
   '/my-visits': '/dashboard/visits',
   '/profile': '/dashboard/profile',
   '/owner/properties': '/owner/dashboard/properties',
-  '/owner/properties/new': '/owner/dashboard/properties',
+  '/owner/properties/new': '/owner/dashboard/properties/new',
   '/owner/leads': '/owner/dashboard/visits',
   '/owner/profile': '/owner/dashboard/profile'
 };
