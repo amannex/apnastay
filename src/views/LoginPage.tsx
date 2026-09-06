@@ -312,20 +312,19 @@ export default function LoginPage() {
       {/* ========================================================================= */}
       {/* RIGHT HALF: CLEAN VECTOR ART DISPLAY (NO VERBOSE TEXT, NO CLUTTER)       */}
       {/* ========================================================================= */}
-      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen bg-gradient-to-br from-[#FFF6F7] via-[#FCF9F9] to-[#F8F5F5] border-l border-gray-100/80 relative overflow-hidden items-center justify-center p-12 xl:p-16">
+      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen bg-[#FBF9F7] border-l border-[#F0ECE6] relative overflow-hidden items-center justify-center p-10 xl:p-16">
         
-        {/* Soft Ambient Light Glows */}
-        <div className="absolute top-10 right-10 w-96 h-96 bg-[#E1224D]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl pointer-events-none" />
+        {/* Soft Ambient Warm Light Glows */}
+        <div className="absolute top-10 right-10 w-96 h-96 bg-[#E1224D]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-amber-100/30 rounded-full blur-3xl pointer-events-none" />
 
-        {/* 3D Isometric Digital Access Vector Art */}
+        {/* Minimalist Lifestyle Vector Art */}
         <div className="relative z-10 flex flex-col items-center">
-          <div className="relative w-80 h-80 xl:w-96 xl:h-96">
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#E1224D]/10 to-amber-200/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="relative w-[340px] h-[340px] xl:w-[440px] xl:h-[440px] max-w-full">
             <img
               src="/auth-vector-art.jpg"
-              alt="Digital Security Vector Art"
-              className="relative w-full h-full object-contain rounded-3xl drop-shadow-2xl"
+              alt="Modern lifestyle vector illustration"
+              className="w-full h-full object-contain rounded-3xl"
             />
           </div>
         </div>
