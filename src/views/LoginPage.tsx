@@ -7,11 +7,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  ArrowRight,
   Eye,
   EyeOff,
-  ShieldCheck,
-  Sparkles,
   Mail,
   Lock,
   HelpCircle
@@ -19,6 +16,7 @@ import {
 import { handleRoleRedirect } from '../lib/auth/session';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import AuthVectorIllustration from '../components/auth/AuthVectorIllustration';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,22 +42,20 @@ export default function LoginPage() {
     isJustRegistered
       ? 'Account created successfully! Please log in.'
       : isPasswordReset
-      ? 'Password reset successfully! Please log in with your new password.'
+      ? 'Password reset successfully! Please log in.'
       : isLoggedOut
-      ? 'You have been logged out successfully.'
+      ? 'You have been logged out.'
       : null
   );
   const [showForgotModal, setShowForgotModal] = useState(false);
 
-  // Update prefilled email if provided via URL
   useEffect(() => {
     if (prefilledEmail) {
       setIdentifier(prev => prev || prefilledEmail);
     }
   }, [prefilledEmail]);
 
-  // Client-side validation
-  const validateForm = (): boolean => {
+  const validate = (): boolean => {
     const errors: Record<string, string> = {};
     const trimmedId = identifier.trim();
 
@@ -69,9 +65,8 @@ export default function LoginPage() {
       const isEmail = trimmedId.includes('@') && trimmedId.includes('.');
       const digitsOnly = trimmedId.replace(/\D/g, '');
       const isPhone = digitsOnly.length >= 10 && digitsOnly.length <= 15;
-
       if (!isEmail && !isPhone) {
-        errors.identifier = 'Please enter a valid email address or 10-digit phone number.';
+        errors.identifier = 'Enter a valid email or 10-digit phone.';
       }
     }
 
@@ -98,14 +93,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAlertError(null);
-    setSuccessMessage(null);
 
-    // Validation error handling
-    if (!validateForm()) {
+    if (!validate()) {
       return;
     }
 
+    setAlertError(null);
+    setSuccessMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -114,34 +108,29 @@ export default function LoginPage() {
         password
       });
 
-      // Handle failed login
       if (!res.success || !res.data) {
         setIsSubmitting(false);
 
-        // Server error vs Invalid credentials vs Inactive account
         if (res.status && res.status >= 500) {
-          setAlertError('The server encountered an error processing your request. Please try again shortly.');
+          setAlertError('Server error. Please try again shortly.');
         } else if (res.code === 'ACCOUNT_INACTIVE') {
-          setAlertError('Your account is inactive or suspended. Please contact ApnaStay support.');
+          setAlertError('Account inactive. Please contact support.');
         } else if (res.code === 'UNAUTHORIZED_ROLE') {
-          setAlertError('This portal is restricted to Tenants and Property Owners.');
+          setAlertError('Portal restricted to Tenants and Property Owners.');
         } else {
-          // Safe generic message — never leaks whether email/phone exists or password was wrong
           setAlertError(res.error || 'Invalid email/phone or password.');
         }
         return;
       }
 
-      // Successful login: User state is already stored centrally in AuthContext
       const authenticatedUser = res.data;
       const isOwner = authenticatedUser.role === 'apnastay_owner' || authenticatedUser.role === 'owner';
       setSuccessMessage(
         isOwner
-          ? 'Login successful! Redirecting to your owner dashboard...'
-          : 'Login successful! Redirecting to properties...'
+          ? 'Login successful! Redirecting to dashboard...'
+          : 'Login successful! Redirecting...'
       );
 
-      // Update AppContext and route based on backend role
       if (handleLoginSuccess) {
         handleLoginSuccess(authenticatedUser, redirectParam, router);
       } else {
@@ -150,189 +139,220 @@ export default function LoginPage() {
         }, 500);
       }
     } catch (err: any) {
-      // Network error handling
       console.error('[ApnaStay LoginPage] Login error:', err);
       setIsSubmitting(false);
 
       if (!navigator.onLine || err?.message?.includes('fetch') || err?.message?.includes('NetworkError')) {
-        setAlertError('Unable to connect to the authentication server. Please check your internet connection and try again.');
+        setAlertError('Unable to connect. Check your internet connection.');
       } else {
-        setAlertError(err?.message || 'An unexpected error occurred. Please try again.');
+        setAlertError(err?.message || 'An unexpected error occurred.');
       }
     }
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#F5F5F7] via-white to-[#F5F5F7] flex flex-col items-center justify-center pt-20 sm:pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-apple-lg border border-[#EDEDED] p-8 sm:p-10 transition-all my-auto">
-        {/* HEADER */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1D1D1F]/5 border border-[#1D1D1F]/10 mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-[#1D1D1F]" />
-            <span className="text-xs font-semibold tracking-wide uppercase text-[#1D1D1F]">
-              Welcome Back
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1D1D1F]">
-            Log in to ApnaStay
+    <div className="min-h-screen bg-white text-[#1A1A1A] flex flex-col lg:flex-row selection:bg-[#E1224D]/15 selection:text-[#E1224D]">
+      
+      {/* ========================================================================= */}
+      {/* LEFT HALF: MINIMAL, CLEAN CANVAS (NO CARD BOX, NO MULTI-STEP)             */}
+      {/* ========================================================================= */}
+      <div className="w-full lg:w-[46%] xl:w-[42%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-14 xl:p-20 z-10">
+        
+        {/* Top: Logo */}
+        <Link href="/" className="inline-flex items-center gap-2.5 group w-fit transition-transform">
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay Logo"
+            className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+          />
+          <span className="font-gotham-black text-2xl tracking-tighter text-[#1A1A1A]">
+            ApnaStay<span className="text-[#E1224D]">.</span>
+          </span>
+        </Link>
+
+        {/* Center: Simple Minimal Form (Sitting Directly on Page Canvas) */}
+        <div className="w-full max-w-sm mx-auto lg:mx-0 my-auto py-8">
+          
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#1A1A1A]">
+            Sign in
           </h1>
-          <p className="text-sm text-[#86868B] mt-2">
-            Sign in to access your verified rentals, agreements, and tours.
+          <p className="text-sm text-gray-500 mt-1.5">
+            Welcome back! Please enter your details.
           </p>
-        </div>
 
-        {/* TOP ALERT: ERROR OR SUCCESS */}
-        {alertError && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-sm text-red-700 animate-fade-in">
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-            <div className="flex-1 font-medium leading-relaxed">{alertError}</div>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 text-sm text-emerald-800 animate-fade-in">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <div className="flex-1 font-medium">{successMessage}</div>
-          </div>
-        )}
-
-        {/* LOGIN FORM */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* EMAIL OR PHONE INPUT */}
-          <div>
-            <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-              Email or phone number
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                autoComplete="username"
-                placeholder="name@example.com or 10-digit phone"
-                value={identifier}
-                onChange={(e) => {
-                  setIdentifier(e.target.value);
-                  handleInputChange('identifier');
-                }}
-                className={`w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                  fieldErrors.identifier
-                    ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                    : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                }`}
-              />
+          {/* Alert Notifications */}
+          {alertError && (
+            <div className="my-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700 animate-fade-in">
+              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+              <div className="flex-1 font-medium">{alertError}</div>
             </div>
-            {fieldErrors.identifier && (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.identifier}</p>
-            )}
-          </div>
+          )}
 
-          {/* PASSWORD INPUT */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider">
-                Password
+          {successMessage && (
+            <div className="my-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-xs text-emerald-800 animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex-1 font-medium">{successMessage}</div>
+            </div>
+          )}
+
+          {/* Single-Page Simple Form */}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {/* Email or Phone */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Email or phone
               </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-[#86868B] hover:text-[#1D1D1F] font-medium transition-colors cursor-pointer"
-              >
-                Forgot password?
-              </Link>
+              <div className="relative">
+                <input
+                  type="text"
+                  autoFocus
+                  autoComplete="username"
+                  placeholder="Enter your email or phone"
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    handleInputChange('identifier');
+                  }}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                    fieldErrors.identifier
+                      ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                      : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                  }`}
+                />
+                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              {fieldErrors.identifier && (
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {fieldErrors.identifier}
+                </p>
+              )}
             </div>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  handleInputChange('password');
-                }}
-                className={`w-full pl-4 pr-11 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                  fieldErrors.password
-                    ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                    : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#86868B] hover:text-[#1D1D1F] transition-colors cursor-pointer"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+
+            {/* Password */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(true)}
+                  className="text-xs text-[#E1224D] hover:text-[#C71B42] font-semibold transition-colors cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    handleInputChange('password');
+                  }}
+                  className={`w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                    fieldErrors.password
+                      ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                      : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                  }`}
+                />
+                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {fieldErrors.password && (
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {fieldErrors.password}
+                </p>
+              )}
             </div>
-            {fieldErrors.password && (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.password}</p>
-            )}
-          </div>
 
-          {/* LOGIN SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full mt-2 py-3.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99] disabled:opacity-70 cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Logging in...</span>
-              </>
-            ) : (
-              <>
-                <span>Login</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 px-6 rounded-xl bg-[#E1224D] hover:bg-[#C71B42] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md shadow-[#E1224D]/25 active:scale-[0.99] disabled:opacity-70 cursor-pointer pt-3"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <span>Sign in</span>
+              )}
+            </button>
+          </form>
 
-        {/* SECURITY PROMISE FOOTER */}
-        <div className="mt-6 pt-6 border-t border-[#EDEDED] flex items-center justify-center gap-2 text-xs text-[#86868B]">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 justify-center shrink-0" />
-          <span>End-to-end encrypted · Your data and privacy are always protected.</span>
-        </div>
-
-        {/* LINK TO CREATE ACCOUNT */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-[#86868B]">
+          {/* Account Creation Link */}
+          <p className="text-sm text-gray-500 mt-6 text-center lg:text-left">
             Don&apos;t have an account?{' '}
             <Link
               href="/register"
-              className="text-[#1D1D1F] font-bold hover:underline transition-all"
+              className="text-[#E1224D] font-bold hover:underline transition-all"
             >
-              Create account
+              Sign up
             </Link>
           </p>
         </div>
+
+        {/* Bottom spacer for balance */}
+        <div className="hidden lg:block text-xs text-gray-400">
+          © ApnaStay
+        </div>
       </div>
 
-      {/* FORGOT PASSWORD MODAL */}
+      {/* ========================================================================= */}
+      {/* RIGHT HALF: TRANSPARENT VECTOR ILLUSTRATION WITH MICRO-ANIMATIONS        */}
+      {/* ========================================================================= */}
+      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen relative overflow-hidden bg-[#FAFAF9] border-l border-gray-100 items-center justify-center p-8 lg:p-12 xl:p-16">
+        
+        {/* Subtle Ambient Light Glows */}
+        <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-rose-100/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-amber-100/20 rounded-full blur-3xl pointer-events-none" />
+
+        {/* The Vector Illustration: 100% transparent, no image background, subtle floating & NFC pulse animation */}
+        <div className="relative z-10 flex items-center justify-center">
+          <AuthVectorIllustration />
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* FORGOT PASSWORD MODAL                                                     */}
+      {/* ========================================================================= */}
       {showForgotModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="w-full max-w-sm bg-white rounded-3xl shadow-apple-lg border border-[#EDEDED] p-6 text-center animate-slide-up">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-[#E1224D] flex items-center justify-center mx-auto mb-4">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="w-full max-w-sm bg-white rounded-3xl shadow-apple-xl border border-gray-100 p-6 text-center animate-slide-up">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-[#E1224D] flex items-center justify-center mx-auto mb-4 border border-rose-100">
               <HelpCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-[#1D1D1F]">Reset Your Password</h3>
-            <p className="text-xs text-[#86868B] mt-2 leading-relaxed">
-              For security, password resets are processed securely by our support team.
-              Please reach out with your registered email or phone:
+            <h3 className="text-lg font-bold text-[#1D1D1F]">Reset Password</h3>
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+              Please contact our support concierge with your registered email or phone:
             </p>
-            <div className="my-4 p-3 rounded-xl bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F]">
+            <div className="my-4 p-3 rounded-xl bg-gray-50 text-xs font-semibold text-[#1D1D1F] border border-gray-200">
               support@apnastay.in
             </div>
             <button
               type="button"
               onClick={() => setShowForgotModal(false)}
-              className="w-full py-2.5 rounded-xl bg-[#1D1D1F] text-white text-xs font-bold hover:bg-black transition-all cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs font-bold transition-all cursor-pointer"
             >
               Got it
             </button>
           </div>
         </div>
       )}
-    </main>
+
+    </div>
   );
 }

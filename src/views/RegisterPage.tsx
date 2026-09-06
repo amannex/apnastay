@@ -10,14 +10,14 @@ import {
   AlertCircle,
   Loader2,
   ArrowRight,
+  ArrowLeft,
   Eye,
   EyeOff,
-  ShieldCheck,
-  Sparkles,
   Phone,
   Mail,
   User,
-  Lock
+  Lock,
+  Check
 } from 'lucide-react';
 import { handleRoleRedirect } from '../lib/auth/session';
 import { useAuth } from '../context/AuthContext';
@@ -29,6 +29,9 @@ export default function RegisterPage() {
   const redirectParam = searchParams?.get('redirect');
   const { handleLoginSuccess } = useApp();
   const { register } = useAuth();
+
+  // Multi-step state: Step 1 (Role) -> Step 2 (Details) -> Step 3 (Security)
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Selected role: 'tenant' or 'property_owner'
   const [role, setRole] = useState<'tenant' | 'property_owner'>('tenant');
@@ -50,10 +53,9 @@ export default function RegisterPage() {
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Validate form client-side
-  const validateForm = (): boolean => {
+  // Step 2 Validation (Personal details)
+  const validateStep2 = (): boolean => {
     const errors: Record<string, string> = {};
-
     const cleanFirst = firstName.trim();
     const cleanLast = lastName.trim();
     const cleanEmail = email.trim();
@@ -62,7 +64,7 @@ export default function RegisterPage() {
     if (!cleanFirst) {
       errors.firstName = 'First name is required.';
     } else if (cleanFirst.length < 2) {
-      errors.firstName = 'First name must be at least 2 characters.';
+      errors.firstName = 'Must be at least 2 characters.';
     } else if (!/^[\p{L}\s\-']+$/u.test(cleanFirst)) {
       errors.firstName = 'First name can only contain letters.';
     }
@@ -70,7 +72,7 @@ export default function RegisterPage() {
     if (!cleanLast) {
       errors.lastName = 'Last name is required.';
     } else if (cleanLast.length < 2) {
-      errors.lastName = 'Last name must be at least 2 characters.';
+      errors.lastName = 'Must be at least 2 characters.';
     } else if (!/^[\p{L}\s\-']+$/u.test(cleanLast)) {
       errors.lastName = 'Last name can only contain letters.';
     }
@@ -85,31 +87,38 @@ export default function RegisterPage() {
     if (!cleanPhone) {
       errors.phone = 'Phone number is required.';
     } else if (digitsOnly.length < 10 || digitsOnly.length > 15) {
-      errors.phone = 'Please enter a valid 10 to 15-digit phone number.';
-    }
-
-    if (!password) {
-      errors.password = 'Password is required.';
-    } else if (password.length < 8) {
-      errors.password = 'Password must be at least 8 characters long.';
-    }
-
-    if (!confirmPassword) {
-      errors.confirmPassword = 'Please confirm your password.';
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match.';
-    }
-
-    if (!termsAccepted) {
-      errors.terms = 'You must accept the Terms of Service & Privacy Policy.';
+      errors.phone = 'Please enter a valid 10-digit phone number.';
     }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    // Clear individual field error when user modifies the field
+  // Step 3 Validation (Password & Terms)
+  const validateStep3 = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!password) {
+      errors.password = 'Password is required.';
+    } else if (password.length < 8) {
+      errors.password = 'Must be at least 8 characters long.';
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = 'Confirm your password.';
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
+    }
+
+    if (!termsAccepted) {
+      errors.terms = 'You must agree to the Terms of Service & Privacy Policy.';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleInputChange = (field: string) => {
     if (fieldErrors[field]) {
       setFieldErrors((prev) => {
         const updated = { ...prev };
@@ -122,15 +131,28 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    setGeneralError(null);
-    setSuccessMessage(null);
+    if (step === 1) {
+      setStep(2);
+      setFieldErrors({});
+    } else if (step === 2) {
+      if (validateStep2()) {
+        setStep(3);
+        setFieldErrors({});
+      }
+    } else if (step === 3) {
+      handleSubmit();
+    }
+  };
 
-    if (!validateForm()) {
+  const handleSubmit = async () => {
+    if (!validateStep3()) {
       return;
     }
 
+    setGeneralError(null);
+    setSuccessMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -148,30 +170,30 @@ export default function RegisterPage() {
       const res = await register(payload);
 
       if (!res.success || !res.data) {
-        // Map machine-readable backend error code to field-specific or general message
         if (res.code === 'EMAIL_ALREADY_EXISTS') {
           setFieldErrors((prev) => ({ ...prev, email: 'An account with this email already exists.' }));
+          setStep(2);
         } else if (res.code === 'PHONE_ALREADY_EXISTS') {
-          setFieldErrors((prev) => ({ ...prev, phone: 'An account with this phone number already exists.' }));
+          setFieldErrors((prev) => ({ ...prev, phone: 'An account with this phone already exists.' }));
+          setStep(2);
         } else if (res.code === 'WEAK_PASSWORD') {
-          setFieldErrors((prev) => ({ ...prev, password: 'Password must be at least 8 characters long.' }));
+          setFieldErrors((prev) => ({ ...prev, password: 'Password must be at least 8 characters.' }));
         } else if (res.code === 'PASSWORD_MISMATCH') {
           setFieldErrors((prev) => ({ ...prev, confirmPassword: 'Passwords do not match.' }));
         } else if (res.code === 'TERMS_NOT_ACCEPTED') {
-          setFieldErrors((prev) => ({ ...prev, terms: 'You must accept the Terms of Service & Privacy Policy.' }));
+          setFieldErrors((prev) => ({ ...prev, terms: 'You must accept the terms to continue.' }));
         }
-        setGeneralError(res.error || 'Registration failed. Please check your information and try again.');
+        setGeneralError(res.error || 'Registration failed. Please check your details.');
         setIsSubmitting(false);
         return;
       }
 
-      // Success: User registered and centrally stored in AuthContext
       const registeredUser = res.data;
       const isOwner = registeredUser.role === 'apnastay_owner' || registeredUser.role === 'owner';
       setSuccessMessage(
         isOwner
-          ? 'Account created successfully! Redirecting to your owner dashboard...'
-          : 'Account created successfully! Redirecting to properties...'
+          ? 'Account created! Redirecting to owner dashboard...'
+          : 'Account created! Redirecting...'
       );
 
       if (handleLoginSuccess) {
@@ -189,379 +211,536 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#F5F5F7] via-white to-[#F5F5F7] flex flex-col items-center justify-center pt-20 sm:pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-xl bg-white rounded-3xl shadow-apple-lg border border-[#EDEDED] p-7 sm:p-10 transition-all my-auto">
-        {/* HEADER */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1D1D1F]/5 border border-[#1D1D1F]/10 mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-[#1D1D1F]" />
-            <span className="text-xs font-semibold tracking-wide uppercase text-[#1D1D1F]">
-              India’s Zero-Brokerage Network
-            </span>
+    <div className="min-h-screen bg-white text-[#1A1A1A] flex flex-col justify-between selection:bg-[#E1224D]/15 selection:text-[#E1224D]">
+      
+      {/* ========================================================================= */}
+      {/* TOP HEADER: BRAND LOGO AT TOP-LEFT, SIGN IN LINK AT TOP-RIGHT            */}
+      {/* ========================================================================= */}
+      <header className="w-full max-w-5xl mx-auto px-6 py-6 sm:py-8 flex items-center justify-between">
+        <Link href="/" className="inline-flex items-center gap-2.5 group transition-transform">
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay Logo"
+            className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+          />
+          <span className="font-gotham-black text-2xl tracking-tighter text-[#1A1A1A]">
+            ApnaStay<span className="text-[#E1224D]">.</span>
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-2 text-xs sm:text-sm">
+          <span className="text-gray-500 hidden sm:inline">Already registered?</span>
+          <Link
+            href="/login"
+            className="font-bold text-[#E1224D] hover:text-[#C71B42] hover:underline transition-colors cursor-pointer"
+          >
+            Sign in
+          </Link>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* CENTERED MULTI-STEP CONTENT (NO CARD BOX, NO SCREEN SPLIT, NO IMAGE)      */}
+      {/* ========================================================================= */}
+      <main className="w-full max-w-md mx-auto px-6 py-6 sm:py-10 flex-1 flex flex-col justify-center">
+        
+        {/* ----------------------------------------------------------------------- */}
+        {/* TIMELINE PROGRESS STEPPER ABOVE THE FORM                                */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="w-full mb-8">
+          <div className="flex items-center justify-between max-w-xs mx-auto relative">
+            
+            {/* Connecting Line between Step 1 & 2 */}
+            <div
+              className={`absolute top-4 left-6 right-6 h-0.5 -translate-y-1/2 transition-all duration-300 z-0 ${
+                step > 1 ? 'bg-[#E1224D]' : 'bg-gray-200'
+              }`}
+            />
+            {/* Connecting Line between Step 2 & 3 */}
+            <div
+              className={`absolute top-4 left-1/2 right-6 h-0.5 -translate-y-1/2 transition-all duration-300 z-0 ${
+                step > 2 ? 'bg-[#E1224D]' : 'bg-gray-200'
+              }`}
+            />
+
+            {/* Step 1 Node */}
+            <div className="flex flex-col items-center relative z-10">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  step >= 1
+                    ? 'bg-[#E1224D] text-white ring-4 ring-[#E1224D]/15'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {step > 1 ? <Check className="w-4 h-4 stroke-[2.5]" /> : '1'}
+              </div>
+              <span className={`text-[11px] font-semibold mt-1.5 ${step === 1 ? 'text-[#1A1A1A]' : 'text-gray-400'}`}>
+                Role
+              </span>
+            </div>
+
+            {/* Step 2 Node */}
+            <div className="flex flex-col items-center relative z-10">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  step >= 2
+                    ? 'bg-[#E1224D] text-white ring-4 ring-[#E1224D]/15'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {step > 2 ? <Check className="w-4 h-4 stroke-[2.5]" /> : '2'}
+              </div>
+              <span className={`text-[11px] font-semibold mt-1.5 ${step === 2 ? 'text-[#1A1A1A]' : 'text-gray-400'}`}>
+                Details
+              </span>
+            </div>
+
+            {/* Step 3 Node */}
+            <div className="flex flex-col items-center relative z-10">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  step === 3
+                    ? 'bg-[#E1224D] text-white ring-4 ring-[#E1224D]/15'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                3
+              </div>
+              <span className={`text-[11px] font-semibold mt-1.5 ${step === 3 ? 'text-[#1A1A1A]' : 'text-gray-400'}`}>
+                Security
+              </span>
+            </div>
+
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1D1D1F]">
-            Create your ApnaStay account
+        </div>
+
+        {/* ----------------------------------------------------------------------- */}
+        {/* HEADER TEXT (MINIMAL & SIMPLE)                                         */}
+        {/* ----------------------------------------------------------------------- */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] tracking-tight">
+            {step === 1 && 'Choose your account type'}
+            {step === 2 && 'Personal details'}
+            {step === 3 && 'Set your password'}
           </h1>
-          <p className="text-sm text-[#86868B] mt-2 max-w-md mx-auto">
-            Experience verified properties, direct owner leases, and instant NFC self-tours.
+          <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
+            {step === 1 && 'Select how you want to use ApnaStay.'}
+            {step === 2 && 'Please enter your name and contact details.'}
+            {step === 3 && 'Create a secure password to protect your account.'}
           </p>
         </div>
 
-        {/* ERROR / SUCCESS ALERTS */}
+        {/* ----------------------------------------------------------------------- */}
+        {/* ALERTS & FEEDBACK                                                      */}
+        {/* ----------------------------------------------------------------------- */}
         {generalError && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-sm text-red-700 animate-fade-in">
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-            <div className="flex-1 font-medium">{generalError}</div>
+          <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700 animate-fade-in">
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <div className="flex-1 font-medium leading-relaxed">{generalError}</div>
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3 text-sm text-emerald-800 animate-fade-in">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-xs text-emerald-800 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <div className="flex-1 font-medium">{successMessage}</div>
           </div>
         )}
 
-        {/* ACCOUNT TYPE SELECTION CARDS */}
-        <div className="mb-6">
-          <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-2.5">
-            Select Account Type
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {/* FIND A PLACE (TENANT) */}
-            <button
-              type="button"
-              onClick={() => {
-                setRole('tenant');
-                setGeneralError(null);
-              }}
-              className={`relative p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
-                role === 'tenant'
-                  ? 'border-[#1D1D1F] bg-[#1D1D1F]/[0.02] shadow-sm'
-                  : 'border-[#EDEDED] hover:border-[#CCCCCC] bg-white'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                    role === 'tenant'
-                      ? 'bg-[#1D1D1F] text-white'
-                      : 'bg-[#F5F5F7] text-[#1D1D1F]'
-                  }`}
-                >
-                  <Home className="w-5 h-5" />
-                </div>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                    role === 'tenant'
-                      ? 'bg-[#1D1D1F] text-white'
-                      : 'bg-[#F5F5F7] text-[#6E6E73]'
-                  }`}
-                >
-                  Tenant
-                </span>
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-[#1D1D1F]">
-                  Find a place
-                </h3>
-                <p className="text-xs text-[#86868B] mt-1 leading-relaxed">
-                  I&apos;m looking for a place to rent.
-                </p>
-              </div>
-            </button>
-
-            {/* LIST MY PROPERTY (PROPERTY OWNER) */}
-            <button
-              type="button"
-              onClick={() => {
-                setRole('property_owner');
-                setGeneralError(null);
-              }}
-              className={`relative p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
-                role === 'property_owner'
-                  ? 'border-[#1D1D1F] bg-[#1D1D1F]/[0.02] shadow-sm'
-                  : 'border-[#EDEDED] hover:border-[#CCCCCC] bg-white'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                    role === 'property_owner'
-                      ? 'bg-[#1D1D1F] text-white'
-                      : 'bg-[#F5F5F7] text-[#1D1D1F]'
-                  }`}
-                >
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                    role === 'property_owner'
-                      ? 'bg-[#1D1D1F] text-white'
-                      : 'bg-[#F5F5F7] text-[#6E6E73]'
-                  }`}
-                >
-                  Owner
-                </span>
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-[#1D1D1F]">
-                  List my property
-                </h3>
-                <p className="text-xs text-[#86868B] mt-1 leading-relaxed">
-                  I&apos;m a property owner.
-                </p>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* REGISTRATION FORM */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* NAME ROW (FIRST & LAST) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-                First Name
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  placeholder="Aman"
-                  value={firstName}
-                  onChange={(e) => {
-                    setFirstName(e.target.value);
-                    handleInputChange('firstName', e.target.value);
-                  }}
-                  className={`w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                    fieldErrors.firstName
-                      ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                      : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                  }`}
-                />
-              </div>
-              {fieldErrors.firstName && (
-                <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.firstName}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-                Last Name
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  placeholder="Saifi"
-                  value={lastName}
-                  onChange={(e) => {
-                    setLastName(e.target.value);
-                    handleInputChange('lastName', e.target.value);
-                  }}
-                  className={`w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                    fieldErrors.lastName
-                      ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                      : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                  }`}
-                />
-              </div>
-              {fieldErrors.lastName && (
-                <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.lastName}</p>
-              )}
-            </div>
-          </div>
-
-          {/* EMAIL */}
-          <div>
-            <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-              Email Address
-            </label>
-            <div className="relative">
-              <input
-                type="email"
-                required
-                placeholder="aman@example.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  handleInputChange('email', e.target.value);
-                }}
-                className={`w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                  fieldErrors.email
-                    ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                    : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                }`}
-              />
-            </div>
-            {fieldErrors.email && (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.email}</p>
-            )}
-          </div>
-
-          {/* PHONE */}
-          <div>
-            <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-              Phone Number
-            </label>
-            <div className="relative">
-              <input
-                type="tel"
-                required
-                placeholder="+91 98765 43210"
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  handleInputChange('phone', e.target.value);
-                }}
-                className={`w-full px-4 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                  fieldErrors.phone
-                    ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                    : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                }`}
-              />
-            </div>
-            {fieldErrors.phone ? (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.phone}</p>
-            ) : (
-              <p className="text-[11px] text-[#86868B] mt-1">Include 10-digit Indian mobile number</p>
-            )}
-          </div>
-
-          {/* PASSWORD */}
-          <div>
-            <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                placeholder="At least 8 characters"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  handleInputChange('password', e.target.value);
-                }}
-                className={`w-full pl-4 pr-11 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                  fieldErrors.password
-                    ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                    : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
-                }`}
-              />
+        {/* ----------------------------------------------------------------------- */}
+        {/* FORM CONTENT BY STEP (DIRECTLY ON CANVAS, NO CARD WRAPPER)             */}
+        {/* ----------------------------------------------------------------------- */}
+        <form onSubmit={handleNext} className="space-y-4">
+          
+          {/* =================================================================== */}
+          {/* STEP 1: ROLE SELECTION                                              */}
+          {/* =================================================================== */}
+          {step === 1 && (
+            <div className="space-y-3 animate-fade-in">
+              {/* Tenant Option */}
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#86868B] hover:text-[#1D1D1F] transition-colors"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            {fieldErrors.password && (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.password}</p>
-            )}
-          </div>
-
-          {/* CONFIRM PASSWORD */}
-          <div>
-            <label className="block text-xs font-semibold text-[#6E6E73] uppercase tracking-wider mb-1.5">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                required
-                placeholder="Re-enter your password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  handleInputChange('confirmPassword', e.target.value);
-                }}
-                className={`w-full pl-4 pr-11 py-3 rounded-xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder-[#86868B] outline-none transition-all font-medium ${
-                  fieldErrors.confirmPassword
-                    ? 'border-red-400 bg-red-50/20 focus:border-red-500'
-                    : 'border-transparent focus:border-[#1D1D1F] focus:bg-white'
+                onClick={() => setRole('tenant')}
+                className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                  role === 'tenant'
+                    ? 'border-[#E1224D] bg-rose-50/40 ring-2 ring-[#E1224D]/15'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
                 }`}
-              />
+              >
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      role === 'tenant' ? 'bg-[#E1224D] text-white' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    <Home className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-[#1A1A1A]">Tenant</div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      Looking for verified stays with ₹0 brokerage
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                    role === 'tenant'
+                      ? 'border-[#E1224D] bg-[#E1224D] text-white'
+                      : 'border-gray-300'
+                  }`}
+                >
+                  {role === 'tenant' && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
+              </button>
+
+              {/* Property Owner Option */}
               <button
                 type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#86868B] hover:text-[#1D1D1F] transition-colors"
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                onClick={() => setRole('property_owner')}
+                className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                  role === 'property_owner'
+                    ? 'border-[#E1224D] bg-rose-50/40 ring-2 ring-[#E1224D]/15'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
+                }`}
               >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      role === 'property_owner' ? 'bg-[#E1224D] text-white' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-[#1A1A1A]">Property Owner</div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      List properties & manage tenant bookings
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                    role === 'property_owner'
+                      ? 'border-[#E1224D] bg-[#E1224D] text-white'
+                      : 'border-gray-300'
+                  }`}
+                >
+                  {role === 'property_owner' && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
               </button>
-            </div>
-            {fieldErrors.confirmPassword && (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.confirmPassword}</p>
-            )}
-          </div>
 
-          {/* TERMS & PRIVACY CHECKBOX */}
-          <div className="pt-2">
-            <label className="flex items-start gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={termsAccepted}
-                onChange={(e) => {
-                  setTermsAccepted(e.target.checked);
-                  handleInputChange('terms', String(e.target.checked));
-                }}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1D1D1F] focus:ring-[#1D1D1F] cursor-pointer"
-              />
-              <span className="text-xs text-[#6E6E73] leading-relaxed">
-                I agree to ApnaStay&apos;s{' '}
-                <span className="text-[#1D1D1F] font-semibold hover:underline">Terms of Service</span>{' '}
-                and{' '}
-                <span className="text-[#1D1D1F] font-semibold hover:underline">Privacy Policy</span>.
-              </span>
-            </label>
-            {fieldErrors.terms && (
-              <p className="text-[11px] text-red-500 mt-1 font-medium">{fieldErrors.terms}</p>
-            )}
-          </div>
-
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full mt-3 py-3.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99] disabled:opacity-70 cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Creating Account...</span>
-              </>
-            ) : (
-              <>
-                <span>Create Account</span>
+              {/* Continue Button */}
+              <button
+                type="submit"
+                className="w-full mt-5 py-3.5 px-6 rounded-xl bg-[#E1224D] hover:bg-[#C71B42] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md shadow-[#E1224D]/20 active:scale-[0.99] cursor-pointer"
+              >
+                <span>Continue</span>
                 <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+              </button>
+            </div>
+          )}
+
+          {/* =================================================================== */}
+          {/* STEP 2: PERSONAL & CONTACT DETAILS                                  */}
+          {/* =================================================================== */}
+          {step === 2 && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Name Fields (First & Last) */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    First name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Aman"
+                      value={firstName}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        handleInputChange('firstName');
+                      }}
+                      className={`w-full pl-9 pr-3 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                        fieldErrors.firstName
+                          ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                          : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                      }`}
+                    />
+                    <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                  {fieldErrors.firstName && (
+                    <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                      {fieldErrors.firstName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Last name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Saifi"
+                      value={lastName}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        handleInputChange('lastName');
+                      }}
+                      className={`w-full pl-9 pr-3 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                        fieldErrors.lastName
+                          ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                          : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                      }`}
+                    />
+                    <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                  {fieldErrors.lastName && (
+                    <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                      {fieldErrors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Email address
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      handleInputChange('email');
+                    }}
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                      fieldErrors.email
+                        ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                        : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                    }`}
+                  />
+                  <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+                {fieldErrors.email && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                    {fieldErrors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Phone number
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="10-digit mobile number"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      handleInputChange('phone');
+                    }}
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                      fieldErrors.phone
+                        ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                        : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                    }`}
+                  />
+                  <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+                {fieldErrors.phone && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                    {fieldErrors.phone}
+                  </p>
+                )}
+              </div>
+
+              {/* Continue to Step 3 */}
+              <button
+                type="submit"
+                className="w-full mt-4 py-3.5 px-6 rounded-xl bg-[#E1224D] hover:bg-[#C71B42] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md shadow-[#E1224D]/20 active:scale-[0.99] cursor-pointer"
+              >
+                <span>Continue</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Back to Step 1 */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStep(1);
+                  setFieldErrors({});
+                }}
+                className="w-full py-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </button>
+            </div>
+          )}
+
+          {/* =================================================================== */}
+          {/* STEP 3: SECURITY & PASSWORD                                         */}
+          {/* =================================================================== */}
+          {step === 3 && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    autoFocus
+                    autoComplete="new-password"
+                    placeholder="At least 8 characters"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      handleInputChange('password');
+                    }}
+                    className={`w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                      fieldErrors.password
+                        ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                        : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                    }`}
+                  />
+                  <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                    {fieldErrors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Confirm password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    placeholder="Repeat password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      handleInputChange('confirmPassword');
+                    }}
+                    className={`w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50/80 hover:bg-gray-50 focus:bg-white border text-sm text-[#1D1D1F] placeholder-gray-400 outline-none transition-all font-medium ${
+                      fieldErrors.confirmPassword
+                        ? 'border-rose-400 bg-rose-50/20 focus:border-[#E1224D]'
+                        : 'border-gray-200 focus:border-[#E1224D] focus:ring-4 focus:ring-[#E1224D]/15'
+                    }`}
+                  />
+                  <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                    {fieldErrors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              {/* Terms Checkbox */}
+              <div className="pt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => {
+                      setTermsAccepted(e.target.checked);
+                      handleInputChange('terms');
+                    }}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#E1224D] focus:ring-[#E1224D]/20 cursor-pointer"
+                  />
+                  <span>
+                    I agree to the{' '}
+                    <span className="text-[#E1224D] font-medium hover:underline">
+                      Terms of Service
+                    </span>{' '}
+                    and{' '}
+                    <span className="text-[#E1224D] font-medium hover:underline">
+                      Privacy Policy
+                    </span>
+                  </span>
+                </label>
+                {fieldErrors.terms && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                    {fieldErrors.terms}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Registration Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full mt-4 py-3.5 px-6 rounded-xl bg-[#E1224D] hover:bg-[#C71B42] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md shadow-[#E1224D]/20 active:scale-[0.99] disabled:opacity-70 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Creating account...</span>
+                  </>
+                ) : (
+                  <span>Complete registration</span>
+                )}
+              </button>
+
+              {/* Back to Step 2 */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStep(2);
+                  setFieldErrors({});
+                }}
+                className="w-full py-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </button>
+            </div>
+          )}
+
         </form>
 
-        {/* SECURITY PROMISE FOOTER */}
-        <div className="mt-6 pt-6 border-t border-[#EDEDED] flex items-center justify-center gap-2 text-xs text-[#86868B]">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>End-to-end encrypted · Your data and privacy are always protected.</span>
-        </div>
+      </main>
 
-        {/* LINK TO LOGIN */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-[#86868B]">
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="text-[#1D1D1F] font-bold hover:underline transition-all"
-            >
-              Log in
-            </Link>
-          </p>
-        </div>
-      </div>
-    </main>
+      {/* ========================================================================= */}
+      {/* BOTTOM FOOTER                                                             */}
+      {/* ========================================================================= */}
+      <footer className="w-full max-w-5xl mx-auto px-6 py-6 text-center text-xs text-gray-400">
+        © ApnaStay · Zero-Brokerage Living
+      </footer>
+
+    </div>
   );
 }

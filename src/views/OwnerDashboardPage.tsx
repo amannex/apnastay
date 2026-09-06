@@ -103,14 +103,7 @@ export default function OwnerDashboardPage() {
           <div className="flex items-center gap-3">
             {can(user, 'apnastay_create_property') && (
               <button
-                onClick={() => {
-                  const check = canPublishProperty(user);
-                  if (!check.allowed) {
-                    alert(`Business Rule Violation: ${check.reason}\n\nNote: You possess the RBAC capability (apnastay_create_property), but publication requires fulfilling domain business rules.`);
-                    return;
-                  }
-                  alert('Opening Property Lister Wizard...');
-                }}
+                onClick={() => router.push('/owner/dashboard/properties/new')}
                 className="px-4 py-3 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold inline-flex items-center gap-2 transition-all shadow-sm"
               >
                 <PlusCircle className="w-4 h-4" />

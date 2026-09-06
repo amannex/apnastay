@@ -1,18 +1,18 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import OwnerDashboardShell from '@/components/dashboard/OwnerDashboardShell';
-import OwnerPropertiesView from '@/features/properties/components/dashboard/OwnerPropertiesView';
+import AddPropertyWizard from '@/features/properties/components/wizard/AddPropertyWizard';
 
 export const metadata: Metadata = {
-  title: 'My Property Listings | ApnaStay India',
-  description: 'Manage your verified residential properties across Tier-2 Indian hubs.',
+  title: 'Add New Property | ApnaStay Owner Portal',
+  description: 'List your house, apartment, PG, hostel, or commercial rental property on ApnaStay.'
 };
 
-export default function PropertiesPage() {
+export default function NewPropertyPage() {
   return (
     <OwnerDashboardShell activeTab="properties">
       <div className="py-2 sm:py-4">
-        <OwnerPropertiesView />
+        <AddPropertyWizard />
       </div>
     </OwnerDashboardShell>
   );
