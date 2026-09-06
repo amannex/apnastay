@@ -58,9 +58,16 @@ export interface PropertyLocation {
   landmark?: string;
 }
 
+export type PropertyAvailabilityType = 'immediate' | 'specific_date';
+
+export interface PropertyAvailability {
+  type: PropertyAvailabilityType;
+  availableFrom?: string; // YYYY-MM-DD ISO date string
+}
+
 export interface PropertyPricing {
   monthlyRent: number;
-  securityDeposit: number;
+  securityDeposit?: number;
   maintenance?: number;
   lockInMonths?: number;
   noticePeriodDays?: number;
@@ -154,6 +161,7 @@ export interface Property {
   description: string;
   status: PropertyStatus;
   location?: PropertyLocation;
+  availability?: PropertyAvailability;
   pricing?: PropertyPricing;
   amenities?: string[];
   rules?: PropertyRules;
@@ -193,6 +201,7 @@ export interface CreatePropertyDraftPayload {
   rentalStructure: RentalStructure;
   title?: string;
   description?: string;
+  availability?: PropertyAvailability;
   location?: Partial<PropertyLocation>;
   pricing?: Partial<PropertyPricing>;
 }
@@ -203,6 +212,7 @@ export interface UpdatePropertyPayload {
   propertyType?: PropertyType;
   customPropertyType?: string;
   rentalStructure?: RentalStructure;
+  availability?: PropertyAvailability;
   location?: Partial<PropertyLocation>;
   pricing?: Partial<PropertyPricing>;
   amenities?: string[];

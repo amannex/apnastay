@@ -296,3 +296,200 @@ export function validateStructureForTemplate(type: PropertyType, structure: Rent
   const template = getPropertyTemplate(type);
   return template.allowedRentalStructures.includes(structure);
 }
+
+// ----------------------------------------------------------------------------
+// Basic Details Dynamic Fields Configuration
+// ----------------------------------------------------------------------------
+export interface PropertyBasicFieldsConfig {
+  titleLabel: string;
+  titlePlaceholder: string;
+  titleHelp?: string;
+  descriptionLabel: string;
+  descriptionPlaceholder: string;
+  descriptionHelp: string;
+  priceLabel: string;
+  pricePlaceholder: string;
+  priceHelp: string;
+  availabilityLabel: string;
+  availabilityHelp: string;
+}
+
+/**
+ * Returns dynamic field labels, placeholders, and guidance for Phase 3 Basic Property Details.
+ * Driven entirely by template registry and rental structure.
+ */
+export function getBasicFieldsConfig(
+  type: PropertyType,
+  structure: RentalStructure,
+  customType?: string
+): PropertyBasicFieldsConfig {
+  switch (type) {
+    case 'pg':
+      return {
+        titleLabel: 'PG Name / Property Title',
+        titlePlaceholder: 'e.g., Green Valley PG, Stanza Living Delhi',
+        titleHelp: 'A clear, recognizable name that students and working professionals will search for.',
+        descriptionLabel: 'Property Description',
+        descriptionPlaceholder: 'Tell tenants about food/meals provided, Wi-Fi speed, housekeeping, nearby colleges or tech parks, and general house culture.',
+        descriptionHelp: 'A warm, honest description helps you attract reliable, long-term tenants.',
+        priceLabel: structure === 'individual_bed' ? 'Starting Rent per Bed (Monthly)' : 'Starting Rent per Room (Monthly)',
+        pricePlaceholder: 'e.g., 7500',
+        priceHelp: 'Starting monthly rent. You will be able to set specific pricing for single, double, or triple sharing rooms in later steps.',
+        availabilityLabel: 'When is this PG available for move-in?',
+        availabilityHelp: 'Let potential residents know whether they can move in immediately or from an upcoming date.'
+      };
+
+    case 'hostel':
+      return {
+        titleLabel: 'Hostel Name',
+        titlePlaceholder: 'e.g., Sunshine Boys & Girls Hostel, Oxford Student Living',
+        titleHelp: 'Hostel name recognizable to students, parents, and working professionals.',
+        descriptionLabel: 'Hostel Description',
+        descriptionPlaceholder: 'Describe hostel facilities, mess timings, study areas, biometric security, and commute to nearby colleges.',
+        descriptionHelp: 'Clear details help parents and students feel confident about booking.',
+        priceLabel: 'Starting Rent per Bed / Room (Monthly)',
+        pricePlaceholder: 'e.g., 6500',
+        priceHelp: 'Base starting rent per month. Room-wise and sharing-wise pricing will be configured later.',
+        availabilityLabel: 'When is this hostel accepting new admissions/residents?',
+        availabilityHelp: 'Specify immediate availability or start date for the upcoming academic session.'
+      };
+
+    case 'coliving':
+      return {
+        titleLabel: 'Co-Living Property Name',
+        titlePlaceholder: 'e.g., UrbanNest Co-Living, Sector 62',
+        titleHelp: 'Brand name or community title for your modern shared living property.',
+        descriptionLabel: 'Community & Property Description',
+        descriptionPlaceholder: 'Highlight modern amenities, community events, quiet work corners, high-speed Wi-Fi, and neighborhood vibe.',
+        descriptionHelp: 'Emphasize community, convenience, and lifestyle benefits.',
+        priceLabel: 'Starting Monthly Rent',
+        pricePlaceholder: 'e.g., 12000',
+        priceHelp: 'Base starting monthly package. Detailed inclusions will be refined in upcoming steps.',
+        availabilityLabel: 'When can new members move in?',
+        availabilityHelp: 'Indicate whether spaces are ready right now or scheduled for a specific date.'
+      };
+
+    case 'apartment':
+      return {
+        titleLabel: 'Apartment / Flat Name',
+        titlePlaceholder: 'e.g., 2 BHK Flat in Greater Noida, Gaur City 2',
+        titleHelp: 'Mention key highlights such as BHK configuration, society name, or tower.',
+        descriptionLabel: 'Flat & Society Description',
+        descriptionPlaceholder: 'Describe flat interiors, balcony view, society security, clubhouse access, and walking distance to metro/markets.',
+        descriptionHelp: 'Tenants appreciate honest details about light, ventilation, and family-friendly society perks.',
+        priceLabel: structure === 'multiple_units' ? 'Starting Rent per Unit (Monthly)' : 'Monthly Rent',
+        pricePlaceholder: 'e.g., 18000',
+        priceHelp: structure === 'multiple_units' ? 'Starting rent across the available flats in this project.' : 'Total monthly rent for this flat.',
+        availabilityLabel: 'When is this flat available for rent?',
+        availabilityHelp: 'Specify if the flat is vacant and ready today or when the current lease concludes.'
+      };
+
+    case 'house':
+      return {
+        titleLabel: 'Property Name / House Title',
+        titlePlaceholder: 'e.g., Independent House near Pari Chowk',
+        titleHelp: 'Give your house an attractive, clear title including location or landmark.',
+        descriptionLabel: 'Property Description',
+        descriptionPlaceholder: 'Describe the house layout, private parking, neighborhood peacefulness, nearby markets, and accessibility.',
+        descriptionHelp: 'Families and executives look for privacy, safety, and neighborhood convenience.',
+        priceLabel: 'Monthly Rent',
+        pricePlaceholder: 'e.g., 25000',
+        priceHelp: 'Total monthly rental amount for the entire house.',
+        availabilityLabel: 'When is this house available for move-in?',
+        availabilityHelp: 'Specify when new tenants can take possession.'
+      };
+
+    case 'villa':
+      return {
+        titleLabel: 'Villa Name / Estate Title',
+        titlePlaceholder: 'e.g., Royal Palms Luxury Villa, Jaypee Greens',
+        titleHelp: 'Prestigious name highlighting luxury, privacy, and upscale living.',
+        descriptionLabel: 'Villa & Grounds Description',
+        descriptionPlaceholder: 'Describe the private lawn, luxury fixtures, servant quarters, swimming pool access, and premium gated security.',
+        descriptionHelp: 'Showcase architectural highlights, privacy, and luxury lifestyle features.',
+        priceLabel: 'Monthly Rent',
+        pricePlaceholder: 'e.g., 65000',
+        priceHelp: 'Monthly rental lease amount.',
+        availabilityLabel: 'When is this villa ready for occupancy?',
+        availabilityHelp: 'Specify immediate availability or private handover date.'
+      };
+
+    case 'building':
+      return {
+        titleLabel: 'Building / Complex Name',
+        titlePlaceholder: 'e.g., Sunrise Residency, Multi-Unit Complex',
+        titleHelp: 'Name of the building or residential complex.',
+        descriptionLabel: 'Building Overview & Description',
+        descriptionPlaceholder: 'Describe total floors, elevator facility, parking capacity, 100% power backup, and commercial/residential suitability.',
+        descriptionHelp: 'Detail total capacity, security features, and central facilities.',
+        priceLabel: structure === 'entire_property' ? 'Monthly Lease / Rent' : 'Starting Rent per Unit (Monthly)',
+        pricePlaceholder: 'e.g., 45000',
+        priceHelp: 'Starting monthly rental expectation.',
+        availabilityLabel: 'When is this building ready for lease?',
+        availabilityHelp: 'Specify immediate handover or phased availability.'
+      };
+
+    case 'independent_floor':
+      return {
+        titleLabel: 'Independent Floor Title',
+        titlePlaceholder: 'e.g., 1st Floor Builder Apartment with Terrace Access',
+        titleHelp: 'Specify the floor level and key exclusive benefits (terrace, elevator, stilt parking).',
+        descriptionLabel: 'Floor Description',
+        descriptionPlaceholder: 'Describe floor layout, private balcony, dedicated parking, safety grills, and proximity to neighborhood parks.',
+        descriptionHelp: 'Highlight private access and low-density living benefits.',
+        priceLabel: 'Monthly Rent',
+        pricePlaceholder: 'e.g., 22000',
+        priceHelp: 'Monthly rental amount for this independent floor.',
+        availabilityLabel: 'When is this floor available for move-in?',
+        availabilityHelp: 'Indicate whether it is vacant now or ready from a future date.'
+      };
+
+    case 'room':
+      return {
+        titleLabel: 'Room / Studio Title',
+        titlePlaceholder: 'e.g., Furnished Studio Room near Cyber City',
+        titleHelp: 'Clear title describing the room and key location.',
+        descriptionLabel: 'Room Description',
+        descriptionPlaceholder: 'Describe attached bathroom, furnishings, private balcony, shared kitchen access, and included utilities.',
+        descriptionHelp: 'Single professionals look for convenience, quiet study/work space, and clean fixtures.',
+        priceLabel: 'Monthly Rent',
+        pricePlaceholder: 'e.g., 10000',
+        priceHelp: 'Monthly rent for the room.',
+        availabilityLabel: 'When is this room available?',
+        availabilityHelp: 'Specify move-in readiness.'
+      };
+
+    case 'commercial':
+      return {
+        titleLabel: 'Commercial Property / Office Name',
+        titlePlaceholder: 'e.g., Prime Office Space in Sector 18, Commercial Floor',
+        titleHelp: 'Title stating the commercial nature, frontage, or office park.',
+        descriptionLabel: 'Commercial Space Description',
+        descriptionPlaceholder: 'Describe super area, carpet area, road frontage, power backup, passenger and goods elevator, and parking bays.',
+        descriptionHelp: 'Businesses and corporate tenants need exact technical and accessibility highlights.',
+        priceLabel: 'Monthly Rent / Lease',
+        pricePlaceholder: 'e.g., 35000',
+        priceHelp: 'Base monthly rent or lease for the commercial space.',
+        availabilityLabel: 'When is this space available for commercial lease?',
+        availabilityHelp: 'Specify fit-out readiness or immediate possession date.'
+      };
+
+    case 'other':
+    default: {
+      const displayType = customType ? customType.trim() : 'Property';
+      return {
+        titleLabel: `${displayType} Name / Title`,
+        titlePlaceholder: `e.g., Prime ${displayType} near Central Market`,
+        titleHelp: 'A descriptive title that informs tenants about what this unique rental offers.',
+        descriptionLabel: 'Property Description',
+        descriptionPlaceholder: 'Describe the key highlights, facilities, accessibility, and ideal guests or tenants for this property.',
+        descriptionHelp: 'Clear details help set proper expectations for interested renters.',
+        priceLabel: 'Starting Monthly Rent',
+        pricePlaceholder: 'e.g., 15000',
+        priceHelp: 'Base monthly rent required to list your property.',
+        availabilityLabel: 'When is this property available for rent?',
+        availabilityHelp: 'Specify when tenants or guests can begin their stay.'
+      };
+    }
+  }
+}

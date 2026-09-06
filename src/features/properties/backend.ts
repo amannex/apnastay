@@ -157,9 +157,13 @@ class PropertyBackendStore {
           longitude: payload.location.longitude,
           landmark: payload.location.landmark
         } : undefined,
+        availability: payload.availability ? {
+          type: payload.availability.type,
+          availableFrom: payload.availability.type === 'specific_date' ? payload.availability.availableFrom : undefined
+        } : undefined,
         pricing: payload.pricing ? {
           monthlyRent: payload.pricing.monthlyRent || 0,
-          securityDeposit: payload.pricing.securityDeposit || 0,
+          securityDeposit: payload.pricing.securityDeposit,
           maintenance: payload.pricing.maintenance,
           lockInMonths: payload.pricing.lockInMonths,
           noticePeriodDays: payload.pricing.noticePeriodDays,
@@ -324,10 +328,17 @@ class PropertyBackendStore {
         };
       }
 
+      if (payload.availability !== undefined) {
+        property.availability = {
+          type: payload.availability.type,
+          availableFrom: payload.availability.type === 'specific_date' ? payload.availability.availableFrom : undefined
+        };
+      }
+
       if (payload.pricing !== undefined) {
         property.pricing = {
           monthlyRent: payload.pricing.monthlyRent ?? property.pricing?.monthlyRent ?? 0,
-          securityDeposit: payload.pricing.securityDeposit ?? property.pricing?.securityDeposit ?? 0,
+          securityDeposit: payload.pricing.securityDeposit ?? property.pricing?.securityDeposit,
           maintenance: payload.pricing.maintenance ?? property.pricing?.maintenance,
           lockInMonths: payload.pricing.lockInMonths ?? property.pricing?.lockInMonths,
           noticePeriodDays: payload.pricing.noticePeriodDays ?? property.pricing?.noticePeriodDays,
@@ -354,6 +365,22 @@ class PropertyBackendStore {
       if (payload.status !== undefined) {
         property.status = payload.status;
       }
+
+      // Recalculate completenessScore dynamically
+      let score = 15; // baseline draft created
+      if (property.title && property.title.length >= 3 && !property.title.startsWith('New ') && !property.title.endsWith('Draft')) {
+        score += 5;
+      } else if (property.title && property.title.length >= 3) {
+        score += 2;
+      }
+      if (property.description && property.description.length >= 10) score += 5;
+      if (property.pricing && property.pricing.monthlyRent > 0) score += 5;
+      if (property.availability) score += 5;
+      if (property.location?.city) score += 15;
+      if (property.photos && property.photos.length > 0) score += 20;
+      if (property.amenities && property.amenities.length > 0) score += 10;
+      if (property.units && property.units.length > 0) score += 23;
+      property.completenessScore = Math.min(100, score);
 
       property.updatedAt = now;
       this.persist();

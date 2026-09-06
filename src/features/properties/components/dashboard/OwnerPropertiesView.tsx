@@ -174,7 +174,7 @@ export default function OwnerPropertiesView() {
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
                   <Link
-                    href={`/owner/dashboard/properties/new`}
+                    href={`/owner/dashboard/properties/new?draftId=${encodeURIComponent(prop.id)}`}
                     className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5"
                   >
                     <span>{isDraft ? 'Continue Draft' : 'Manage'}</span>
