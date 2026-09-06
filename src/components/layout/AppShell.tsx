@@ -68,8 +68,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Auth Pages Minimal Header: Logo at top-left (LoginPage has integrated full top navigation) */}
-      {isAuthPage && pathname !== '/login' && (
+      {/* Auth Pages Minimal Header: Logo at top-left */}
+      {isAuthPage && (
         <header className="absolute top-0 left-0 w-full p-4 sm:p-6 z-50 flex items-center">
           <Link href="/" className="inline-flex items-center gap-2.5 group transition-transform">
             <img
