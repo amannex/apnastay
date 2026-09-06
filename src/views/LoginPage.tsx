@@ -310,25 +310,15 @@ export default function LoginPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* RIGHT HALF: CLEAN VECTOR ART DISPLAY (NO VERBOSE TEXT, NO CLUTTER)       */}
+      {/* RIGHT HALF: FULL-BLEED BACKGROUND (DIRECTLY ON BG, NO CARD FRAMING)      */}
       {/* ========================================================================= */}
-      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen bg-[#FBF9F7] border-l border-[#F0ECE6] relative overflow-hidden items-center justify-center p-10 xl:p-16">
-        
-        {/* Soft Ambient Warm Light Glows */}
-        <div className="absolute top-10 right-10 w-96 h-96 bg-[#E1224D]/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-amber-100/30 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Minimalist Lifestyle Vector Art: Person Entering Room */}
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="relative w-[360px] h-[360px] xl:w-[480px] xl:h-[480px] max-w-full">
-            <img
-              src="/auth-vector-art.jpg"
-              alt="Person entering modern room illustration"
-              className="w-full h-full object-contain rounded-3xl shadow-sm"
-            />
-          </div>
-        </div>
-
+      <div className="hidden lg:block lg:w-[54%] xl:w-[58%] min-h-screen relative overflow-hidden bg-[#F5F2ED]">
+        <img
+          src="/auth-vector-art.jpg"
+          alt="Person entering modern room illustration"
+          className="w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
       </div>
 
       {/* ========================================================================= */}
