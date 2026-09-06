@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function AuthVectorIllustration() {
   return (
-    <div className="relative w-full max-w-[440px] xl:max-w-[500px] aspect-square flex items-center justify-center select-none pointer-events-none">
+    <div className="relative w-full max-w-[600px] xl:max-w-[580px] 2xl:max-w-[620px] aspect-square flex items-center justify-center select-none pointer-events-none">
       
       {/* ======================================================================= */}
       {/* FLOATING AMBIENT GLOW BEHIND THE VECTOR ILLUSTRATION                    */}
@@ -20,7 +20,7 @@ export default function AuthVectorIllustration() {
           repeat: Infinity,
           ease: 'easeInOut'
         }}
-        className="absolute w-72 h-72 rounded-full bg-gradient-to-tr from-[#E1224D]/15 via-amber-200/20 to-transparent blur-3xl pointer-events-none"
+        className="absolute w-100 h-100 xl:w-96 xl:h-96 rounded-full bg-gradient-to-tr from-[#E1224D]/15 via-amber-200/20 to-transparent blur-3xl pointer-events-none"
       />
 
       {/* ======================================================================= */}
