@@ -17,7 +17,11 @@ import {
   IndianRupee,
   Calendar,
   Loader2,
-  Edit3
+  Edit3,
+  Compass,
+  Navigation,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import type { Property, PropertyType, RentalStructure, PropertyAvailability } from '../../types';
 import { getPropertyTemplate } from '../../templates';
@@ -25,17 +29,21 @@ import { createPropertyDraft, updateProperty, getProperty } from '../../api';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
+import StepLocation, { LocationFormData } from './StepLocation';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
 
   // Basic Details draft form state (preserved on back navigation)
   const [basicDetails, setBasicDetails] = useState<Partial<BasicDetailsFormData>>({});
+
+  // Location draft form state (preserved on back navigation)
+  const [locationData, setLocationData] = useState<Partial<LocationFormData>>({});
 
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -74,10 +82,29 @@ export default function AddPropertyWizard() {
             monthlyRent: prop.pricing?.monthlyRent || 0
           });
 
+          // Restore location form fields
+          if (prop.location) {
+            setLocationData({
+              addressLine1: prop.location.addressLine1 || '',
+              locality: prop.location.locality || '',
+              city: prop.location.city || '',
+              state: prop.location.state || '',
+              pincode: prop.location.pincode || '',
+              landmark: prop.location.landmark || '',
+              latitude: prop.location.latitude,
+              longitude: prop.location.longitude,
+              hideExactAddress: prop.location.hideExactAddress
+            });
+          }
+
           // Determine step from URL or progress
           const stepParam = Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 4) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4);
+          if (stepParam >= 1 && stepParam <= 5) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5);
+          } else if (prop.location?.city && prop.location?.addressLine1 && prop.location?.pincode) {
+            setCurrentStep(5);
+          } else if (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0) {
+            setCurrentStep(4);
           } else {
             setCurrentStep(3);
           }
@@ -92,7 +119,7 @@ export default function AddPropertyWizard() {
   }, []);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     if (typeof window !== 'undefined') {
@@ -228,6 +255,54 @@ export default function AddPropertyWizard() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 4: Location Back & Save Handlers
+  // --------------------------------------------------------------------------
+  const handleBackFromLocation = (currentValues: LocationFormData) => {
+    setLocationData(currentValues);
+    setCurrentStep(3);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSaveLocation = async (data: LocationFormData) => {
+    if (!createdProperty) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await updateProperty(createdProperty.id, {
+        location: {
+          addressLine1: data.addressLine1,
+          locality: data.locality,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+          landmark: data.landmark,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          hideExactAddress: data.hideExactAddress
+        }
+      });
+
+      if (res.success && res.data) {
+        setLocationData(data);
+        syncDraftState(res.data, 5);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(res.error || 'Failed to save property location.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Network error while saving location.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -239,6 +314,7 @@ export default function AddPropertyWizard() {
     setCustomPropertyType('');
     setSelectedStructure(null);
     setBasicDetails({});
+    setLocationData({});
     setCreatedProperty(null);
     setErrorMsg(null);
   };
@@ -287,7 +363,7 @@ export default function AddPropertyWizard() {
           </h1>
         </div>
 
-        {/* PROGRESS STEPPER */}
+        {/* PROGRESS STEPPER (5 STEPS) */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {/* Step 1: Format */}
           <div className="flex items-center gap-1.5">
@@ -311,7 +387,7 @@ export default function AddPropertyWizard() {
             </span>
           </div>
 
-          <div className="w-4 sm:w-6 h-[2px] bg-[#EDEDED]" />
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
 
           {/* Step 2: Rental Model */}
           <div className="flex items-center gap-1.5">
@@ -335,7 +411,7 @@ export default function AddPropertyWizard() {
             </span>
           </div>
 
-          <div className="w-4 sm:w-6 h-[2px] bg-[#EDEDED]" />
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
 
           {/* Step 3: Basic Details */}
           <div className="flex items-center gap-1.5">
@@ -359,15 +435,39 @@ export default function AddPropertyWizard() {
             </span>
           </div>
 
-          <div className="w-4 sm:w-6 h-[2px] bg-[#EDEDED]" />
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
 
-          {/* Step 4: Location (Upcoming) */}
+          {/* Step 4: Location */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                currentStep > 4
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 4
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {currentStep > 4 ? <CheckCircle2 className="w-4 h-4" /> : '4'}
+            </div>
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 4 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
+              Location
+            </span>
+          </div>
+
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
+
+          {/* Step 5: Upcoming Phase (Photos & Amenities) */}
           <div className="flex items-center gap-1.5 opacity-40">
             <div className="w-7 h-7 rounded-full bg-[#EDEDED] text-[#86868B] flex items-center justify-center text-xs font-bold">
-              4
+              5
             </div>
             <span className="text-xs font-semibold text-[#86868B] hidden sm:inline">
-              Location
+              Photos
             </span>
           </div>
         </div>
@@ -436,8 +536,34 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 4: PHASE 3 COMPLETION SUMMARY CARD */}
-      {currentStep === 4 && createdProperty && !isLoadingDraft && (
+      {/* STEP 4: LOCATION */}
+      {currentStep === 4 && selectedType && selectedStructure && !isLoadingDraft && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+          <StepLocation
+            propertyType={selectedType}
+            customPropertyType={customPropertyType}
+            rentalStructure={selectedStructure}
+            initialValues={{
+              addressLine1: locationData.addressLine1 ?? createdProperty?.location?.addressLine1,
+              locality: locationData.locality ?? createdProperty?.location?.locality,
+              city: locationData.city ?? createdProperty?.location?.city,
+              state: locationData.state ?? createdProperty?.location?.state,
+              pincode: locationData.pincode ?? createdProperty?.location?.pincode,
+              landmark: locationData.landmark ?? createdProperty?.location?.landmark,
+              latitude: locationData.latitude ?? createdProperty?.location?.latitude,
+              longitude: locationData.longitude ?? createdProperty?.location?.longitude,
+              hideExactAddress:
+                locationData.hideExactAddress ?? createdProperty?.location?.hideExactAddress
+            }}
+            onBack={handleBackFromLocation}
+            onSave={handleSaveLocation}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 5: PHASE 4 COMPLETION SUMMARY CARD */}
+      {currentStep === 5 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 className="w-8 h-8" />
@@ -446,21 +572,21 @@ export default function AddPropertyWizard() {
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 3 Complete — Basic Details Saved</span>
+              <span>Phase 4 Complete — Property Location Saved</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Property Details Saved!
+              Property Location Saved!
             </h2>
             <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your basic property information has been successfully updated on your draft. You can safely exit and return anytime.
+              Your location information has been safely stored with your listing draft. Tenants searching in your area can now find this property.
             </p>
           </div>
 
-          {/* DRAFT SUMMARY CARD */}
-          <div className="max-w-md mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-3.5">
+          {/* DRAFT OVERVIEW CARD */}
+          <div className="max-w-lg mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-3.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#86868B] font-semibold">Property Title</span>
-              <span className="font-bold text-[#1D1D1F] text-right truncate max-w-[200px]">
+              <span className="font-bold text-[#1D1D1F] text-right truncate max-w-[240px]">
                 {createdProperty.title}
               </span>
             </div>
@@ -476,6 +602,13 @@ export default function AddPropertyWizard() {
             </div>
 
             <div className="flex items-center justify-between text-xs">
+              <span className="text-[#86868B] font-semibold">Monthly Starting Rent</span>
+              <span className="font-extrabold text-emerald-600">
+                ₹{createdProperty.pricing?.monthlyRent?.toLocaleString('en-IN') || '0'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
               <span className="text-[#86868B] font-semibold">Move-In Availability</span>
               <span className="font-bold text-[#1D1D1F] inline-flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-emerald-600" />
@@ -487,14 +620,60 @@ export default function AddPropertyWizard() {
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#86868B] font-semibold">Monthly Starting Rent</span>
-              <span className="font-extrabold text-emerald-600">
-                ₹{createdProperty.pricing?.monthlyRent?.toLocaleString('en-IN') || '0'}
-              </span>
+            {/* LOCATION DETAILS SECTION */}
+            <div className="pt-3 border-t border-[#EDEDED] space-y-2">
+              <div className="flex items-start justify-between text-xs gap-3">
+                <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Locality & City</span>
+                </span>
+                <span className="font-bold text-[#1D1D1F] text-right">
+                  {[createdProperty.location?.locality, createdProperty.location?.city]
+                    .filter(Boolean)
+                    .join(', ') || '—'}
+                </span>
+              </div>
+
+              <div className="flex items-start justify-between text-xs gap-3">
+                <span className="text-[#86868B] font-semibold shrink-0">State & PIN Code</span>
+                <span className="font-bold text-[#1D1D1F] text-right">
+                  {[createdProperty.location?.state, createdProperty.location?.pincode]
+                    .filter(Boolean)
+                    .join(' - ') || '—'}
+                </span>
+              </div>
+
+              {createdProperty.location?.landmark && (
+                <div className="flex items-start justify-between text-xs gap-3">
+                  <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
+                    <Navigation className="w-3.5 h-3.5 text-[#86868B]" />
+                    <span>Landmark</span>
+                  </span>
+                  <span className="font-medium text-[#1D1D1F] text-right">
+                    {createdProperty.location.landmark}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-start justify-between text-xs gap-3">
+                <span className="text-[#86868B] font-semibold shrink-0">Address Privacy</span>
+                <span className="font-semibold text-right">
+                  {createdProperty.location?.hideExactAddress ? (
+                    <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-[11px]">
+                      <EyeOff className="w-3 h-3" />
+                      <span>Protected (Private)</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
+                      <Eye className="w-3 h-3" />
+                      <span>Public on listing</span>
+                    </span>
+                  )}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EDEDED]">
+            <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
               <span className="text-[#86868B] font-semibold">Listing Completeness</span>
               <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
                 <Clock className="w-3 h-3" />
@@ -505,6 +684,21 @@ export default function AddPropertyWizard() {
 
           {/* ACTION BUTTONS */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentStep(4);
+                if (typeof window !== 'undefined') {
+                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
+                  window.history.replaceState(null, '', newUrl);
+                }
+              }}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Location</span>
+            </button>
+
             <button
               type="button"
               onClick={() => {

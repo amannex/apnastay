@@ -159,12 +159,12 @@ export default function OwnerPropertiesView() {
                       <span>Offering: {prop.rentalStructure.replace(/_/g, ' ')}</span>
                       <span>•</span>
                       <span>Units: {prop.units?.length || 0}</span>
-                      {prop.location?.city && (
+                      {(prop.location?.locality || prop.location?.city) && (
                         <>
                           <span>•</span>
-                          <span className="inline-flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {prop.location.city}
+                          <span className="inline-flex items-center gap-1 text-[#1D1D1F] font-medium">
+                            <MapPin className="w-3 h-3 text-blue-600" />
+                            {[prop.location?.locality, prop.location?.city].filter(Boolean).join(', ')}
                           </span>
                         </>
                       )}

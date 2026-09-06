@@ -49,6 +49,7 @@ export type TemplateStructure =
 
 export interface PropertyLocation {
   addressLine1: string;
+  locality?: string;
   addressLine2?: string;
   city: string;
   state?: string;
@@ -56,6 +57,7 @@ export interface PropertyLocation {
   latitude?: number;
   longitude?: number;
   landmark?: string;
+  hideExactAddress?: boolean;
 }
 
 export type PropertyAvailabilityType = 'immediate' | 'specific_date';

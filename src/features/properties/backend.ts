@@ -149,13 +149,15 @@ class PropertyBackendStore {
         status: 'draft',
         location: payload.location ? {
           addressLine1: payload.location.addressLine1 || '',
+          locality: payload.location.locality,
           addressLine2: payload.location.addressLine2,
           city: payload.location.city || '',
           state: payload.location.state,
           pincode: payload.location.pincode || '',
           latitude: payload.location.latitude,
           longitude: payload.location.longitude,
-          landmark: payload.location.landmark
+          landmark: payload.location.landmark,
+          hideExactAddress: payload.location.hideExactAddress
         } : undefined,
         availability: payload.availability ? {
           type: payload.availability.type,
@@ -318,13 +320,15 @@ class PropertyBackendStore {
       if (payload.location !== undefined) {
         property.location = {
           addressLine1: payload.location.addressLine1 ?? property.location?.addressLine1 ?? '',
+          locality: payload.location.locality ?? property.location?.locality,
           addressLine2: payload.location.addressLine2 ?? property.location?.addressLine2,
           city: payload.location.city ?? property.location?.city ?? '',
           state: payload.location.state ?? property.location?.state,
           pincode: payload.location.pincode ?? property.location?.pincode ?? '',
           latitude: payload.location.latitude ?? property.location?.latitude,
           longitude: payload.location.longitude ?? property.location?.longitude,
-          landmark: payload.location.landmark ?? property.location?.landmark
+          landmark: payload.location.landmark ?? property.location?.landmark,
+          hideExactAddress: payload.location.hideExactAddress ?? property.location?.hideExactAddress
         };
       }
 
@@ -376,7 +380,11 @@ class PropertyBackendStore {
       if (property.description && property.description.length >= 10) score += 5;
       if (property.pricing && property.pricing.monthlyRent > 0) score += 5;
       if (property.availability) score += 5;
-      if (property.location?.city) score += 15;
+      if (property.location?.city && property.location?.addressLine1 && property.location?.pincode) {
+        score += 15;
+      } else if (property.location?.city) {
+        score += 8;
+      }
       if (property.photos && property.photos.length > 0) score += 20;
       if (property.amenities && property.amenities.length > 0) score += 10;
       if (property.units && property.units.length > 0) score += 23;
