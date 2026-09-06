@@ -49,6 +49,20 @@ async function resolveRequestContext() {
 }
 
 /**
+ * Detect if response indicates missing WordPress route or unreachable server,
+ * triggering automatic development fallback to propertyBackend simulation.
+ */
+function shouldFallbackToSimulation(res: Response, data: any): boolean {
+  return (
+    res.status === 404 ||
+    data?.code === 'rest_no_route' ||
+    res.status === 502 ||
+    res.status === 503 ||
+    (typeof data?.message === 'string' && data.message.includes('No route was found'))
+  );
+}
+
+/**
  * Create a new property draft.
  * Endpoint: POST /wp-json/apnastay/v1/owner/properties
  */
@@ -65,6 +79,10 @@ export async function createPropertyDraft(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.createDraft(ctx, payload);
+      }
       return {
         success: false,
         status: res.status,
@@ -98,6 +116,10 @@ export async function getProperty(propertyId: string): Promise<PropertyApiRespon
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.getProperty(ctx, propertyId);
+      }
       return {
         success: false,
         status: res.status,
@@ -136,6 +158,10 @@ export async function getOwnerProperties(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.getOwnerProperties(ctx, statusFilter);
+      }
       return {
         success: false,
         status: res.status,
@@ -172,6 +198,10 @@ export async function updateProperty(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updateProperty(ctx, propertyId, payload);
+      }
       return {
         success: false,
         status: res.status,
@@ -208,6 +238,10 @@ export async function createUnit(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.addUnit(ctx, propertyId, payload);
+      }
       return {
         success: false,
         status: res.status,
@@ -247,6 +281,10 @@ export async function bulkCreateUnits(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.bulkCreateUnits(ctx, propertyId, payload);
+      }
       return {
         success: false,
         status: res.status,
@@ -287,6 +325,10 @@ export async function duplicateUnit(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.duplicateUnit(ctx, propertyId, unitId, newNameOrNumber);
+      }
       return {
         success: false,
         status: res.status,
@@ -327,6 +369,10 @@ export async function updateUnit(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updateUnit(ctx, propertyId, unitId, updates);
+      }
       return {
         success: false,
         status: res.status,
@@ -364,6 +410,10 @@ export async function deleteUnit(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.deleteUnit(ctx, propertyId, unitId);
+      }
       return {
         success: false,
         status: res.status,
@@ -404,6 +454,10 @@ export async function createBed(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.addBed(ctx, propertyId, unitId, payload);
+      }
       return {
         success: false,
         status: res.status,
@@ -445,6 +499,10 @@ export async function updateBed(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updateBed(ctx, propertyId, unitId, bedId, updates);
+      }
       return {
         success: false,
         status: res.status,
@@ -483,6 +541,10 @@ export async function deleteBed(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.deleteBed(ctx, propertyId, unitId, bedId);
+      }
       return {
         success: false,
         status: res.status,
@@ -518,6 +580,10 @@ export async function publishProperty(propertyId: string): Promise<PropertyApiRe
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.publishProperty(ctx, propertyId);
+      }
       return {
         success: false,
         status: res.status,
@@ -553,6 +619,10 @@ export async function unpublishProperty(propertyId: string): Promise<PropertyApi
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.unpublishProperty(ctx, propertyId);
+      }
       return {
         success: false,
         status: res.status,
@@ -588,6 +658,10 @@ export async function archiveProperty(propertyId: string): Promise<PropertyApiRe
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.archiveProperty(ctx, propertyId);
+      }
       return {
         success: false,
         status: res.status,
