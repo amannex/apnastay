@@ -318,13 +318,13 @@ export default function LoginPage() {
         <div className="absolute top-10 right-10 w-96 h-96 bg-[#E1224D]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-amber-100/30 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Minimalist Lifestyle Vector Art */}
+        {/* Minimalist Lifestyle Vector Art: Person Entering Room */}
         <div className="relative z-10 flex flex-col items-center">
-          <div className="relative w-[340px] h-[340px] xl:w-[440px] xl:h-[440px] max-w-full">
+          <div className="relative w-[360px] h-[360px] xl:w-[480px] xl:h-[480px] max-w-full">
             <img
               src="/auth-vector-art.jpg"
-              alt="Modern lifestyle vector illustration"
-              className="w-full h-full object-contain rounded-3xl"
+              alt="Person entering modern room illustration"
+              className="w-full h-full object-contain rounded-3xl shadow-sm"
             />
           </div>
         </div>
