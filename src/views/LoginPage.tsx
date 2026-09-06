@@ -153,26 +153,24 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white text-[#1A1A1A] flex flex-col lg:flex-row selection:bg-[#E1224D]/15 selection:text-[#E1224D]">
       
       {/* ========================================================================= */}
-      {/* LEFT 60%: CONTENT CENTER-ALIGNED WITH LOGO ON TOP-LEFT                   */}
+      {/* LEFT HALF: MINIMAL, CLEAN CANVAS (NO CARD BOX, NO MULTI-STEP)             */}
       {/* ========================================================================= */}
-      <div className="w-full lg:w-[60%] min-h-screen relative flex items-center justify-center p-6 sm:p-10 z-10">
+      <div className="w-full lg:w-[46%] xl:w-[42%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-14 xl:p-20 z-10">
         
-        {/* Top-Left: Logo */}
-        <div className="absolute top-6 left-6 sm:top-8 sm:left-10 lg:top-10 lg:left-12 z-20">
-          <Link href="/" className="inline-flex items-center gap-2.5 group w-fit transition-transform">
-            <img
-              src="/logo-icon.png"
-              alt="ApnaStay Logo"
-              className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
-            />
-            <span className="font-gotham-black text-2xl tracking-tighter text-[#1A1A1A]">
-              ApnaStay<span className="text-[#E1224D]">.</span>
-            </span>
-          </Link>
-        </div>
+        {/* Top: Logo */}
+        <Link href="/" className="inline-flex items-center gap-2.5 group w-fit transition-transform">
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay Logo"
+            className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+          />
+          <span className="font-gotham-black text-2xl tracking-tighter text-[#1A1A1A]">
+            ApnaStay<span className="text-[#E1224D]">.</span>
+          </span>
+        </Link>
 
-        {/* Center: Simple Minimal Form (Center-Aligned in 60% Screen) */}
-        <div className="w-full max-w-sm mx-auto py-12">
+        {/* Center: Simple Minimal Form (Sitting Directly on Page Canvas) */}
+        <div className="w-full max-w-sm mx-auto lg:mx-0 my-auto py-8">
           
           <h1 className="text-3xl font-extrabold tracking-tight text-[#1A1A1A]">
             Sign in
@@ -305,22 +303,30 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Bottom-Left: Copyright */}
-        <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-10 lg:bottom-10 lg:left-12 text-xs text-gray-400">
+        {/* Bottom spacer for balance */}
+        <div className="hidden lg:block text-xs text-gray-400">
           © ApnaStay
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* RIGHT 40%: FULL-BLEED BACKGROUND (DIRECTLY ON BG, NO CARD FRAMING)       */}
+      {/* RIGHT HALF: SEAMLESS ARTWORK (SMALLER THAN BG, DIRECTLY BLENDED)          */}
       {/* ========================================================================= */}
-      <div className="hidden lg:block lg:w-[40%] min-h-screen relative overflow-hidden bg-[#F5F2ED]">
-        <img
-          src="/auth-vector-art.jpg"
-          alt="Person entering modern room illustration"
-          className="w-full h-full object-cover object-center"
-        />
-        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent pointer-events-none" />
+      <div className="hidden lg:flex lg:w-[54%] xl:w-[58%] min-h-screen relative overflow-hidden bg-[#FCFBF9] border-l border-gray-100/80 items-center justify-center p-8 lg:p-12 xl:p-16">
+        
+        {/* Soft Ambient Light Glows */}
+        <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-rose-100/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-amber-100/25 rounded-full blur-3xl pointer-events-none" />
+
+        {/* The Illustration: Sized comfortably, sitting directly on the canvas */}
+        <div className="relative z-10 w-full max-w-md xl:max-w-lg flex items-center justify-center">
+          <img
+            src="/auth-vector-art.jpg"
+            alt="Person entering modern room illustration"
+            className="w-full h-auto max-h-[75vh] object-contain mix-blend-multiply"
+          />
+        </div>
+
       </div>
 
       {/* ========================================================================= */}
