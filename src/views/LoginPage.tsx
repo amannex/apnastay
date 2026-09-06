@@ -153,24 +153,26 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white text-[#1A1A1A] flex flex-col lg:flex-row selection:bg-[#E1224D]/15 selection:text-[#E1224D]">
       
       {/* ========================================================================= */}
-      {/* LEFT 60%: MINIMAL, CLEAN CANVAS (NO CARD BOX, NO MULTI-STEP)              */}
+      {/* LEFT 60%: CONTENT CENTER-ALIGNED WITH LOGO ON TOP-LEFT                   */}
       {/* ========================================================================= */}
-      <div className="w-full lg:w-[60%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-16 xl:p-24 z-10">
+      <div className="w-full lg:w-[60%] min-h-screen relative flex items-center justify-center p-6 sm:p-10 z-10">
         
-        {/* Top: Logo */}
-        <Link href="/" className="inline-flex items-center gap-2.5 group w-fit transition-transform">
-          <img
-            src="/logo-icon.png"
-            alt="ApnaStay Logo"
-            className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
-          />
-          <span className="font-gotham-black text-2xl tracking-tighter text-[#1A1A1A]">
-            ApnaStay<span className="text-[#E1224D]">.</span>
-          </span>
-        </Link>
+        {/* Top-Left: Logo */}
+        <div className="absolute top-6 left-6 sm:top-8 sm:left-10 lg:top-10 lg:left-12 z-20">
+          <Link href="/" className="inline-flex items-center gap-2.5 group w-fit transition-transform">
+            <img
+              src="/logo-icon.png"
+              alt="ApnaStay Logo"
+              className="h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+            />
+            <span className="font-gotham-black text-2xl tracking-tighter text-[#1A1A1A]">
+              ApnaStay<span className="text-[#E1224D]">.</span>
+            </span>
+          </Link>
+        </div>
 
-        {/* Center: Simple Minimal Form (Sitting Directly on Page Canvas) */}
-        <div className="w-full max-w-sm mx-auto lg:mx-0 my-auto py-8">
+        {/* Center: Simple Minimal Form (Center-Aligned in 60% Screen) */}
+        <div className="w-full max-w-sm mx-auto py-12">
           
           <h1 className="text-3xl font-extrabold tracking-tight text-[#1A1A1A]">
             Sign in
@@ -303,8 +305,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Bottom spacer for balance */}
-        <div className="hidden lg:block text-xs text-gray-400">
+        {/* Bottom-Left: Copyright */}
+        <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-10 lg:bottom-10 lg:left-12 text-xs text-gray-400">
           © ApnaStay
         </div>
       </div>
