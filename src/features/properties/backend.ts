@@ -183,11 +183,12 @@ class PropertyBackendStore {
           visitorsAllowed: true
         },
         photos: [],
-        completenessScore: 15, // Starting draft completeness
+        completenessScore: 15,
         units: [],
         createdAt: now,
         updatedAt: now
       };
+      property.completenessScore = this.computeCompletenessScore(property);
 
       this.properties.set(id, property);
       this.persist();
@@ -357,6 +358,10 @@ class PropertyBackendStore {
         property.amenities = payload.amenities;
       }
 
+      if (payload.customAmenities !== undefined) {
+        property.customAmenities = payload.customAmenities;
+      }
+
       if (payload.rules !== undefined) {
         property.rules = {
           ...property.rules,
@@ -411,8 +416,6 @@ class PropertyBackendStore {
       !property.title.endsWith('Draft')
     ) {
       score += 5;
-    } else if (property.title && property.title.length >= 3) {
-      score += 2;
     }
     if (property.description && property.description.length >= 10) score += 5;
     if (property.pricing && property.pricing.monthlyRent > 0) score += 5;
@@ -423,7 +426,10 @@ class PropertyBackendStore {
       score += 8;
     }
     if (property.photos && property.photos.length > 0) score += 20;
-    if (property.amenities && property.amenities.length > 0) score += 10;
+    const hasAmenities =
+      (property.amenities && property.amenities.length > 0) ||
+      (property.customAmenities && property.customAmenities.length > 0);
+    if (hasAmenities) score += 10;
     if (property.units && property.units.length > 0) score += 23;
     return Math.min(100, score);
   }
@@ -1515,6 +1521,158 @@ class PropertyBackendStore {
         status: err.status || 500,
         code: err.code || 'ARCHIVE_PROPERTY_ERROR',
         error: err.message || 'Failed to archive property.'
+      };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Phase 6: Amenity Management Operations
+  // --------------------------------------------------------------------------
+
+  /**
+   * Update the property's selected amenities and custom amenities.
+   */
+  public updateAmenities(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    amenities: string[],
+    customAmenities: string[] = []
+  ): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const now = new Date().toISOString();
+      property.amenities = Array.from(new Set(amenities));
+      property.customAmenities = Array.from(new Set(customAmenities.map((c) => c.trim()).filter(Boolean)));
+      property.completenessScore = this.computeCompletenessScore(property);
+      property.updatedAt = now;
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: property
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_AMENITIES_ERROR',
+        error: err.message || 'Failed to update amenities.'
+      };
+    }
+  }
+
+  /**
+   * Add a single custom amenity to a property.
+   */
+  public addCustomAmenity(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    customName: string
+  ): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const sanitized = customName.trim();
+      if (!sanitized) {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_CUSTOM_AMENITY',
+          error: 'Custom amenity name cannot be empty.'
+        };
+      }
+
+      const existing = property.customAmenities ? [...property.customAmenities] : [];
+      if (!existing.includes(sanitized)) {
+        existing.push(sanitized);
+        property.customAmenities = existing;
+        property.completenessScore = this.computeCompletenessScore(property);
+        property.updatedAt = new Date().toISOString();
+        this.persist();
+      }
+
+      return {
+        success: true,
+        status: 200,
+        data: property
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'ADD_CUSTOM_AMENITY_ERROR',
+        error: err.message || 'Failed to add custom amenity.'
+      };
+    }
+  }
+
+  /**
+   * Remove a single custom amenity from a property.
+   */
+  public removeCustomAmenity(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    customName: string
+  ): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const sanitized = customName.trim();
+      const existing = property.customAmenities ? [...property.customAmenities] : [];
+      property.customAmenities = existing.filter((c) => c !== sanitized);
+      property.completenessScore = this.computeCompletenessScore(property);
+      property.updatedAt = new Date().toISOString();
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: property
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'REMOVE_CUSTOM_AMENITY_ERROR',
+        error: err.message || 'Failed to remove custom amenity.'
       };
     }
   }

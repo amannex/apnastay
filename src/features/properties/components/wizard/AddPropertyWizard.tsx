@@ -28,17 +28,19 @@ import {
 } from 'lucide-react';
 import type { Property, PropertyType, RentalStructure, PropertyAvailability, PropertyPhoto } from '../../types';
 import { getPropertyTemplate } from '../../templates';
-import { createPropertyDraft, updateProperty, getProperty } from '../../api';
+import { createPropertyDraft, updateProperty, getProperty, updatePropertyAmenities } from '../../api';
+import { AMENITY_REGISTRY } from '../../amenities';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
 import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
+import StepAmenities from './StepAmenities';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -51,6 +53,10 @@ export default function AddPropertyWizard() {
 
   // Photos draft state (Phase 5)
   const [photos, setPhotos] = useState<PropertyPhoto[]>([]);
+
+  // Amenities draft state (Phase 6)
+  const [amenities, setAmenities] = useState<string[]>([]);
+  const [customAmenities, setCustomAmenities] = useState<string[]>([]);
 
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -109,12 +115,25 @@ export default function AddPropertyWizard() {
             setPhotos(prop.photos);
           }
 
+          // Restore amenities form fields (Phase 6)
+          if (prop.amenities && prop.amenities.length > 0) {
+            setAmenities(prop.amenities);
+          }
+          if (prop.customAmenities && prop.customAmenities.length > 0) {
+            setCustomAmenities(prop.customAmenities);
+          }
+
           // Determine step from URL or progress
           const stepParam = Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 6) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6);
+          if (stepParam >= 1 && stepParam <= 7) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7);
+          } else if (
+            (prop.amenities && prop.amenities.length > 0) ||
+            (prop.customAmenities && prop.customAmenities.length > 0)
+          ) {
+            setCurrentStep(6);
           } else if (prop.photos && prop.photos.length > 0) {
-            setCurrentStep(5);
+            setCurrentStep(6);
           } else if (prop.location?.city && prop.location?.addressLine1 && prop.location?.pincode) {
             setCurrentStep(5);
           } else if (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0) {
@@ -133,7 +152,7 @@ export default function AddPropertyWizard() {
   }, []);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     if (typeof window !== 'undefined') {
@@ -355,6 +374,48 @@ export default function AddPropertyWizard() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 6: Amenities Back & Save Handlers (Phase 6)
+  // --------------------------------------------------------------------------
+  const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
+    setAmenities(currentAmenities);
+    setCustomAmenities(currentCustom);
+    setCurrentStep(5);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=5`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSaveAmenities = async (currentAmenities: string[], currentCustom: string[]) => {
+    if (!createdProperty) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await updatePropertyAmenities(
+        createdProperty.id,
+        currentAmenities,
+        currentCustom
+      );
+
+      if (res.success && res.data) {
+        setAmenities(currentAmenities);
+        setCustomAmenities(currentCustom);
+        syncDraftState(res.data, 7);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(res.error || 'Failed to save property amenities.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Network error while saving amenities.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -368,6 +429,8 @@ export default function AddPropertyWizard() {
     setBasicDetails({});
     setLocationData({});
     setPhotos([]);
+    setAmenities([]);
+    setCustomAmenities([]);
     setCreatedProperty(null);
     setErrorMsg(null);
   };
@@ -514,13 +577,49 @@ export default function AddPropertyWizard() {
 
           <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
 
-          {/* Step 5: Upcoming Phase (Photos & Amenities) */}
-          <div className="flex items-center gap-1.5 opacity-40">
-            <div className="w-7 h-7 rounded-full bg-[#EDEDED] text-[#86868B] flex items-center justify-center text-xs font-bold">
-              5
+          {/* Step 5: Photos */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                currentStep > 5
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 5
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {currentStep > 5 ? <CheckCircle2 className="w-4 h-4" /> : '5'}
             </div>
-            <span className="text-xs font-semibold text-[#86868B] hidden sm:inline">
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 5 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
               Photos
+            </span>
+          </div>
+
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
+
+          {/* Step 6: Amenities */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                currentStep > 6
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 6
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {currentStep > 6 ? <CheckCircle2 className="w-4 h-4" /> : '6'}
+            </div>
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 6 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
+              Amenities
             </span>
           </div>
         </div>
@@ -628,8 +727,25 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 6: PHASE 5 COMPLETION SUMMARY CARD */}
+      {/* STEP 6: AMENITIES & FEATURES (PHASE 6) */}
       {currentStep === 6 && createdProperty && !isLoadingDraft && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+          <StepAmenities
+            propertyType={selectedType}
+            customPropertyType={customPropertyType}
+            initialAmenities={amenities.length > 0 ? amenities : createdProperty.amenities || []}
+            initialCustomAmenities={
+              customAmenities.length > 0 ? customAmenities : createdProperty.customAmenities || []
+            }
+            onBack={handleBackFromAmenities}
+            onSave={handleSaveAmenities}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 7: PHASE 6 COMPLETION SUMMARY CARD */}
+      {currentStep === 7 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 className="w-8 h-8" />
@@ -638,14 +754,14 @@ export default function AddPropertyWizard() {
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 5 Complete — Photos & Listing Saved</span>
+              <span>Phase 6 Complete — Amenities & Property Features Saved</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Property Photos Saved!
+              Property Amenities Saved!
             </h2>
             <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your photos and listing information have been safely stored with your property draft.
-              Tenants can now visually explore your listing with high-quality media.
+              Your amenities, photos, and property details have been safely stored with your listing draft.
+              Tenants will now have complete visibility into what your property offers.
             </p>
           </div>
 
@@ -781,6 +897,60 @@ export default function AddPropertyWizard() {
                 </div>
               </div>
 
+              {/* AMENITIES DETAILS (PHASE 6) */}
+              <div className="pt-3 border-t border-[#EDEDED] space-y-2.5">
+                {(() => {
+                  const currentAmenities =
+                    amenities.length > 0 ? amenities : createdProperty.amenities || [];
+                  const currentCustom =
+                    customAmenities.length > 0
+                      ? customAmenities
+                      : createdProperty.customAmenities || [];
+                  const totalCount = currentAmenities.length + currentCustom.length;
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Amenities & Features</span>
+                        </span>
+                        <span className="font-bold text-emerald-600">
+                          {totalCount} Selected
+                        </span>
+                      </div>
+
+                      {totalCount > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {currentAmenities.map((amenityId) => {
+                            const def = AMENITY_REGISTRY[amenityId];
+                            return (
+                              <span
+                                key={amenityId}
+                                className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-100"
+                              >
+                                {def?.name || amenityId}
+                              </span>
+                            );
+                          })}
+                          {currentCustom.map((item, idx) => (
+                            <span
+                              key={`cust-sum-${idx}`}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-100"
+                            >
+                              <Sparkles className="w-2.5 h-2.5" />
+                              <span>{item}</span>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-[#86868B] italic">No amenities specified</p>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
                 <span className="text-[#86868B] font-semibold">Listing Completeness</span>
                 <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
@@ -796,31 +966,31 @@ export default function AddPropertyWizard() {
             <button
               type="button"
               onClick={() => {
+                setCurrentStep(6);
+                if (typeof window !== 'undefined') {
+                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=6`;
+                  window.history.replaceState(null, '', newUrl);
+                }
+              }}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span>Edit Amenities</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 setCurrentStep(5);
                 if (typeof window !== 'undefined') {
                   const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=5`;
                   window.history.replaceState(null, '', newUrl);
                 }
               }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
             >
               <Camera className="w-4 h-4" />
               <span>Manage Photos</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(4);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Edit Location</span>
             </button>
 
             <Link

@@ -13,9 +13,10 @@ import type {
   AuthResponse
 } from './types';
 import { TENANT_CAPABILITIES, OWNER_CAPABILITIES, ADMIN_CAPABILITIES } from './permissions';
+import { siteConfig } from '../../config/site';
 
-const WP_API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WP_API_URL) || 'http://localhost:8888/wp-json';
-const APNASTAY_API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_APNASTAY_API_URL) || `${WP_API_BASE}/apnastay/v1`;
+const WP_API_BASE = siteConfig.api.wp;
+const APNASTAY_API_BASE = siteConfig.api.apnastay;
 
 /**
  * Helper to get default fallback user profiles for local development when CMS is unreachable.

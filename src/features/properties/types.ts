@@ -128,6 +128,27 @@ export interface UpdatePhotoPayload {
   order?: number;
 }
 
+// ----------------------------------------------------------------------------
+// Phase 6: Amenity Definitions
+// ----------------------------------------------------------------------------
+export type AmenityCategory =
+  | 'basic'
+  | 'comfort'
+  | 'building'
+  | 'services'
+  | 'safety'
+  | 'outdoor'
+  | 'custom';
+
+export interface AmenityDefinition {
+  id: string;
+  name: string;
+  category: AmenityCategory;
+  iconName: string;
+  description?: string;
+  defaultSuggestedFor?: PropertyType[];
+}
+
 export interface PropertyRules {
   tenantPreference?:
     | 'all'
@@ -188,6 +209,7 @@ export interface Property {
   availability?: PropertyAvailability;
   pricing?: PropertyPricing;
   amenities?: string[];
+  customAmenities?: string[];
   rules?: PropertyRules;
   photos?: PropertyPhoto[];
   completenessScore: number; // 0 - 100
@@ -240,6 +262,7 @@ export interface UpdatePropertyPayload {
   location?: Partial<PropertyLocation>;
   pricing?: Partial<PropertyPricing>;
   amenities?: string[];
+  customAmenities?: string[];
   rules?: Partial<PropertyRules>;
   photos?: PropertyPhoto[];
   status?: PropertyStatus;

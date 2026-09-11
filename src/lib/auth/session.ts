@@ -5,6 +5,7 @@
 
 import { getCurrentUser, logoutUser } from '../../features/auth/api';
 import type { UserProfile } from '../../features/auth/types';
+import { siteConfig } from '../../config/site';
 
 let cachedSessionUser: UserProfile | null = null;
 let sessionFetchPromise: Promise<UserProfile | null> | null = null;
@@ -137,7 +138,7 @@ export function getRoleRedirectUrl(user: UserProfile | null | undefined, customR
 
   // Default authoritative redirects by role
   if (role === 'administrator' || role === 'admin') {
-    return (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WP_ADMIN_URL) || 'http://localhost:8888/wp-admin/';
+    return siteConfig.api.wpAdmin;
   }
   if (role === 'owner') {
     return '/owner/dashboard';

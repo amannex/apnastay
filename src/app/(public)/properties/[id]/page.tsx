@@ -1,3 +1,4 @@
+import { siteConfig } from '@/config/site';
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
 
   const title = `${titleText} - ₹${priceNum.toLocaleString()}/mo in ${neighborhoodText}`;
   const description = `Rent ${roomTypeText} in ${neighborhoodText}, ${cityText} with zero brokerage. Verified NFC smart-lock self-tour, high-speed fiber Wi-Fi, and ₹0 commission.`;
-  const canonicalUrl = `https://apnastay-eight.vercel.app/properties/${property.id}`;
+  const canonicalUrl = `${siteConfig.url}/properties/${property.id}`;
 
   return {
     title,
@@ -93,7 +94,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     '@type': 'RealEstateListing',
     name: titleText,
     description: `Zero-brokerage rental residence located in ${neighborhoodText}, ${cityText}.`,
-    url: `https://apnastay-eight.vercel.app/properties/${property.id}`,
+    url: `${siteConfig.url}/properties/${property.id}`,
     datePosted: '2026-07-01',
     offers: {
       '@type': 'Offer',

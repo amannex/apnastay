@@ -5,9 +5,10 @@ import '../styles/index.css';
 import { AppProvider } from '../context/AppContext';
 import { AuthProvider } from '../context/AuthContext';
 import AppShell from '../components/layout/AppShell';
+import { siteConfig } from '../config/site';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://apnastay-eight.vercel.app'),
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: 'ApnaStay | Zero-Brokerage Rental Platform in India',
     template: '%s | ApnaStay India',
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     'pune flats for rent',
     'chandigarh rentals',
   ],
-  authors: [{ name: 'ApnaStay India Team', url: 'https://apnastay-eight.vercel.app' }],
+  authors: [{ name: 'ApnaStay India Team', url: siteConfig.url }],
   creator: 'ApnaStay India',
   publisher: 'ApnaStay Technologies Pvt Ltd',
   robots: {
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://apnastay-eight.vercel.app',
+    url: siteConfig.url,
     siteName: 'ApnaStay India',
     title: 'ApnaStay | Zero-Brokerage Rental Platform in India',
     description:
@@ -87,8 +88,8 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',
     name: 'ApnaStay India',
-    url: 'https://apnastay-eight.vercel.app',
-    logo: 'https://apnastay-eight.vercel.app/logo.png',
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/logo.png`,
     description:
       "India's premier verified zero-brokerage residential rental platform serving Tier-1 & Tier-2 cities including Indore, Jaipur, Coimbatore, Kochi, Chandigarh, and Pune.",
     address: {
@@ -99,9 +100,9 @@ export default function RootLayout({
     },
     priceRange: '₹16,500 - ₹50,000',
     sameAs: [
-      'https://twitter.com/apnastayindia',
-      'https://www.linkedin.com/company/apnastayindia',
-      'https://www.instagram.com/apnastayindia',
+      siteConfig.links.twitter,
+      siteConfig.links.linkedin,
+      siteConfig.links.instagram,
     ],
   };
 

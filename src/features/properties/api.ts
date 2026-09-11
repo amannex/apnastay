@@ -22,11 +22,10 @@ import type {
 import { propertyBackend } from './backend';
 import { getCurrentUser } from '../auth/api';
 import { fetchSession } from '../../lib/auth/session';
+import { siteConfig } from '../../config/site';
 
-const WP_API_BASE =
-  (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WP_API_URL) || 'http://localhost:8888/wp-json';
-const APNASTAY_API_BASE =
-  (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_APNASTAY_API_URL) || `${WP_API_BASE}/apnastay/v1`;
+const WP_API_BASE = siteConfig.api.wp;
+const APNASTAY_API_BASE = siteConfig.api.apnastay;
 
 /**
  * Resolve the current active user context for local simulations.
@@ -884,3 +883,23 @@ export async function setCoverPropertyPhoto(
 ): Promise<PropertyApiResponse<PropertyPhoto>> {
   return updatePropertyPhoto(propertyId, photoId, { isCover: true });
 }
+
+// ============================================================================
+// PHASE 6: AMENITIES & FEATURES CLIENT API
+// ============================================================================
+
+/**
+ * Update selected amenities and custom amenities on a property draft.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}
+ */
+export async function updatePropertyAmenities(
+  propertyId: string,
+  amenities: string[],
+  customAmenities: string[] = []
+): Promise<PropertyApiResponse<Property>> {
+  return updateProperty(propertyId, {
+    amenities,
+    customAmenities
+  });
+}
+

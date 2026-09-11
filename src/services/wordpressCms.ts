@@ -4,8 +4,9 @@
 // ============================================================================
 
 import type { BlogPost } from '../types';
+import { siteConfig } from '../config/site';
 
-const WP_API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WP_API_URL) || 'https://demo.wp-api.org/wp-json/wp/v2';
+const WP_API_BASE = siteConfig.api.wp;
 
 export const STATIC_BLOG_POSTS: BlogPost[] = [
   {
@@ -170,7 +171,7 @@ export const STATIC_ADMIN_ANALYTICS = {
 };
 
 export async function fetchBlogPosts(perPage: number = 10) {
-  if (!process.env.NEXT_PUBLIC_WP_API_URL) {
+  if (!process.env.NEXT_PUBLIC_WP_API_URL && !siteConfig.isProduction) {
     return STATIC_BLOG_POSTS;
   }
   try {
@@ -217,7 +218,7 @@ export async function fetchBlogPosts(perPage: number = 10) {
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   const staticPost = STATIC_BLOG_POSTS.find(p => p.slug === slug);
-  if (!process.env.NEXT_PUBLIC_WP_API_URL) {
+  if (!process.env.NEXT_PUBLIC_WP_API_URL && !siteConfig.isProduction) {
     return staticPost || null;
   }
   try {
