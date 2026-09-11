@@ -13,6 +13,8 @@ export { default as StepRentalStructure } from './components/wizard/StepRentalSt
 export { default as StepBasicDetails } from './components/wizard/StepBasicDetails';
 export { default as StepLocation } from './components/wizard/StepLocation';
 export type { LocationFormData } from './components/wizard/StepLocation';
+export { default as StepPhotos } from './components/wizard/StepPhotos';
+export type { StepPhotosProps } from './components/wizard/StepPhotos';
 export { default as HybridMapPicker } from './components/wizard/HybridMapPicker';
 export type { DetectedAddressComponents } from './components/wizard/HybridMapPicker';
 export { default as AddPropertyWizard } from './components/wizard/AddPropertyWizard';

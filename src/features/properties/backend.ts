@@ -17,14 +17,16 @@ import type {
   CreateUnitPayload,
   CreateBedPayload,
   BulkCreateUnitsPayload,
+  PropertyPhoto,
+  PhotoCategory,
+  UploadPhotoPayload,
+  UpdatePhotoPayload,
+  BackendRequestContext,
   PropertyApiResponse
 } from './types';
 import { getPropertyTemplate, validateStructureForTemplate } from './templates';
 
-export interface BackendRequestContext {
-  userId: number; // The authenticated user making the request
-  isAdmin?: boolean;
-}
+export type { BackendRequestContext };
 
 /**
  * Generate lightweight unique IDs (cryptographically secure where available, RFC4122 v4 fallback).
@@ -363,33 +365,22 @@ class PropertyBackendStore {
       }
 
       if (payload.photos !== undefined) {
-        property.photos = payload.photos;
+        const normalized = payload.photos.map((p, idx) => ({
+          ...p,
+          order: typeof p.order === 'number' ? p.order : idx
+        }));
+        const hasCover = normalized.some((p) => p.isCover);
+        if (!hasCover && normalized.length > 0) {
+          normalized[0].isCover = true;
+        }
+        property.photos = normalized;
       }
 
       if (payload.status !== undefined) {
         property.status = payload.status;
       }
 
-      // Recalculate completenessScore dynamically
-      let score = 15; // baseline draft created
-      if (property.title && property.title.length >= 3 && !property.title.startsWith('New ') && !property.title.endsWith('Draft')) {
-        score += 5;
-      } else if (property.title && property.title.length >= 3) {
-        score += 2;
-      }
-      if (property.description && property.description.length >= 10) score += 5;
-      if (property.pricing && property.pricing.monthlyRent > 0) score += 5;
-      if (property.availability) score += 5;
-      if (property.location?.city && property.location?.addressLine1 && property.location?.pincode) {
-        score += 15;
-      } else if (property.location?.city) {
-        score += 8;
-      }
-      if (property.photos && property.photos.length > 0) score += 20;
-      if (property.amenities && property.amenities.length > 0) score += 10;
-      if (property.units && property.units.length > 0) score += 23;
-      property.completenessScore = Math.min(100, score);
-
+      property.completenessScore = this.computeCompletenessScore(property);
       property.updatedAt = now;
       this.persist();
 
@@ -406,6 +397,385 @@ class PropertyBackendStore {
         error: err.message || 'Failed to update property.'
       };
     }
+  }
+
+  // --------------------------------------------------------------------------
+  // Completeness Scoring Helper
+  // --------------------------------------------------------------------------
+  public computeCompletenessScore(property: Property): number {
+    let score = 15; // baseline draft created
+    if (
+      property.title &&
+      property.title.length >= 3 &&
+      !property.title.startsWith('New ') &&
+      !property.title.endsWith('Draft')
+    ) {
+      score += 5;
+    } else if (property.title && property.title.length >= 3) {
+      score += 2;
+    }
+    if (property.description && property.description.length >= 10) score += 5;
+    if (property.pricing && property.pricing.monthlyRent > 0) score += 5;
+    if (property.availability) score += 5;
+    if (property.location?.city && property.location?.addressLine1 && property.location?.pincode) {
+      score += 15;
+    } else if (property.location?.city) {
+      score += 8;
+    }
+    if (property.photos && property.photos.length > 0) score += 20;
+    if (property.amenities && property.amenities.length > 0) score += 10;
+    if (property.units && property.units.length > 0) score += 23;
+    return Math.min(100, score);
+  }
+
+  // --------------------------------------------------------------------------
+  // Phase 5: Photo Management Operations
+  // --------------------------------------------------------------------------
+
+  /**
+   * Upload and attach a photo to a property with validation & ownership security.
+   */
+  public uploadPhoto(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    payload: UploadPhotoPayload
+  ): PropertyApiResponse<PropertyPhoto> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      // File format validation
+      const supportedMimes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/heic',
+        'image/heif'
+      ];
+      const mime = (payload.mimeType || '').toLowerCase();
+      const ext = (payload.fileName || '').split('.').pop()?.toLowerCase() || '';
+      const supportedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif'];
+
+      const isValidMime = supportedMimes.includes(mime);
+      const isValidExt = supportedExts.includes(ext);
+
+      if (!isValidMime && !isValidExt) {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_IMAGE_FORMAT',
+          error: `Unsupported image format (${mime || ext || 'unknown'}). Supported formats: JPEG, PNG, WebP, GIF, and HEIC.`
+        };
+      }
+
+      // File size validation (up to 10MB)
+      if (typeof payload.fileSize === 'number') {
+        if (payload.fileSize <= 0) {
+          return {
+            success: false,
+            status: 400,
+            code: 'CORRUPTED_IMAGE',
+            error: 'Image file is empty or corrupted (0 bytes).'
+          };
+        }
+        const maxBytes = 10 * 1024 * 1024; // 10MB
+        if (payload.fileSize > maxBytes) {
+          return {
+            success: false,
+            status: 400,
+            code: 'IMAGE_TOO_LARGE',
+            error: `Image exceeds maximum allowed size of 10MB (got ${(payload.fileSize / (1024 * 1024)).toFixed(1)}MB).`
+          };
+        }
+      }
+
+      const photoId = generateEntityId('photo');
+      const now = new Date().toISOString();
+      const existingPhotos = property.photos ? [...property.photos] : [];
+
+      // Determine cover photo status:
+      // If manually specified true, or if this is the first photo, set as cover.
+      const isFirst = existingPhotos.length === 0;
+      const isCover = payload.isCover !== undefined ? payload.isCover : isFirst;
+
+      if (isCover) {
+        existingPhotos.forEach((p) => {
+          p.isCover = false;
+        });
+      }
+
+      const photoUrl =
+        payload.dataUrl ||
+        (payload.file && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+          ? URL.createObjectURL(payload.file)
+          : `/uploads/properties/${propertyId}/${photoId}.jpg`);
+
+      const newPhoto: PropertyPhoto = {
+        id: photoId,
+        url: photoUrl,
+        thumbnailUrl: photoUrl,
+        category: payload.category,
+        isCover,
+        order: existingPhotos.length,
+        fileName: payload.fileName,
+        fileSize: payload.fileSize,
+        mimeType: payload.mimeType,
+        uploadedAt: now
+      };
+
+      existingPhotos.push(newPhoto);
+      property.photos = existingPhotos;
+      property.completenessScore = this.computeCompletenessScore(property);
+      property.updatedAt = now;
+      this.persist();
+
+      return {
+        success: true,
+        status: 201,
+        data: newPhoto
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPLOAD_PHOTO_ERROR',
+        error: err.message || 'Failed to upload photo.'
+      };
+    }
+  }
+
+  /**
+   * Delete a photo with ownership check and automatic cover photo fallback.
+   */
+  public deletePhoto(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    photoId: string | number
+  ): PropertyApiResponse<{ deletedPhotoId: string | number; remainingPhotos: PropertyPhoto[] }> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const photos = property.photos ? [...property.photos] : [];
+      const index = photos.findIndex((p) => String(p.id) === String(photoId));
+      if (index === -1) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PHOTO_NOT_FOUND',
+          error: `Photo with ID '${photoId}' not found on this property.`
+        };
+      }
+
+      const [deleted] = photos.splice(index, 1);
+
+      // Reorder remaining photos
+      photos.forEach((p, idx) => {
+        p.order = idx;
+      });
+
+      // If deleted photo was cover, assign cover to the first remaining photo
+      if (deleted.isCover && photos.length > 0) {
+        photos[0].isCover = true;
+      }
+
+      property.photos = photos;
+      property.completenessScore = this.computeCompletenessScore(property);
+      property.updatedAt = new Date().toISOString();
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: {
+          deletedPhotoId: photoId,
+          remainingPhotos: photos
+        }
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'DELETE_PHOTO_ERROR',
+        error: err.message || 'Failed to delete photo.'
+      };
+    }
+  }
+
+  /**
+   * Reorder property photos according to provided array of photo IDs.
+   */
+  public reorderPhotos(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    orderedPhotoIds: (string | number)[]
+  ): PropertyApiResponse<PropertyPhoto[]> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const existingPhotos = property.photos ? [...property.photos] : [];
+      const photoMap = new Map<string, PropertyPhoto>();
+      existingPhotos.forEach((p) => photoMap.set(String(p.id), { ...p }));
+
+      const reordered: PropertyPhoto[] = [];
+      orderedPhotoIds.forEach((id, idx) => {
+        const p = photoMap.get(String(id));
+        if (p) {
+          p.order = idx;
+          reordered.push(p);
+          photoMap.delete(String(id));
+        }
+      });
+
+      // Append any unmentioned photos to the end
+      photoMap.forEach((p) => {
+        p.order = reordered.length;
+        reordered.push(p);
+      });
+
+      // Ensure a cover photo is defined if photos exist
+      const hasCover = reordered.some((p) => p.isCover);
+      if (!hasCover && reordered.length > 0) {
+        reordered[0].isCover = true;
+      }
+
+      property.photos = reordered;
+      property.updatedAt = new Date().toISOString();
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: reordered
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'REORDER_PHOTOS_ERROR',
+        error: err.message || 'Failed to reorder photos.'
+      };
+    }
+  }
+
+  /**
+   * Update individual photo details (category, isCover, or order).
+   */
+  public updatePhotoDetails(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    photoId: string | number,
+    updates: UpdatePhotoPayload
+  ): PropertyApiResponse<PropertyPhoto> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const photos = property.photos ? [...property.photos] : [];
+      const photo = photos.find((p) => String(p.id) === String(photoId));
+      if (!photo) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PHOTO_NOT_FOUND',
+          error: `Photo with ID '${photoId}' not found on this property.`
+        };
+      }
+
+      if (updates.isCover === true) {
+        photos.forEach((p) => {
+          p.isCover = false;
+        });
+        photo.isCover = true;
+      }
+
+      if (updates.category !== undefined) {
+        photo.category = updates.category;
+      }
+
+      if (typeof updates.order === 'number') {
+        photo.order = updates.order;
+        photos.sort((a, b) => a.order - b.order);
+        photos.forEach((p, idx) => {
+          p.order = idx;
+        });
+      }
+
+      property.photos = photos;
+      property.updatedAt = new Date().toISOString();
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: photo
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_PHOTO_ERROR',
+        error: err.message || 'Failed to update photo details.'
+      };
+    }
+  }
+
+  /**
+   * Set specific photo as the primary cover photo.
+   */
+  public setCoverPhoto(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    photoId: string | number
+  ): PropertyApiResponse<PropertyPhoto> {
+    return this.updatePhotoDetails(ctx, propertyId, photoId, { isCover: true });
   }
 
   // --------------------------------------------------------------------------

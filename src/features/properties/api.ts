@@ -14,6 +14,9 @@ import type {
   CreateUnitPayload,
   CreateBedPayload,
   BulkCreateUnitsPayload,
+  PropertyPhoto,
+  UploadPhotoPayload,
+  UpdatePhotoPayload,
   PropertyApiResponse
 } from './types';
 import { propertyBackend } from './backend';
@@ -678,4 +681,206 @@ export async function archiveProperty(propertyId: string): Promise<PropertyApiRe
     const ctx = await resolveRequestContext();
     return propertyBackend.archiveProperty(ctx, propertyId);
   }
+}
+
+// ============================================================================
+// PHASE 5: PROPERTY PHOTO MANAGEMENT CLIENT API
+// ============================================================================
+
+/**
+ * Upload and attach a photo to a property draft.
+ * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/photos
+ */
+export async function uploadPropertyPhoto(
+  propertyId: string,
+  payload: UploadPhotoPayload
+): Promise<PropertyApiResponse<PropertyPhoto>> {
+  try {
+    let res: Response;
+
+    if (payload.file) {
+      const formData = new FormData();
+      formData.append('file', payload.file);
+      if (payload.category) formData.append('category', payload.category);
+      if (payload.isCover !== undefined) formData.append('isCover', String(payload.isCover));
+
+      res = await fetch(`${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/photos`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+    } else {
+      res = await fetch(`${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+    }
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.uploadPhoto(ctx, propertyId, payload);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPLOAD_PHOTO_FAILED',
+        error: data?.message || data?.error || 'Failed to upload photo.'
+      };
+    }
+
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.uploadPhoto(ctx, propertyId, payload);
+  }
+}
+
+/**
+ * Delete a photo from a property.
+ * Endpoint: DELETE /wp-json/apnastay/v1/owner/properties/{id}/photos/{photoId}
+ */
+export async function deletePropertyPhoto(
+  propertyId: string,
+  photoId: string | number
+): Promise<PropertyApiResponse<{ deletedPhotoId: string | number; remainingPhotos: PropertyPhoto[] }>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/photos/${encodeURIComponent(photoId)}`,
+      {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+        credentials: 'include'
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.deletePhoto(ctx, propertyId, photoId);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'DELETE_PHOTO_FAILED',
+        error: data?.message || data?.error || 'Failed to delete photo.'
+      };
+    }
+
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.deletePhoto(ctx, propertyId, photoId);
+  }
+}
+
+/**
+ * Reorder property photos.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}/photos/reorder
+ */
+export async function reorderPropertyPhotos(
+  propertyId: string,
+  orderedPhotoIds: (string | number)[]
+): Promise<PropertyApiResponse<PropertyPhoto[]>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/photos/reorder`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ photoIds: orderedPhotoIds })
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.reorderPhotos(ctx, propertyId, orderedPhotoIds);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'REORDER_PHOTOS_FAILED',
+        error: data?.message || data?.error || 'Failed to reorder photos.'
+      };
+    }
+
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.reorderPhotos(ctx, propertyId, orderedPhotoIds);
+  }
+}
+
+/**
+ * Update photo metadata (category or cover flag).
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}/photos/{photoId}
+ */
+export async function updatePropertyPhoto(
+  propertyId: string,
+  photoId: string | number,
+  updates: UpdatePhotoPayload
+): Promise<PropertyApiResponse<PropertyPhoto>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/photos/${encodeURIComponent(photoId)}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updates)
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updatePhotoDetails(ctx, propertyId, photoId, updates);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPDATE_PHOTO_FAILED',
+        error: data?.message || data?.error || 'Failed to update photo details.'
+      };
+    }
+
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.updatePhotoDetails(ctx, propertyId, photoId, updates);
+  }
+}
+
+/**
+ * Set a photo as the primary cover photo for the property.
+ */
+export async function setCoverPropertyPhoto(
+  propertyId: string,
+  photoId: string | number
+): Promise<PropertyApiResponse<PropertyPhoto>> {
+  return updatePropertyPhoto(propertyId, photoId, { isCover: true });
 }

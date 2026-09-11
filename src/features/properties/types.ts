@@ -88,22 +88,44 @@ export interface BedPricing {
   securityDeposit: number;
 }
 
+export type PhotoCategory =
+  | 'exterior'
+  | 'bedroom'
+  | 'bathroom'
+  | 'kitchen'
+  | 'living_room'
+  | 'room'
+  | 'common_area'
+  | 'parking'
+  | 'other';
+
 export interface PropertyPhoto {
   id: string | number;
   url: string;
   thumbnailUrl?: string;
-  category?:
-    | 'exterior'
-    | 'bedroom'
-    | 'bathroom'
-    | 'kitchen'
-    | 'living_room'
-    | 'room'
-    | 'common_area'
-    | 'parking'
-    | 'other';
+  category?: PhotoCategory;
   isCover: boolean;
   order: number;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  uploadedAt?: string;
+}
+
+export interface UploadPhotoPayload {
+  file?: File;
+  dataUrl?: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  category?: PhotoCategory;
+  isCover?: boolean;
+}
+
+export interface UpdatePhotoPayload {
+  category?: PhotoCategory;
+  isCover?: boolean;
+  order?: number;
 }
 
 export interface PropertyRules {
@@ -264,4 +286,9 @@ export interface PropertyApiResponse<T = any> {
   error?: string;
   code?: string;
   status?: number;
+}
+
+export interface BackendRequestContext {
+  userId: number; // The authenticated user making the request
+  isAdmin?: boolean;
 }

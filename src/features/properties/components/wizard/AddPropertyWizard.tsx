@@ -21,20 +21,24 @@ import {
   Compass,
   Navigation,
   Eye,
-  EyeOff
+  EyeOff,
+  Camera,
+  Star,
+  Image as ImageIcon
 } from 'lucide-react';
-import type { Property, PropertyType, RentalStructure, PropertyAvailability } from '../../types';
+import type { Property, PropertyType, RentalStructure, PropertyAvailability, PropertyPhoto } from '../../types';
 import { getPropertyTemplate } from '../../templates';
 import { createPropertyDraft, updateProperty, getProperty } from '../../api';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
 import StepLocation, { LocationFormData } from './StepLocation';
+import StepPhotos from './StepPhotos';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -44,6 +48,9 @@ export default function AddPropertyWizard() {
 
   // Location draft form state (preserved on back navigation)
   const [locationData, setLocationData] = useState<Partial<LocationFormData>>({});
+
+  // Photos draft state (Phase 5)
+  const [photos, setPhotos] = useState<PropertyPhoto[]>([]);
 
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -97,10 +104,17 @@ export default function AddPropertyWizard() {
             });
           }
 
+          // Restore photos form fields (Phase 5)
+          if (prop.photos && prop.photos.length > 0) {
+            setPhotos(prop.photos);
+          }
+
           // Determine step from URL or progress
           const stepParam = Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 5) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5);
+          if (stepParam >= 1 && stepParam <= 6) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6);
+          } else if (prop.photos && prop.photos.length > 0) {
+            setCurrentStep(5);
           } else if (prop.location?.city && prop.location?.addressLine1 && prop.location?.pincode) {
             setCurrentStep(5);
           } else if (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0) {
@@ -119,7 +133,7 @@ export default function AddPropertyWizard() {
   }, []);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     if (typeof window !== 'undefined') {
@@ -303,6 +317,44 @@ export default function AddPropertyWizard() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 5: Photos Back & Save Handlers (Phase 5)
+  // --------------------------------------------------------------------------
+  const handleBackFromPhotos = (currentPhotos: PropertyPhoto[]) => {
+    setPhotos(currentPhotos);
+    setCurrentStep(4);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSavePhotos = async (currentPhotos: PropertyPhoto[]) => {
+    if (!createdProperty) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await updateProperty(createdProperty.id, {
+        photos: currentPhotos
+      });
+
+      if (res.success && res.data) {
+        setPhotos(currentPhotos);
+        syncDraftState(res.data, 6);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(res.error || 'Failed to save property photos.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Network error while saving photos.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -315,6 +367,7 @@ export default function AddPropertyWizard() {
     setSelectedStructure(null);
     setBasicDetails({});
     setLocationData({});
+    setPhotos([]);
     setCreatedProperty(null);
     setErrorMsg(null);
   };
@@ -562,8 +615,21 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 5: PHASE 4 COMPLETION SUMMARY CARD */}
+      {/* STEP 5: PHOTOS (PHASE 5) */}
       {currentStep === 5 && createdProperty && !isLoadingDraft && (
+        <div className="space-y-6 animate-fade-in">
+          <StepPhotos
+            propertyId={createdProperty.id}
+            initialPhotos={photos.length > 0 ? photos : createdProperty.photos || []}
+            onBack={handleBackFromPhotos}
+            onSave={handleSavePhotos}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 6: PHASE 5 COMPLETION SUMMARY CARD */}
+      {currentStep === 6 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 className="w-8 h-8" />
@@ -572,118 +638,176 @@ export default function AddPropertyWizard() {
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 4 Complete — Property Location Saved</span>
+              <span>Phase 5 Complete — Photos & Listing Saved</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Property Location Saved!
+              Property Photos Saved!
             </h2>
             <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your location information has been safely stored with your listing draft. Tenants searching in your area can now find this property.
+              Your photos and listing information have been safely stored with your property draft.
+              Tenants can now visually explore your listing with high-quality media.
             </p>
           </div>
 
           {/* DRAFT OVERVIEW CARD */}
-          <div className="max-w-lg mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-3.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#86868B] font-semibold">Property Title</span>
-              <span className="font-bold text-[#1D1D1F] text-right truncate max-w-[240px]">
-                {createdProperty.title}
-              </span>
-            </div>
+          <div className="max-w-lg mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-4">
+            {/* COVER PHOTO THUMBNAIL IF AVAILABLE */}
+            {(() => {
+              const currentPhotos = photos.length > 0 ? photos : createdProperty.photos || [];
+              const cover = currentPhotos.find((p) => p.isCover) || currentPhotos[0];
+              if (cover) {
+                return (
+                  <div className="relative rounded-2xl overflow-hidden aspect-video w-full bg-[#EDEDED] border border-[#EDEDED]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={cover.thumbnailUrl || cover.url}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[11px] font-extrabold shadow-sm">
+                      <Star className="w-3 h-3 fill-white" />
+                      <span>Cover Photo</span>
+                    </div>
+                    <div className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-bold inline-flex items-center gap-1">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{currentPhotos.length} photo{currentPhotos.length > 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#86868B] font-semibold">Property Format</span>
-              <span className="font-bold text-[#1D1D1F]">{getFormatLabel()}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#86868B] font-semibold">Rental Offering</span>
-              <span className="font-bold text-[#1D1D1F]">{getRentalLabel()}</span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#86868B] font-semibold">Monthly Starting Rent</span>
-              <span className="font-extrabold text-emerald-600">
-                ₹{createdProperty.pricing?.monthlyRent?.toLocaleString('en-IN') || '0'}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#86868B] font-semibold">Move-In Availability</span>
-              <span className="font-bold text-[#1D1D1F] inline-flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                <span>
-                  {createdProperty.availability?.type === 'immediate'
-                    ? 'Available Now'
-                    : `From ${createdProperty.availability?.availableFrom}`}
-                </span>
-              </span>
-            </div>
-
-            {/* LOCATION DETAILS SECTION */}
-            <div className="pt-3 border-t border-[#EDEDED] space-y-2">
-              <div className="flex items-start justify-between text-xs gap-3">
-                <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Locality & City</span>
-                </span>
-                <span className="font-bold text-[#1D1D1F] text-right">
-                  {[createdProperty.location?.locality, createdProperty.location?.city]
-                    .filter(Boolean)
-                    .join(', ') || '—'}
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868B] font-semibold">Property Title</span>
+                <span className="font-bold text-[#1D1D1F] text-right truncate max-w-[240px]">
+                  {createdProperty.title}
                 </span>
               </div>
 
-              <div className="flex items-start justify-between text-xs gap-3">
-                <span className="text-[#86868B] font-semibold shrink-0">State & PIN Code</span>
-                <span className="font-bold text-[#1D1D1F] text-right">
-                  {[createdProperty.location?.state, createdProperty.location?.pincode]
-                    .filter(Boolean)
-                    .join(' - ') || '—'}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868B] font-semibold">Property Format</span>
+                <span className="font-bold text-[#1D1D1F]">{getFormatLabel()}</span>
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868B] font-semibold">Rental Offering</span>
+                <span className="font-bold text-[#1D1D1F]">{getRentalLabel()}</span>
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868B] font-semibold">Monthly Starting Rent</span>
+                <span className="font-extrabold text-emerald-600">
+                  ₹{createdProperty.pricing?.monthlyRent?.toLocaleString('en-IN') || '0'}
                 </span>
               </div>
 
-              {createdProperty.location?.landmark && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868B] font-semibold">Move-In Availability</span>
+                <span className="font-bold text-[#1D1D1F] inline-flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>
+                    {createdProperty.availability?.type === 'immediate'
+                      ? 'Available Now'
+                      : `From ${createdProperty.availability?.availableFrom}`}
+                  </span>
+                </span>
+              </div>
+
+              {/* LOCATION DETAILS SECTION */}
+              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
                 <div className="flex items-start justify-between text-xs gap-3">
                   <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
-                    <Navigation className="w-3.5 h-3.5 text-[#86868B]" />
-                    <span>Landmark</span>
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Locality & City</span>
                   </span>
-                  <span className="font-medium text-[#1D1D1F] text-right">
-                    {createdProperty.location.landmark}
+                  <span className="font-bold text-[#1D1D1F] text-right">
+                    {[createdProperty.location?.locality, createdProperty.location?.city]
+                      .filter(Boolean)
+                      .join(', ') || '—'}
                   </span>
                 </div>
-              )}
 
-              <div className="flex items-start justify-between text-xs gap-3">
-                <span className="text-[#86868B] font-semibold shrink-0">Address Privacy</span>
-                <span className="font-semibold text-right">
-                  {createdProperty.location?.hideExactAddress ? (
-                    <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-[11px]">
-                      <EyeOff className="w-3 h-3" />
-                      <span>Protected (Private)</span>
+                <div className="flex items-start justify-between text-xs gap-3">
+                  <span className="text-[#86868B] font-semibold shrink-0">State & PIN Code</span>
+                  <span className="font-bold text-[#1D1D1F] text-right">
+                    {[createdProperty.location?.state, createdProperty.location?.pincode]
+                      .filter(Boolean)
+                      .join(' - ') || '—'}
+                  </span>
+                </div>
+
+                {createdProperty.location?.landmark && (
+                  <div className="flex items-start justify-between text-xs gap-3">
+                    <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
+                      <Navigation className="w-3.5 h-3.5 text-[#86868B]" />
+                      <span>Landmark</span>
                     </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
-                      <Eye className="w-3 h-3" />
-                      <span>Public on listing</span>
+                    <span className="font-medium text-[#1D1D1F] text-right">
+                      {createdProperty.location.landmark}
                     </span>
-                  )}
+                  </div>
+                )}
+
+                <div className="flex items-start justify-between text-xs gap-3">
+                  <span className="text-[#86868B] font-semibold shrink-0">Address Privacy</span>
+                  <span className="font-semibold text-right">
+                    {createdProperty.location?.hideExactAddress ? (
+                      <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-[11px]">
+                        <EyeOff className="w-3 h-3" />
+                        <span>Protected (Private)</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
+                        <Eye className="w-3 h-3" />
+                        <span>Public on listing</span>
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* MEDIA DETAILS */}
+              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                    <Camera className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Gallery Media</span>
+                  </span>
+                  <span className="font-bold text-[#1D1D1F]">
+                    {(photos.length > 0 ? photos.length : createdProperty.photos?.length) || 0} Photos Attached
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
+                <span className="text-[#86868B] font-semibold">Listing Completeness</span>
+                <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                  <Clock className="w-3 h-3" />
+                  <span>Draft ({createdProperty.completenessScore}% complete)</span>
                 </span>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
-              <span className="text-[#86868B] font-semibold">Listing Completeness</span>
-              <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
-                <Clock className="w-3 h-3" />
-                <span>Draft ({createdProperty.completenessScore}% complete)</span>
-              </span>
             </div>
           </div>
 
           {/* ACTION BUTTONS */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentStep(5);
+                if (typeof window !== 'undefined') {
+                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=5`;
+                  window.history.replaceState(null, '', newUrl);
+                }
+              }}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <Camera className="w-4 h-4" />
+              <span>Manage Photos</span>
+            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -699,24 +823,9 @@ export default function AddPropertyWizard() {
               <span>Edit Location</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(3);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Edit Basic Details</span>
-            </button>
-
             <Link
               href="/owner/dashboard/properties"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
             >
               <span>View in My Properties</span>
               <ArrowRight className="w-4 h-4" />

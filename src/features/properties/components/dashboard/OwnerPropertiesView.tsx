@@ -12,7 +12,8 @@ import {
   Sparkles,
   Loader2,
   Layers,
-  MapPin
+  MapPin,
+  Camera
 } from 'lucide-react';
 import type { Property } from '../../types';
 import { getOwnerProperties } from '../../api';
@@ -28,17 +29,18 @@ export default function OwnerPropertiesView() {
       try {
         setLoading(true);
         const res = await getOwnerProperties();
-        if (res.success && Array.isArray(res.data)) {
+        if (res.success && res.data) {
           setProperties(res.data);
         } else {
-          setError(res.error || 'Failed to load properties.');
+          setError(res.error || 'Failed to load your properties.');
         }
       } catch (err: any) {
-        setError(err?.message || 'Network error fetching properties.');
+        setError(err.message || 'Network error while fetching properties.');
       } finally {
         setLoading(false);
       }
     }
+
     loadProperties();
   }, []);
 
@@ -119,6 +121,7 @@ export default function OwnerPropertiesView() {
             const template = getPropertyTemplate(prop.propertyType);
             const isDraft = prop.status === 'draft';
             const isPublished = prop.status === 'published';
+            const coverPhoto = prop.photos?.find((p) => p.isCover) || prop.photos?.[0];
 
             return (
               <div
@@ -126,9 +129,20 @@ export default function OwnerPropertiesView() {
                 className="bg-white rounded-2xl p-5 border border-[#EDEDED] shadow-apple-sm hover:border-[#D1D1D6] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#F5F5F7] flex items-center justify-center text-[#1D1D1F] shrink-0 border border-[#EDEDED]">
-                    <Building2 className="w-6 h-6" />
-                  </div>
+                  {coverPhoto ? (
+                    <div className="w-14 h-14 rounded-xl bg-[#F5F5F7] overflow-hidden shrink-0 border border-[#EDEDED] relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={coverPhoto.thumbnailUrl || coverPhoto.url}
+                        alt="Cover"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-[#F5F5F7] flex items-center justify-center text-[#1D1D1F] shrink-0 border border-[#EDEDED]">
+                      <Building2 className="w-6 h-6" />
+                    </div>
+                  )}
 
                   <div>
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -155,10 +169,19 @@ export default function OwnerPropertiesView() {
                       )}
                     </div>
 
-                    <p className="text-xs text-[#86868B] flex items-center gap-2">
+                    <p className="text-xs text-[#86868B] flex items-center gap-2 flex-wrap">
                       <span>Offering: {prop.rentalStructure.replace(/_/g, ' ')}</span>
                       <span>•</span>
                       <span>Units: {prop.units?.length || 0}</span>
+                      {prop.photos && prop.photos.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                            <Camera className="w-3 h-3" />
+                            <span>{prop.photos.length} Photo{prop.photos.length > 1 ? 's' : ''}</span>
+                          </span>
+                        </>
+                      )}
                       {(prop.location?.locality || prop.location?.city) && (
                         <>
                           <span>•</span>
