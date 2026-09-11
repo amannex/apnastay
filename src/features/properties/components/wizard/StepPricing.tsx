@@ -1114,7 +1114,7 @@ export default function StepPricing({
             </>
           ) : (
             <>
-              <span>Save & Review Listing</span>
+              <span>Save & Continue to Rules</span>
               <ArrowRight className="w-4 h-4 text-emerald-400" />
             </>
           )}

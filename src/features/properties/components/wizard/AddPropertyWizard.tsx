@@ -28,7 +28,15 @@ import {
   BedDouble,
   Zap,
   Wrench,
-  Tag
+  Tag,
+  ShieldAlert,
+  Users,
+  Utensils,
+  PawPrint,
+  Cigarette,
+  Wine,
+  FileCheck2,
+  ListPlus
 } from 'lucide-react';
 import type {
   Property,
@@ -37,7 +45,8 @@ import type {
   PropertyAvailability,
   PropertyPhoto,
   PropertyUnit,
-  PropertyPricing
+  PropertyPricing,
+  PropertyRules
 } from '../../types';
 import { getPropertyTemplate } from '../../templates';
 import {
@@ -46,7 +55,8 @@ import {
   getProperty,
   updatePropertyAmenities,
   updatePropertyUnits,
-  updatePropertyPricing
+  updatePropertyPricing,
+  updatePropertyRules
 } from '../../api';
 import { AMENITY_REGISTRY } from '../../amenities';
 import { getUnitTerminology, calculateUnitAvailability } from '../../units';
@@ -56,6 +66,13 @@ import {
   getPropertyAvailabilityLabel,
   formatPricingDisplay
 } from '../../pricing';
+import {
+  getPolicyBadgeInfo,
+  formatFoodPolicy,
+  formatKitchenPolicy,
+  formatTimingPolicy,
+  formatResidentSuitability
+} from '../../rules';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
@@ -64,11 +81,12 @@ import StepPhotos from './StepPhotos';
 import StepAmenities from './StepAmenities';
 import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
+import StepRules from './StepRules';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(1);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -88,6 +106,9 @@ export default function AddPropertyWizard() {
 
   // Units draft state (Phase 7)
   const [units, setUnits] = useState<PropertyUnit[]>([]);
+
+  // Rules draft state (Phase 9)
+  const [rules, setRules] = useState<PropertyRules | null>(null);
 
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -159,15 +180,29 @@ export default function AddPropertyWizard() {
             setUnits(prop.units);
           }
 
+          // Restore rules state (Phase 9)
+          if (prop.rules) {
+            setRules(prop.rules);
+          }
+
           // Determine step from URL or progress
           const stepParam = Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 9) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9);
+          if (stepParam >= 1 && stepParam <= 10) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10);
+          } else if (
+            prop.rules &&
+            (
+              (prop.rules.suitableFor && prop.rules.suitableFor.length > 0) ||
+              (prop.rules.customRules && prop.rules.customRules.length > 0) ||
+              (prop.rules.guestPolicy && prop.rules.guestPolicy !== 'not_specified')
+            )
+          ) {
+            setCurrentStep(10);
           } else if (
             prop.pricing?.securityDepositConfig ||
             (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0 && prop.availability)
           ) {
-            setCurrentStep(8);
+            setCurrentStep(9);
           } else if (prop.units && prop.units.length > 0) {
             setCurrentStep(8);
           } else if (
@@ -195,7 +230,7 @@ export default function AddPropertyWizard() {
   }, []);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     if (typeof window !== 'undefined') {
@@ -556,6 +591,42 @@ export default function AddPropertyWizard() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 9: Rules & Preferences Handlers (Phase 9)
+  // --------------------------------------------------------------------------
+  const handleBackFromRules = () => {
+    setCurrentStep(8);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=8`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSaveRules = async (rulesPayload: PropertyRules) => {
+    if (!createdProperty) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await updatePropertyRules(createdProperty.id, rulesPayload);
+
+      if (res.success && res.data) {
+        setRules(res.data);
+        const updated = { ...createdProperty, rules: res.data };
+        syncDraftState(updated, 10);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(res.error || 'Failed to save property rules.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Network error while saving rules.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -572,6 +643,7 @@ export default function AddPropertyWizard() {
     setAmenities([]);
     setCustomAmenities([]);
     setUnits([]);
+    setRules(null);
     setCreatedProperty(null);
     setErrorMsg(null);
   };
@@ -811,6 +883,30 @@ export default function AddPropertyWizard() {
               Pricing
             </span>
           </div>
+
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
+
+          {/* Step 9: Rules */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                currentStep > 9
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 9
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {currentStep > 9 ? <CheckCircle2 className="w-4 h-4" /> : '9'}
+            </div>
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 9 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
+              Rules
+            </span>
+          </div>
         </div>
       </div>
 
@@ -961,8 +1057,20 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 9: PHASE 8 COMPLETION & LISTING REVIEW */}
+      {/* STEP 9: RULES & TENANT PREFERENCES (PHASE 9) */}
       {currentStep === 9 && createdProperty && !isLoadingDraft && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+          <StepRules
+            property={createdProperty}
+            onBack={handleBackFromRules}
+            onSave={handleSaveRules}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 10: PHASE 9 COMPLETION & LISTING REVIEW */}
+      {currentStep === 10 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 className="w-8 h-8" />
@@ -971,14 +1079,14 @@ export default function AddPropertyWizard() {
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 8 Complete — Ready for Tenants!</span>
+              <span>Phase 9 Complete — Ready for Review!</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
               Property Listing Complete!
             </h2>
             <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your property details, photos, amenities, unit layout, pricing, and availability terms
-              have all been saved. Review the finalized summary below!
+              Your property details, photos, amenities, unit layout, pricing, availability terms,
+              and house rules have all been saved. Review the finalized summary below!
             </p>
           </div>
 
@@ -1264,6 +1372,117 @@ export default function AddPropertyWizard() {
                 })()}
               </div>
 
+              {/* RULES & PREFERENCES DETAILS (PHASE 9) */}
+              <div className="pt-3 border-t border-[#EDEDED] space-y-2.5">
+                {(() => {
+                  const currentRules = rules || createdProperty.rules;
+                  if (!currentRules) {
+                    return (
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                            <ShieldAlert className="w-3.5 h-3.5 text-indigo-600" />
+                            <span>Rules & Preferences</span>
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#86868B] italic">No rules specified</p>
+                      </div>
+                    );
+                  }
+
+                  const guestBadge = getPolicyBadgeInfo(currentRules.guestPolicy);
+                  const petBadge = getPolicyBadgeInfo(currentRules.petPolicy);
+                  const smokingBadge = getPolicyBadgeInfo(currentRules.smokingPolicy);
+                  const alcoholBadge = getPolicyBadgeInfo(currentRules.alcoholPolicy);
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                          <ShieldAlert className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>Rules & Preferences</span>
+                        </span>
+                        <span className="font-bold text-indigo-600">Configured</span>
+                      </div>
+
+                      {/* Suitability */}
+                      {currentRules.suitableFor && currentRules.suitableFor.length > 0 && (
+                        <div className="mb-2">
+                          <span className="text-[11px] text-[#86868B] font-semibold block mb-1">
+                            Suitable For:
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {currentRules.suitableFor.map((s) => (
+                              <span
+                                key={s}
+                                className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 text-[10px] font-bold border border-indigo-100"
+                              >
+                                {formatResidentSuitability(s)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Policies Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
+                          <span className="text-[#86868B] block">Guests:</span>
+                          <span className="font-bold text-[#1D1D1F]">{guestBadge.label}</span>
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
+                          <span className="text-[#86868B] block">Pets:</span>
+                          <span className="font-bold text-[#1D1D1F]">{petBadge.label}</span>
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
+                          <span className="text-[#86868B] block">Smoking:</span>
+                          <span className="font-bold text-[#1D1D1F]">{smokingBadge.label}</span>
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
+                          <span className="text-[#86868B] block">Alcohol:</span>
+                          <span className="font-bold text-[#1D1D1F]">{alcoholBadge.label}</span>
+                        </div>
+                      </div>
+
+                      {/* Timing & Food summary */}
+                      {(currentRules.timingType || currentRules.foodPolicy) && (
+                        <div className="pt-2 flex flex-wrap gap-2 text-[11px]">
+                          {currentRules.timingType && (
+                            <span className="inline-flex items-center gap-1 text-[#1D1D1F] font-medium">
+                              <Clock className="w-3 h-3 text-[#86868B]" />
+                              <span>{formatTimingPolicy(currentRules.timingType, currentRules.gateClosingTime)}</span>
+                            </span>
+                          )}
+                          {currentRules.foodPolicy && currentRules.foodPolicy !== 'not_specified' && (
+                            <span className="inline-flex items-center gap-1 text-[#1D1D1F] font-medium">
+                              <Utensils className="w-3 h-3 text-[#86868B]" />
+                              <span>{formatFoodPolicy(currentRules.foodPolicy)}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Custom Rules */}
+                      {currentRules.customRules && currentRules.customRules.length > 0 && (
+                        <div className="pt-2">
+                          <span className="text-[11px] text-[#86868B] font-semibold block mb-1">
+                            House Rules ({currentRules.customRules.length}):
+                          </span>
+                          <ul className="list-disc list-inside text-[11px] text-[#1D1D1F] space-y-0.5 pl-1">
+                            {currentRules.customRules.slice(0, 3).map((r, idx) => (
+                              <li key={idx} className="truncate">{r}</li>
+                            ))}
+                            {currentRules.customRules.length > 3 && (
+                              <li className="text-[#86868B] italic">+{currentRules.customRules.length - 3} more</li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
                 <span className="text-[#86868B] font-semibold">Listing Completeness</span>
                 <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
@@ -1279,16 +1498,31 @@ export default function AddPropertyWizard() {
             <button
               type="button"
               onClick={() => {
+                setCurrentStep(9);
+                if (typeof window !== 'undefined') {
+                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=9`;
+                  window.history.replaceState(null, '', newUrl);
+                }
+              }}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <ShieldAlert className="w-4 h-4 text-indigo-400" />
+              <span>Edit Rules & Guidelines</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 setCurrentStep(8);
                 if (typeof window !== 'undefined') {
                   const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=8`;
                   window.history.replaceState(null, '', newUrl);
                 }
               }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
             >
-              <IndianRupee className="w-4 h-4 text-emerald-400" />
-              <span>Edit Pricing & Terms</span>
+              <IndianRupee className="w-4 h-4 text-emerald-600" />
+              <span>Edit Pricing</span>
             </button>
 
             <button

@@ -22,7 +22,8 @@ import type {
   BedPricing,
   PropertyAvailability,
   BulkPricingPayload,
-  PropertyApiResponse
+  PropertyApiResponse,
+  PropertyRules
 } from './types';
 import { propertyBackend } from './backend';
 import { getCurrentUser } from '../auth/api';
@@ -1122,5 +1123,45 @@ export async function updateBulkPricing(
   }
 }
 
+/**
+ * Update property rules and tenant preferences.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}/rules
+ */
+export async function updatePropertyRules(
+  propertyId: string,
+  rules: Partial<PropertyRules>
+): Promise<PropertyApiResponse<PropertyRules>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/rules`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(rules)
+      }
+    );
 
-
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updatePropertyRules(ctx, propertyId, rules);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPDATE_RULES_FAILED',
+        error: data?.message || data?.error || 'Failed to update property rules.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.updatePropertyRules(ctx, propertyId, rules);
+  }
+}

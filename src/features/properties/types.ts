@@ -216,7 +216,87 @@ export interface AmenityDefinition {
   defaultSuggestedFor?: PropertyType[];
 }
 
+export type PolicyStatus = 'allowed' | 'not_allowed' | 'with_restrictions' | 'not_specified';
+
+export type ResidentSuitability =
+  | 'individuals'
+  | 'couples'
+  | 'families'
+  | 'students'
+  | 'working_professionals'
+  | 'bachelors';
+
+export type FoodIncludedPolicy =
+  | 'all_meals'
+  | 'breakfast_only'
+  | 'breakfast_dinner'
+  | 'no_meals'
+  | 'on_demand'
+  | 'not_specified';
+
+export type KitchenAccessPolicy =
+  | 'private'
+  | 'shared'
+  | 'not_available'
+  | 'not_specified';
+
+export type CookingAllowedPolicy =
+  | 'veg_only'
+  | 'veg_and_nonveg'
+  | 'not_allowed'
+  | 'not_specified';
+
+export type TimingRestrictionType =
+  | 'curfew'
+  | 'gate_closing'
+  | 'open_24_7'
+  | 'flexible'
+  | 'not_specified';
+
 export interface PropertyRules {
+  // Occupancy & Residents
+  maxOccupants?: number;
+  suitableFor?: ResidentSuitability[];
+  genderPreference?: 'any' | 'male_only' | 'female_only';
+
+  // Guest Policy
+  guestPolicy?: PolicyStatus;
+  guestRestrictions?: string;
+
+  // Pet Policy
+  petPolicy?: PolicyStatus;
+  petRestrictions?: string;
+
+  // Smoking & Alcohol
+  smokingPolicy?: PolicyStatus;
+  smokingRestrictions?: string;
+  alcoholPolicy?: PolicyStatus;
+  alcoholRestrictions?: string;
+
+  // Timing & Access
+  timingType?: TimingRestrictionType;
+  gateClosingTime?: string;
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+  timingNotes?: string;
+
+  // Food & Kitchen
+  foodPolicy?: FoodIncludedPolicy;
+  kitchenAccess?: KitchenAccessPolicy;
+  cookingPolicy?: CookingAllowedPolicy;
+  foodNotes?: string;
+
+  // Move-in & Verification
+  requiresIdProof?: boolean;
+  requiresPoliceVerification?: boolean;
+  requiresEmploymentOrCollegeProof?: boolean;
+  verificationNotes?: string;
+
+  // Custom Rules & Notes
+  customRules?: string[];
+  additionalNotes?: string;
+
+  // Backward compatibility fields
   tenantPreference?:
     | 'all'
     | 'bachelors_male'
@@ -228,8 +308,8 @@ export interface PropertyRules {
   alcoholAllowed?: boolean;
   petsAllowed?: boolean;
   visitorsAllowed?: boolean;
-  gateClosingTime?: string;
-  customRules?: string[];
+  noticePeriodDays?: number;
+  lockInPeriodMonths?: number;
 }
 
 export interface PropertyBed {
@@ -389,6 +469,7 @@ export interface PropertyApiResponse<T = any> {
   error?: string;
   code?: string;
   status?: number;
+  message?: string;
 }
 
 export interface BackendRequestContext {

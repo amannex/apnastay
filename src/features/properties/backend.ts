@@ -28,10 +28,12 @@ import type {
   PropertyAvailability,
   BulkPricingPayload,
   BackendRequestContext,
-  PropertyApiResponse
+  PropertyApiResponse,
+  PropertyRules
 } from './types';
 import { getPropertyTemplate, validateStructureForTemplate } from './templates';
 import { validatePricingPayload, calculateEffectiveDeposit } from './pricing';
+import { validatePropertyRules, sanitizePropertyRules } from './rules';
 
 export type { BackendRequestContext };
 
@@ -415,10 +417,10 @@ class PropertyBackendStore {
       }
 
       if (payload.rules !== undefined) {
-        property.rules = {
+        property.rules = sanitizePropertyRules({
           ...property.rules,
           ...payload.rules
-        };
+        });
       }
 
       if (payload.photos !== undefined) {
@@ -499,6 +501,25 @@ class PropertyBackendStore {
       property.pricing?.electricityChargesConfig
     );
     if (hasDetailedPricing) score += 5;
+
+    // Phase 9: Rules & Preferences scoring
+    const hasConfiguredRules = Boolean(
+      property.rules &&
+      (
+        (property.rules.suitableFor && property.rules.suitableFor.length > 0) ||
+        (property.rules.guestPolicy && property.rules.guestPolicy !== 'not_specified') ||
+        (property.rules.petPolicy && property.rules.petPolicy !== 'not_specified') ||
+        (property.rules.smokingPolicy && property.rules.smokingPolicy !== 'not_specified') ||
+        (property.rules.alcoholPolicy && property.rules.alcoholPolicy !== 'not_specified') ||
+        (property.rules.timingType && property.rules.timingType !== 'not_specified') ||
+        (property.rules.foodPolicy && property.rules.foodPolicy !== 'not_specified') ||
+        (property.rules.kitchenAccess && property.rules.kitchenAccess !== 'not_specified') ||
+        (property.rules.customRules && property.rules.customRules.length > 0) ||
+        property.rules.requiresIdProof ||
+        property.rules.requiresPoliceVerification
+      )
+    );
+    if (hasConfiguredRules) score += 5;
 
     // Structure / Units scoring
     if (property.units && property.units.length > 0) {
@@ -2012,6 +2033,70 @@ class PropertyBackendStore {
         status: err.status || 500,
         code: err.code || 'REMOVE_CUSTOM_AMENITY_ERROR',
         error: err.message || 'Failed to remove custom amenity.'
+      };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Phase 9: Rules & Preferences Operations
+  // --------------------------------------------------------------------------
+
+  /**
+   * Update rules and preferences for a property with validation & ownership security.
+   */
+  public updatePropertyRules(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    rules: Partial<PropertyRules>
+  ): PropertyApiResponse<PropertyRules> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      const validation = validatePropertyRules(rules);
+      if (!validation.valid) {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_RULES_CONFIG',
+          error: validation.errors.join(' ')
+        };
+      }
+
+      const mergedRules: PropertyRules = {
+        ...property.rules,
+        ...rules
+      };
+
+      const sanitized = sanitizePropertyRules(mergedRules);
+      property.rules = sanitized;
+      property.completenessScore = this.computeCompletenessScore(property);
+      property.updatedAt = new Date().toISOString();
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: property.rules,
+        message: 'Property rules updated successfully.'
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_RULES_ERROR',
+        error: err.message || 'Failed to update property rules.'
       };
     }
   }
