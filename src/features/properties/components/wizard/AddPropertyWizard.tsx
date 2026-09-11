@@ -26,12 +26,36 @@ import {
   Star,
   Image as ImageIcon,
   BedDouble,
+  Zap,
+  Wrench,
+  Tag
 } from 'lucide-react';
-import type { Property, PropertyType, RentalStructure, PropertyAvailability, PropertyPhoto, PropertyUnit } from '../../types';
+import type {
+  Property,
+  PropertyType,
+  RentalStructure,
+  PropertyAvailability,
+  PropertyPhoto,
+  PropertyUnit,
+  PropertyPricing
+} from '../../types';
 import { getPropertyTemplate } from '../../templates';
-import { createPropertyDraft, updateProperty, getProperty, updatePropertyAmenities, updatePropertyUnits } from '../../api';
+import {
+  createPropertyDraft,
+  updateProperty,
+  getProperty,
+  updatePropertyAmenities,
+  updatePropertyUnits,
+  updatePropertyPricing
+} from '../../api';
 import { AMENITY_REGISTRY } from '../../amenities';
 import { getUnitTerminology, calculateUnitAvailability } from '../../units';
+import {
+  formatCurrency,
+  calculateEffectiveDeposit,
+  getPropertyAvailabilityLabel,
+  formatPricingDisplay
+} from '../../pricing';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
@@ -39,11 +63,12 @@ import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
 import StepAmenities from './StepAmenities';
 import StepUnits from './StepUnits';
+import StepPricing from './StepPricing';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>(1);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -136,10 +161,15 @@ export default function AddPropertyWizard() {
 
           // Determine step from URL or progress
           const stepParam = Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 8) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8);
+          if (stepParam >= 1 && stepParam <= 9) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9);
+          } else if (
+            prop.pricing?.securityDepositConfig ||
+            (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0 && prop.availability)
+          ) {
+            setCurrentStep(8);
           } else if (prop.units && prop.units.length > 0) {
-            setCurrentStep(7);
+            setCurrentStep(8);
           } else if (
             (prop.amenities && prop.amenities.length > 0) ||
             (prop.customAmenities && prop.customAmenities.length > 0)
@@ -165,7 +195,7 @@ export default function AddPropertyWizard() {
   }, []);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     if (typeof window !== 'undefined') {
@@ -474,9 +504,56 @@ export default function AddPropertyWizard() {
 
   const handleSkipUnits = async () => {
     if (!createdProperty) return;
-    // Simply advance to completion without requiring units
+    // Simply advance to pricing without requiring units
     syncDraftState(createdProperty, 8);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // --------------------------------------------------------------------------
+  // Step 8: Pricing & Availability Back & Save Handlers (Phase 8)
+  // --------------------------------------------------------------------------
+  const handleBackFromPricing = () => {
+    setCurrentStep(7);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=7`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSavePricing = async (data: {
+    propertyPricing: PropertyPricing;
+    propertyAvailability: PropertyAvailability;
+    units?: PropertyUnit[];
+  }) => {
+    if (!createdProperty) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      if (data.units && data.units.length > 0) {
+        setUnits(data.units);
+        await updatePropertyUnits(createdProperty.id, data.units);
+      }
+
+      const res = await updatePropertyPricing(
+        createdProperty.id,
+        data.propertyPricing,
+        data.propertyAvailability
+      );
+
+      if (res.success && res.data) {
+        syncDraftState(res.data, 9);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(res.error || 'Failed to save property pricing.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Network error while saving pricing.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Reset wizard to create another property
@@ -710,6 +787,30 @@ export default function AddPropertyWizard() {
               Units
             </span>
           </div>
+
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
+
+          {/* Step 8: Pricing */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                currentStep > 8
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 8
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {currentStep > 8 ? <CheckCircle2 className="w-4 h-4" /> : '8'}
+            </div>
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 8 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
+              Pricing
+            </span>
+          </div>
         </div>
       </div>
 
@@ -848,8 +949,20 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 8: PHASE 7 COMPLETION SUMMARY CARD */}
+      {/* STEP 8: PRICING & AVAILABILITY (PHASE 8) */}
       {currentStep === 8 && createdProperty && !isLoadingDraft && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+          <StepPricing
+            property={createdProperty}
+            onBack={handleBackFromPricing}
+            onSave={handleSavePricing}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 9: PHASE 8 COMPLETION & LISTING REVIEW */}
+      {currentStep === 9 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 className="w-8 h-8" />
@@ -858,14 +971,14 @@ export default function AddPropertyWizard() {
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 7 Complete — Property Structure Configured</span>
+              <span>Phase 8 Complete — Ready for Tenants!</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Property Listing Almost Ready!
+              Property Listing Complete!
             </h2>
             <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your property details, photos, amenities, and unit structure have been saved.
-              Review the summary below — your listing is nearly complete!
+              Your property details, photos, amenities, unit layout, pricing, and availability terms
+              have all been saved. Review the finalized summary below!
             </p>
           </div>
 
@@ -916,22 +1029,75 @@ export default function AddPropertyWizard() {
                 <span className="font-bold text-[#1D1D1F]">{getRentalLabel()}</span>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-[#86868B] font-semibold">Monthly Starting Rent</span>
-                <span className="font-extrabold text-emerald-600">
-                  ₹{createdProperty.pricing?.monthlyRent?.toLocaleString('en-IN') || '0'}
-                </span>
+              {/* PRICING & DEPOSIT SUMMARY */}
+              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                    <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Monthly Rent</span>
+                  </span>
+                  <span className="font-extrabold text-emerald-600">
+                    {formatPricingDisplay(createdProperty.pricing, createdProperty.pricing?.monthlyRent || 0)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Security Deposit</span>
+                  </span>
+                  <span className="font-bold text-indigo-700">
+                    {formatCurrency(
+                      calculateEffectiveDeposit(
+                        createdProperty.pricing?.monthlyRent || 0,
+                        createdProperty.pricing?.securityDepositConfig,
+                        createdProperty.pricing?.securityDeposit
+                      )
+                    )}
+                  </span>
+                </div>
+
+                {createdProperty.pricing?.maintenanceChargesConfig && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                      <Wrench className="w-3.5 h-3.5 text-[#86868B]" />
+                      <span>Maintenance</span>
+                    </span>
+                    <span className="font-medium text-[#1D1D1F]">
+                      {createdProperty.pricing.maintenanceChargesConfig.type === 'fixed'
+                        ? formatCurrency(createdProperty.pricing.maintenanceChargesConfig.amount)
+                        : createdProperty.pricing.maintenanceChargesConfig.type === 'included'
+                        ? 'Included in rent'
+                        : createdProperty.pricing.maintenanceChargesConfig.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                )}
+
+                {createdProperty.pricing?.electricityChargesConfig && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Electricity</span>
+                    </span>
+                    <span className="font-medium text-[#1D1D1F]">
+                      {createdProperty.pricing.electricityChargesConfig.type === 'fixed'
+                        ? formatCurrency(createdProperty.pricing.electricityChargesConfig.amount)
+                        : createdProperty.pricing.electricityChargesConfig.type === 'included'
+                        ? 'Included in rent'
+                        : createdProperty.pricing.electricityChargesConfig.type === 'meter_based'
+                        ? 'As per meter / actuals'
+                        : createdProperty.pricing.electricityChargesConfig.type}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              <div className="flex items-center justify-between text-xs">
+              {/* AVAILABILITY SUMMARY */}
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EDEDED]">
                 <span className="text-[#86868B] font-semibold">Move-In Availability</span>
                 <span className="font-bold text-[#1D1D1F] inline-flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>
-                    {createdProperty.availability?.type === 'immediate'
-                      ? 'Available Now'
-                      : `From ${createdProperty.availability?.availableFrom}`}
-                  </span>
+                  <span>{getPropertyAvailabilityLabel(createdProperty.availability)}</span>
                 </span>
               </div>
 
@@ -1091,7 +1257,7 @@ export default function AddPropertyWizard() {
                           </span>
                         </div>
                       ) : (
-                        <p className="text-[11px] text-[#86868B] italic">No units configured (skipped or whole-property rental)</p>
+                        <p className="text-[11px] text-[#86868B] italic">No separate units configured (whole-property rental)</p>
                       )}
                     </div>
                   );
@@ -1101,8 +1267,8 @@ export default function AddPropertyWizard() {
               <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
                 <span className="text-[#86868B] font-semibold">Listing Completeness</span>
                 <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                  <Clock className="w-3 h-3" />
-                  <span>Draft ({createdProperty.completenessScore}% complete)</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>{createdProperty.completenessScore}% Complete</span>
                 </span>
               </div>
             </div>
@@ -1113,31 +1279,31 @@ export default function AddPropertyWizard() {
             <button
               type="button"
               onClick={() => {
+                setCurrentStep(8);
+                if (typeof window !== 'undefined') {
+                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=8`;
+                  window.history.replaceState(null, '', newUrl);
+                }
+              }}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <IndianRupee className="w-4 h-4 text-emerald-400" />
+              <span>Edit Pricing & Terms</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 setCurrentStep(7);
                 if (typeof window !== 'undefined') {
                   const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=7`;
                   window.history.replaceState(null, '', newUrl);
                 }
               }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
-            >
-              <Layers className="w-4 h-4 text-indigo-400" />
-              <span>Edit Units & Rooms</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(6);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=6`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
               className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Edit Amenities</span>
+              <Layers className="w-4 h-4 text-indigo-600" />
+              <span>Edit Units</span>
             </button>
 
             <Link

@@ -32,14 +32,19 @@ export type PropertyStatus =
 export type UnitStatus =
   | 'draft'
   | 'available'
+  | 'partially_occupied'
   | 'occupied'
   | 'reserved'
-  | 'under_maintenance';
+  | 'under_maintenance'
+  | 'fully_occupied'
+  | 'unavailable';
 
 export type BedStatus =
   | 'available'
   | 'occupied'
-  | 'reserved';
+  | 'reserved'
+  | 'fully_occupied'
+  | 'unavailable';
 
 export type TemplateStructure =
   | 'single_unit'
@@ -60,33 +65,95 @@ export interface PropertyLocation {
   hideExactAddress?: boolean;
 }
 
-export type PropertyAvailabilityType = 'immediate' | 'specific_date';
+export type PropertyAvailabilityType =
+  | 'immediate'
+  | 'specific_date'
+  | 'currently_unavailable'
+  | 'temporarily_unavailable';
 
 export interface PropertyAvailability {
   type: PropertyAvailabilityType;
   availableFrom?: string; // YYYY-MM-DD ISO date string
+  reason?: string;
 }
 
-export interface PropertyPricing {
+export type UnitAvailabilityStatus =
+  | 'available'
+  | 'partially_occupied'
+  | 'fully_occupied'
+  | 'unavailable';
+
+// ----------------------------------------------------------------------------
+// Phase 8: Generic Rentable Entity Pricing Definitions
+// ----------------------------------------------------------------------------
+export type PricingMode = 'fixed' | 'starting_from' | 'on_request';
+
+export type BillingPeriod = 'monthly' | 'weekly' | 'daily' | 'one_time' | 'custom';
+
+export type SecurityDepositType = 'none' | 'fixed' | 'months' | 'custom';
+
+export type MaintenanceChargesType =
+  | 'included'
+  | 'excluded'
+  | 'fixed'
+  | 'variable'
+  | 'not_applicable';
+
+export type ElectricityChargesType =
+  | 'included'
+  | 'excluded'
+  | 'meter_based'
+  | 'fixed'
+  | 'not_applicable';
+
+export interface OtherRecurringCharge {
+  id: string;
+  name: string;
+  amount: number;
+  period?: BillingPeriod;
+}
+
+export interface SecurityDepositConfig {
+  type: SecurityDepositType;
+  amount?: number;
+  monthsCount?: number;
+  customDetails?: string;
+}
+
+export interface MaintenanceChargesConfig {
+  type: MaintenanceChargesType;
+  amount?: number;
+}
+
+export interface ElectricityChargesConfig {
+  type: ElectricityChargesType;
+  amount?: number;
+}
+
+export interface GenericRentablePricing {
+  pricingMode?: PricingMode;
+  amount?: number;
+  currency?: string; // e.g. 'INR'
+  billingPeriod?: BillingPeriod;
   monthlyRent: number;
   securityDeposit?: number;
+  securityDepositConfig?: SecurityDepositConfig;
+  maintenanceChargesConfig?: MaintenanceChargesConfig;
   maintenance?: number;
+  electricityChargesConfig?: ElectricityChargesConfig;
+  otherCharges?: OtherRecurringCharge[];
+}
+
+export interface PropertyPricing extends GenericRentablePricing {
   lockInMonths?: number;
   noticePeriodDays?: number;
   foodIncluded?: boolean;
   foodChargesMonthly?: number;
 }
 
-export interface UnitPricing {
-  monthlyRent: number;
-  securityDeposit: number;
-  maintenance?: number;
-}
+export interface UnitPricing extends GenericRentablePricing {}
 
-export interface BedPricing {
-  monthlyRent: number;
-  securityDeposit: number;
-}
+export interface BedPricing extends GenericRentablePricing {}
 
 export type PhotoCategory =
   | 'exterior'
@@ -170,7 +237,7 @@ export interface PropertyBed {
   unitId: string;
   label: string; // e.g., "Bed A", "Bed 1", "Upper Bunk"
   bedType?: 'single' | 'bunk_lower' | 'bunk_upper' | 'queen';
-  availability: 'available' | 'occupied' | 'reserved';
+  availability: 'available' | 'occupied' | 'reserved' | 'fully_occupied' | 'unavailable';
   pricing: BedPricing;
   status: BedStatus;
   createdAt: string;
@@ -188,7 +255,7 @@ export interface PropertyUnit {
   floor?: string | number;
   carpetAreaSqft?: number;
   pricing: UnitPricing;
-  availability: 'available' | 'occupied' | 'reserved' | 'under_maintenance';
+  availability: 'available' | 'partially_occupied' | 'occupied' | 'reserved' | 'under_maintenance' | 'fully_occupied' | 'unavailable';
   availableFrom?: string;
   status: UnitStatus;
   beds: PropertyBed[];
@@ -302,6 +369,18 @@ export interface BulkCreateUnitsPayload {
   bedsPerUnit?: number;
   bedPriceMonthly?: number;
   bedDeposit?: number;
+}
+
+export interface UpdatePropertyPricingPayload {
+  pricing: PropertyPricing;
+  availability?: PropertyAvailability;
+}
+
+export interface BulkPricingPayload {
+  defaultPricing: GenericRentablePricing;
+  defaultAvailability?: PropertyAvailabilityType | UnitAvailabilityStatus;
+  unitOverrides?: Record<string, Partial<UnitPricing> & { availability?: string }>;
+  bedOverrides?: Record<string, Partial<BedPricing> & { availability?: string }>;
 }
 
 export interface PropertyApiResponse<T = any> {

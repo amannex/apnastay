@@ -17,6 +17,11 @@ import type {
   PropertyPhoto,
   UploadPhotoPayload,
   UpdatePhotoPayload,
+  PropertyPricing,
+  UnitPricing,
+  BedPricing,
+  PropertyAvailability,
+  BulkPricingPayload,
   PropertyApiResponse
 } from './types';
 import { propertyBackend } from './backend';
@@ -934,5 +939,188 @@ export async function updatePropertyUnits(
 ): Promise<PropertyApiResponse<Property>> {
   return updateProperty(propertyId, { units });
 }
+
+// ============================================================================
+// PHASE 8: PRICING & AVAILABILITY CLIENT API
+// ============================================================================
+
+/**
+ * Update property-level pricing and availability.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}/pricing
+ */
+export async function updatePropertyPricing(
+  propertyId: string,
+  pricing: PropertyPricing,
+  availability?: PropertyAvailability
+): Promise<PropertyApiResponse<Property>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/pricing`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ pricing, availability })
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updatePropertyPricing(ctx, propertyId, pricing, availability);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPDATE_PRICING_FAILED',
+        error: data?.message || data?.error || 'Failed to update property pricing.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.updatePropertyPricing(ctx, propertyId, pricing, availability);
+  }
+}
+
+/**
+ * Update unit-level pricing and availability.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}/units/{unitId}/pricing
+ */
+export async function updateUnitPricing(
+  propertyId: string,
+  unitId: string,
+  pricing: UnitPricing,
+  availability?: string
+): Promise<PropertyApiResponse<PropertyUnit>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/units/${encodeURIComponent(unitId)}/pricing`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ pricing, availability })
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updateUnitPricing(ctx, propertyId, unitId, pricing, availability);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPDATE_UNIT_PRICING_FAILED',
+        error: data?.message || data?.error || 'Failed to update unit pricing.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.updateUnitPricing(ctx, propertyId, unitId, pricing, availability);
+  }
+}
+
+/**
+ * Update bed-level pricing and availability.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}/units/{unitId}/beds/{bedId}/pricing
+ */
+export async function updateBedPricing(
+  propertyId: string,
+  unitId: string,
+  bedId: string,
+  pricing: BedPricing,
+  availability?: string
+): Promise<PropertyApiResponse<PropertyBed>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/units/${encodeURIComponent(unitId)}/beds/${encodeURIComponent(bedId)}/pricing`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ pricing, availability })
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updateBedPricing(ctx, propertyId, unitId, bedId, pricing, availability);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPDATE_BED_PRICING_FAILED',
+        error: data?.message || data?.error || 'Failed to update bed pricing.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.updateBedPricing(ctx, propertyId, unitId, bedId, pricing, availability);
+  }
+}
+
+/**
+ * Atomically apply default pricing across all units/beds with optional granular overrides.
+ * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/pricing/bulk
+ */
+export async function updateBulkPricing(
+  propertyId: string,
+  payload: BulkPricingPayload
+): Promise<PropertyApiResponse<Property>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/pricing/bulk`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.updateBulkPricing(ctx, propertyId, payload);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'UPDATE_BULK_PRICING_FAILED',
+        error: data?.message || data?.error || 'Failed to update bulk pricing.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.updateBulkPricing(ctx, propertyId, payload);
+  }
+}
+
 
 

@@ -21,10 +21,17 @@ import type {
   PhotoCategory,
   UploadPhotoPayload,
   UpdatePhotoPayload,
+  PropertyPricing,
+  UnitPricing,
+  BedPricing,
+  GenericRentablePricing,
+  PropertyAvailability,
+  BulkPricingPayload,
   BackendRequestContext,
   PropertyApiResponse
 } from './types';
 import { getPropertyTemplate, validateStructureForTemplate } from './templates';
+import { validatePricingPayload, calculateEffectiveDeposit } from './pricing';
 
 export type { BackendRequestContext };
 
@@ -393,13 +400,9 @@ class PropertyBackendStore {
 
       if (payload.pricing !== undefined) {
         property.pricing = {
-          monthlyRent: payload.pricing.monthlyRent ?? property.pricing?.monthlyRent ?? 0,
-          securityDeposit: payload.pricing.securityDeposit ?? property.pricing?.securityDeposit,
-          maintenance: payload.pricing.maintenance ?? property.pricing?.maintenance,
-          lockInMonths: payload.pricing.lockInMonths ?? property.pricing?.lockInMonths,
-          noticePeriodDays: payload.pricing.noticePeriodDays ?? property.pricing?.noticePeriodDays,
-          foodIncluded: payload.pricing.foodIncluded ?? property.pricing?.foodIncluded,
-          foodChargesMonthly: payload.pricing.foodChargesMonthly ?? property.pricing?.foodChargesMonthly
+          ...property.pricing,
+          ...payload.pricing,
+          monthlyRent: payload.pricing.monthlyRent ?? property.pricing?.monthlyRent ?? 0
         };
       }
 
@@ -471,7 +474,12 @@ class PropertyBackendStore {
       score += 5;
     }
     if (property.description && property.description.length >= 10) score += 5;
-    if (property.pricing && property.pricing.monthlyRent > 0) score += 5;
+    if (
+      property.pricing &&
+      (property.pricing.monthlyRent > 0 || property.pricing.pricingMode === 'on_request')
+    ) {
+      score += 5;
+    }
     if (property.availability) score += 5;
     if (property.location?.city && property.location?.addressLine1 && property.location?.pincode) {
       score += 15;
@@ -483,7 +491,22 @@ class PropertyBackendStore {
       (property.amenities && property.amenities.length > 0) ||
       (property.customAmenities && property.customAmenities.length > 0);
     if (hasAmenities) score += 10;
-    if (property.units && property.units.length > 0) score += 23;
+
+    // Phase 8: Detailed pricing configurations on entities
+    const hasDetailedPricing = Boolean(
+      property.pricing?.securityDepositConfig ||
+      property.pricing?.maintenanceChargesConfig ||
+      property.pricing?.electricityChargesConfig
+    );
+    if (hasDetailedPricing) score += 5;
+
+    // Structure / Units scoring
+    if (property.units && property.units.length > 0) {
+      score += 20;
+    } else if (property.rentalStructure === 'entire_property' && hasDetailedPricing) {
+      score += 20;
+    }
+
     return Math.min(100, score);
   }
 
@@ -1312,6 +1335,389 @@ class PropertyBackendStore {
         status: err.status || 500,
         code: err.code || 'DELETE_BED_ERROR',
         error: err.message || 'Failed to delete bed.'
+      };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Phase 8: Generic Rentable Entity Pricing & Availability Operations
+  // --------------------------------------------------------------------------
+
+  /**
+   * Update property-level pricing and availability.
+   */
+  public updatePropertyPricing(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    pricing: PropertyPricing,
+    availability?: PropertyAvailability
+  ): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+
+      const validation = validatePricingPayload(pricing, false);
+      if (!validation.isValid) {
+        const firstErrorKey = Object.keys(validation.errors)[0];
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_PRICING',
+          error: validation.errors[firstErrorKey] || 'Invalid pricing configuration.'
+        };
+      }
+
+      const rent = Math.round(Number(pricing.monthlyRent || pricing.amount || 0));
+      const deposit = calculateEffectiveDeposit(
+        rent,
+        pricing.securityDepositConfig,
+        pricing.securityDeposit
+      );
+
+      const updatedPricing: PropertyPricing = {
+        ...property.pricing,
+        ...pricing,
+        monthlyRent: rent,
+        amount: rent,
+        securityDeposit: deposit
+      };
+
+      property.pricing = updatedPricing;
+      if (availability) {
+        property.availability = availability;
+      }
+
+      const now = new Date().toISOString();
+      property.updatedAt = now;
+      property.completenessScore = this.computeCompletenessScore(property);
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: property
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_PRICING_ERROR',
+        error: err.message || 'Failed to update property pricing.'
+      };
+    }
+  }
+
+  /**
+   * Update individual unit pricing and availability.
+   */
+  public updateUnitPricing(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    unitId: string,
+    pricing: UnitPricing,
+    availability?: string
+  ): PropertyApiResponse<PropertyUnit> {
+    try {
+      this.assertAuthenticated(ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+
+      const unit = property.units.find((u) => u.id === unitId);
+      if (!unit) {
+        return {
+          success: false,
+          status: 404,
+          code: 'UNIT_NOT_FOUND',
+          error: `Unit with ID '${unitId}' not found in property.`
+        };
+      }
+
+      const validation = validatePricingPayload(pricing, false);
+      if (!validation.isValid) {
+        const firstErrorKey = Object.keys(validation.errors)[0];
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_PRICING',
+          error: validation.errors[firstErrorKey] || 'Invalid pricing configuration.'
+        };
+      }
+
+      const rent = Math.round(Number(pricing.monthlyRent || pricing.amount || 0));
+      const deposit = calculateEffectiveDeposit(
+        rent,
+        pricing.securityDepositConfig,
+        pricing.securityDeposit
+      );
+
+      unit.pricing = {
+        ...unit.pricing,
+        ...pricing,
+        monthlyRent: rent,
+        amount: rent,
+        securityDeposit: deposit
+      };
+
+      if (availability) {
+        unit.availability = availability as any;
+        if (
+          availability === 'available' ||
+          availability === 'occupied' ||
+          availability === 'unavailable' ||
+          availability === 'fully_occupied' ||
+          availability === 'partially_occupied'
+        ) {
+          unit.status = availability as any;
+        }
+      }
+
+      const now = new Date().toISOString();
+      unit.updatedAt = now;
+      property.updatedAt = now;
+      property.completenessScore = this.computeCompletenessScore(property);
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: unit
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_UNIT_PRICING_ERROR',
+        error: err.message || 'Failed to update unit pricing.'
+      };
+    }
+  }
+
+  /**
+   * Update individual bed pricing and availability.
+   */
+  public updateBedPricing(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    unitId: string,
+    bedId: string,
+    pricing: BedPricing,
+    availability?: string
+  ): PropertyApiResponse<PropertyBed> {
+    try {
+      this.assertAuthenticated(ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+
+      const unit = property.units.find((u) => u.id === unitId);
+      if (!unit) {
+        return {
+          success: false,
+          status: 404,
+          code: 'UNIT_NOT_FOUND',
+          error: `Unit with ID '${unitId}' not found in property.`
+        };
+      }
+
+      const bed = unit.beds.find((b) => b.id === bedId);
+      if (!bed) {
+        return {
+          success: false,
+          status: 404,
+          code: 'BED_NOT_FOUND',
+          error: `Bed with ID '${bedId}' not found in unit.`
+        };
+      }
+
+      const validation = validatePricingPayload(pricing, false);
+      if (!validation.isValid) {
+        const firstErrorKey = Object.keys(validation.errors)[0];
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_PRICING',
+          error: validation.errors[firstErrorKey] || 'Invalid pricing configuration.'
+        };
+      }
+
+      const rent = Math.round(Number(pricing.monthlyRent || pricing.amount || 0));
+      const deposit = calculateEffectiveDeposit(
+        rent,
+        pricing.securityDepositConfig,
+        pricing.securityDeposit
+      );
+
+      bed.pricing = {
+        ...bed.pricing,
+        ...pricing,
+        monthlyRent: rent,
+        amount: rent,
+        securityDeposit: deposit
+      };
+
+      if (availability) {
+        bed.availability = availability as any;
+        if (
+          availability === 'available' ||
+          availability === 'occupied' ||
+          availability === 'unavailable' ||
+          availability === 'fully_occupied'
+        ) {
+          bed.status = availability as any;
+        }
+      }
+
+      const now = new Date().toISOString();
+      bed.updatedAt = now;
+      unit.updatedAt = now;
+      property.updatedAt = now;
+      property.completenessScore = this.computeCompletenessScore(property);
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: bed
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_BED_PRICING_ERROR',
+        error: err.message || 'Failed to update bed pricing.'
+      };
+    }
+  }
+
+  /**
+   * Atomically apply default pricing across all units/beds with optional granular overrides.
+   */
+  public updateBulkPricing(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    payload: BulkPricingPayload
+  ): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+
+      const defaultRent = Math.round(
+        Number(payload.defaultPricing.monthlyRent || payload.defaultPricing.amount || 0)
+      );
+      const defaultDeposit = calculateEffectiveDeposit(
+        defaultRent,
+        payload.defaultPricing.securityDepositConfig,
+        payload.defaultPricing.securityDeposit
+      );
+
+      const basePricing: GenericRentablePricing = {
+        ...payload.defaultPricing,
+        monthlyRent: defaultRent,
+        amount: defaultRent,
+        securityDeposit: defaultDeposit
+      };
+
+      // Set property-level summary pricing
+      property.pricing = {
+        ...property.pricing,
+        ...basePricing
+      };
+
+      // Apply to all units and optional unit overrides
+      if (property.units && property.units.length > 0) {
+        property.units.forEach((unit) => {
+          const override = payload.unitOverrides ? payload.unitOverrides[unit.id] : undefined;
+          const unitRent =
+            override?.monthlyRent !== undefined
+              ? Math.round(Number(override.monthlyRent))
+              : basePricing.monthlyRent;
+          const unitDeposit =
+            override?.securityDeposit !== undefined
+              ? Math.round(Number(override.securityDeposit))
+              : calculateEffectiveDeposit(
+                  unitRent,
+                  override?.securityDepositConfig || basePricing.securityDepositConfig,
+                  basePricing.securityDeposit
+                );
+
+          unit.pricing = {
+            ...unit.pricing,
+            ...basePricing,
+            ...(override || {}),
+            monthlyRent: unitRent,
+            amount: unitRent,
+            securityDeposit: unitDeposit
+          };
+
+          if (override?.availability) {
+            unit.availability = override.availability as any;
+          } else if (payload.defaultAvailability) {
+            unit.availability = payload.defaultAvailability as any;
+          }
+
+          // If individual bed rental, apply to all beds and optional bed overrides
+          if (unit.beds && unit.beds.length > 0) {
+            unit.beds.forEach((bed) => {
+              const bedOverride = payload.bedOverrides ? payload.bedOverrides[bed.id] : undefined;
+              const bedRent =
+                bedOverride?.monthlyRent !== undefined
+                  ? Math.round(Number(bedOverride.monthlyRent))
+                  : unit.pricing.monthlyRent;
+              const bedDeposit =
+                bedOverride?.securityDeposit !== undefined
+                  ? Math.round(Number(bedOverride.securityDeposit))
+                  : calculateEffectiveDeposit(
+                      bedRent,
+                      bedOverride?.securityDepositConfig || unit.pricing.securityDepositConfig,
+                      unit.pricing.securityDeposit
+                    );
+
+              bed.pricing = {
+                ...bed.pricing,
+                ...unit.pricing,
+                ...(bedOverride || {}),
+                monthlyRent: bedRent,
+                amount: bedRent,
+                securityDeposit: bedDeposit
+              };
+
+              if (bedOverride?.availability) {
+                bed.availability = bedOverride.availability as any;
+              } else if (payload.defaultAvailability) {
+                bed.availability = payload.defaultAvailability as any;
+              }
+            });
+          }
+        });
+      }
+
+      if (payload.defaultAvailability && typeof payload.defaultAvailability === 'string') {
+        const validPropAvails = [
+          'immediate',
+          'specific_date',
+          'currently_unavailable',
+          'temporarily_unavailable'
+        ];
+        if (validPropAvails.includes(payload.defaultAvailability)) {
+          property.availability = {
+            type: payload.defaultAvailability as any
+          };
+        }
+      }
+
+      const now = new Date().toISOString();
+      property.updatedAt = now;
+      property.completenessScore = this.computeCompletenessScore(property);
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: property
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'UPDATE_BULK_PRICING_ERROR',
+        error: err.message || 'Failed to update bulk pricing.'
       };
     }
   }

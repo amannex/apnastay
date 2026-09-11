@@ -6,6 +6,7 @@ export * from './types';
 export * from './templates';
 export * from './amenities';
 export * from './units';
+export * from './pricing';
 export * from './backend';
 export * from './api';
 
@@ -21,6 +22,7 @@ export { default as StepAmenities } from './components/wizard/StepAmenities';
 export type { StepAmenitiesProps } from './components/wizard/StepAmenities';
 export { default as StepUnits } from './components/wizard/StepUnits';
 export type { StepUnitsProps } from './components/wizard/StepUnits';
+export { default as StepPricing } from './components/wizard/StepPricing';
 export { default as HybridMapPicker } from './components/wizard/HybridMapPicker';
 export type { DetectedAddressComponents } from './components/wizard/HybridMapPicker';
 export { default as AddPropertyWizard } from './components/wizard/AddPropertyWizard';
