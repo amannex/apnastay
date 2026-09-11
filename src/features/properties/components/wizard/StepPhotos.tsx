@@ -46,6 +46,36 @@ export const SUPPORTED_MIME_TYPES = [
   'image/heif'
 ];
 
+/**
+ * Safely resolve photo URLs in local development if pointing to production CMS uploads.
+ */
+export function getSafeImageUrl(url?: string): string {
+  if (!url) return '';
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    if (url.includes('cms.apnastay.in/wp-content/uploads')) {
+      return url.replace('https://cms.apnastay.in/wp-content/uploads', 'http://localhost:8888/wp-content/uploads');
+    }
+  }
+  return url;
+}
+
+/**
+ * Ensures that strictly one photo is marked as the primary cover photo.
+ */
+export function ensureSingleCover(list: PropertyPhoto[]): PropertyPhoto[] {
+  if (!list || list.length === 0) return [];
+  const coverIdx = list.findIndex((p) => Boolean(p.isCover));
+  const targetIdx = coverIdx >= 0 ? coverIdx : 0;
+  return list.map((p, idx) => ({
+    ...p,
+    isCover: idx === targetIdx,
+    order: typeof p.order === 'number' ? p.order : idx
+  }));
+}
+
 interface UploadQueueItem {
   clientId: string;
   file: File;
@@ -70,14 +100,9 @@ export default function StepPhotos({
   onSave,
   isSaving = false
 }: StepPhotosProps) {
-  // Main photos list
+  // Main photos list — strictly one cover photo
   const [photos, setPhotos] = useState<PropertyPhoto[]>(() => {
-    const list = [...initialPhotos];
-    // Ensure default cover photo exists if photos exist
-    if (list.length > 0 && !list.some((p) => p.isCover)) {
-      list[0].isCover = true;
-    }
-    return list.map((p, idx) => ({ ...p, order: typeof p.order === 'number' ? p.order : idx }));
+    return ensureSingleCover(initialPhotos);
   });
 
   // Upload queue for tracking in-flight and failed uploads
@@ -98,11 +123,7 @@ export default function StepPhotos({
   // Keep photos synchronized with initialPhotos if refreshed
   useEffect(() => {
     if (initialPhotos && initialPhotos.length > 0 && photos.length === 0) {
-      const list = [...initialPhotos];
-      if (!list.some((p) => p.isCover)) {
-        list[0].isCover = true;
-      }
-      setPhotos(list.map((p, idx) => ({ ...p, order: typeof p.order === 'number' ? p.order : idx })));
+      setPhotos(ensureSingleCover(initialPhotos));
     }
   }, [initialPhotos, photos.length]);
 
@@ -292,29 +313,23 @@ export default function StepPhotos({
   // --------------------------------------------------------------------------
   const handleSetCover = (photoId: string | number) => {
     setPhotos((prev) => {
-      return prev.map((p) => ({
+      const next = prev.map((p) => ({
         ...p,
         isCover: String(p.id) === String(photoId)
       }));
+      return ensureSingleCover(next);
     });
-    if (previewPhoto && String(previewPhoto.id) === String(photoId)) {
-      setPreviewPhoto((prev) => (prev ? { ...prev, isCover: true } : null));
+    if (previewPhoto) {
+      setPreviewPhoto((prev) =>
+        prev ? { ...prev, isCover: String(prev.id) === String(photoId) } : null
+      );
     }
   };
 
   const handleDeletePhoto = (photoId: string | number) => {
     setPhotos((prev) => {
       const remaining = prev.filter((p) => String(p.id) !== String(photoId));
-      // Re-index orders
-      remaining.forEach((p, idx) => {
-        p.order = idx;
-      });
-      // If deleted photo was cover and other photos remain, make the first one cover
-      const hasCover = remaining.some((p) => p.isCover);
-      if (!hasCover && remaining.length > 0) {
-        remaining[0].isCover = true;
-      }
-      return remaining;
+      return ensureSingleCover(remaining);
     });
 
     if (previewPhoto && String(previewPhoto.id) === String(photoId)) {
@@ -598,7 +613,7 @@ export default function StepPhotos({
           {/* THUMBNAILS GRID: [ photo ] [ photo ] ... [ + Add ] */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {photos.map((photo, index) => {
-              const isCover = photo.isCover || index === 0;
+              const isCover = Boolean(photo.isCover);
               const isBeingDragged = draggedPhotoIndex === index;
               const isTargetDrop = dragOverIndex === index;
 
@@ -624,10 +639,17 @@ export default function StepPhotos({
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={photo.thumbnailUrl || photo.url}
+                      src={getSafeImageUrl(photo.thumbnailUrl || photo.url)}
                       alt={photo.fileName || `Property Photo ${index + 1}`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        const fallback = getSafeImageUrl(photo.url);
+                        if (fallback && target.src !== fallback) {
+                          target.src = fallback;
+                        }
+                      }}
                     />
 
                     {/* HOVER OVERLAY WITH PREVIEW ICON */}
@@ -797,9 +819,16 @@ export default function StepPhotos({
             <div className="relative bg-black/90 flex-1 flex items-center justify-center p-4 min-h-[300px] max-h-[60vh] overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={previewPhoto.url}
-                alt="Full preview"
+                src={getSafeImageUrl(previewPhoto.url)}
+                alt={previewPhoto.fileName || 'Full preview'}
                 className="max-h-full max-w-full object-contain rounded-xl shadow-lg"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  const fallback = getSafeImageUrl(previewPhoto.thumbnailUrl);
+                  if (fallback && target.src !== fallback) {
+                    target.src = fallback;
+                  }
+                }}
               />
             </div>
 

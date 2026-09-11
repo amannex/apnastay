@@ -18,6 +18,7 @@ import {
 import type { Property } from '../../types';
 import { getOwnerProperties } from '../../api';
 import { getPropertyTemplate } from '../../templates';
+import { getSafeImageUrl } from '../wizard/StepPhotos';
 
 export default function OwnerPropertiesView() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -133,7 +134,7 @@ export default function OwnerPropertiesView() {
                     <div className="w-14 h-14 rounded-xl bg-[#F5F5F7] overflow-hidden shrink-0 border border-[#EDEDED] relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={coverPhoto.thumbnailUrl || coverPhoto.url}
+                        src={getSafeImageUrl(coverPhoto.thumbnailUrl || coverPhoto.url)}
                         alt="Cover"
                         className="w-full h-full object-cover"
                       />
