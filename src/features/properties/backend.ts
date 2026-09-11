@@ -34,6 +34,7 @@ import type {
 import { getPropertyTemplate, validateStructureForTemplate } from './templates';
 import { validatePricingPayload, calculateEffectiveDeposit } from './pricing';
 import { validatePropertyRules, sanitizePropertyRules } from './rules';
+import { evaluateListingCompleteness } from './completeness';
 
 export type { BackendRequestContext };
 
@@ -1751,7 +1752,11 @@ class PropertyBackendStore {
    * Publish a property.
    * Validates that mandatory requirements are met before publishing.
    */
-  public publishProperty(ctx: BackendRequestContext, propertyId: string): PropertyApiResponse<Property> {
+  public publishProperty(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    options?: { strict?: boolean }
+  ): PropertyApiResponse<Property> {
     try {
       this.assertAuthenticated(ctx);
 
@@ -1767,28 +1772,47 @@ class PropertyBackendStore {
 
       this.assertOwnership(property, ctx);
 
-      // Invariants check
-      if (!property.title || property.title.length < 5) {
-        return {
-          success: false,
-          status: 400,
-          code: 'INVALID_TITLE',
-          error: 'Property title must be at least 5 characters to publish.'
-        };
-      }
+      // In strict mode (enforced in Phase 10 review), run full completeness evaluation
+      if (options?.strict) {
+        const evaluation = evaluateListingCompleteness(property);
+        if (!evaluation.isPublishable) {
+          const firstError = evaluation.missingRequired[0]?.message || 'Required listing information is missing.';
+          return {
+            success: false,
+            status: 400,
+            code: 'LISTING_INCOMPLETE',
+            error: `Cannot publish listing: ${firstError}`,
+            details: {
+              missingRequired: evaluation.missingRequired
+            }
+          };
+        }
+      } else {
+        // Baseline invariants check (preserves Phase 1 test compatibility)
+        if (!property.title || property.title.length < 5) {
+          return {
+            success: false,
+            status: 400,
+            code: 'INVALID_TITLE',
+            error: 'Property title must be at least 5 characters to publish.'
+          };
+        }
 
-      const template = getPropertyTemplate(property.propertyType);
-      if (template.hasUnits && property.units.length === 0) {
-        return {
-          success: false,
-          status: 400,
-          code: 'MISSING_UNITS',
-          error: `Properties of type '${template.label}' require at least one configured unit before publishing.`
-        };
+        const template = getPropertyTemplate(property.propertyType);
+        if (template?.hasUnits && property.units.length === 0) {
+          return {
+            success: false,
+            status: 400,
+            code: 'MISSING_UNITS',
+            error: `Properties of type '${template.label}' require at least one configured unit before publishing.`
+          };
+        }
       }
 
       const now = new Date().toISOString();
       property.status = 'published';
+      property.publishedAt = now;
+      property.completenessScore = evaluateListingCompleteness(property).score;
       property.updatedAt = now;
       this.persist();
 
@@ -1797,6 +1821,7 @@ class PropertyBackendStore {
         status: 200,
         data: property
       };
+
     } catch (err: any) {
       return {
         success: false,

@@ -56,7 +56,8 @@ import {
   updatePropertyAmenities,
   updatePropertyUnits,
   updatePropertyPricing,
-  updatePropertyRules
+  updatePropertyRules,
+  publishProperty
 } from '../../api';
 import { AMENITY_REGISTRY } from '../../amenities';
 import { getUnitTerminology, calculateUnitAvailability } from '../../units';
@@ -82,6 +83,7 @@ import StepAmenities from './StepAmenities';
 import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRules from './StepRules';
+import StepReview from './StepReview';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
@@ -112,8 +114,11 @@ export default function AddPropertyWizard() {
 
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [isPublishedSuccess, setIsPublishedSuccess] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
+
 
   // --------------------------------------------------------------------------
   // Draft Restoration on Mount / Page Refresh
@@ -627,6 +632,42 @@ export default function AddPropertyWizard() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 10: Review & Publishing (Phase 10)
+  // --------------------------------------------------------------------------
+  const handlePublishListing = async () => {
+    if (!createdProperty) return;
+
+    setIsPublishing(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await publishProperty(createdProperty.id, { strict: true });
+
+      if (res.success && res.data) {
+        setCreatedProperty(res.data);
+        setIsPublishedSuccess(true);
+        if (typeof window !== 'undefined') {
+          window.sessionStorage?.removeItem('apnastay_active_draft_id');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(res.error || 'Failed to publish listing. Please check required fields.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Network error while publishing listing.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleSaveIncompleteDraft = async () => {
+    if (createdProperty && typeof window !== 'undefined') {
+      window.sessionStorage?.setItem('apnastay_active_draft_id', createdProperty.id);
+    }
+    router.push('/owner/dashboard/properties');
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -645,8 +686,10 @@ export default function AddPropertyWizard() {
     setUnits([]);
     setRules(null);
     setCreatedProperty(null);
+    setIsPublishedSuccess(false);
     setErrorMsg(null);
   };
+
 
   const getFormatLabel = () => {
     if (selectedType === 'other' && customPropertyType) {
@@ -907,8 +950,37 @@ export default function AddPropertyWizard() {
               Rules
             </span>
           </div>
+
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
+
+          {/* Step 10: Review */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                createdProperty?.status === 'published' || isPublishedSuccess
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 10
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {createdProperty?.status === 'published' || isPublishedSuccess ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                '10'
+              )}
+            </div>
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 10 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
+              Review
+            </span>
+          </div>
         </div>
       </div>
+
 
       {/* DRAFT LOADING INDICATOR */}
       {isLoadingDraft && (
@@ -1069,494 +1141,119 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 10: PHASE 9 COMPLETION & LISTING REVIEW */}
+      {/* STEP 10: LISTING REVIEW & PUBLISHING (PHASE 10) */}
       {currentStep === 10 && createdProperty && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-
-          <div className="max-w-md mx-auto">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 9 Complete — Ready for Review!</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Property Listing Complete!
-            </h2>
-            <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your property details, photos, amenities, unit layout, pricing, availability terms,
-              and house rules have all been saved. Review the finalized summary below!
-            </p>
-          </div>
-
-          {/* DRAFT OVERVIEW CARD */}
-          <div className="max-w-lg mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-4">
-            {/* COVER PHOTO THUMBNAIL IF AVAILABLE */}
-            {(() => {
-              const currentPhotos = photos.length > 0 ? photos : createdProperty.photos || [];
-              const cover = currentPhotos.find((p) => p.isCover) || currentPhotos[0];
-              if (cover) {
-                return (
-                  <div className="relative rounded-2xl overflow-hidden aspect-video w-full bg-[#EDEDED] border border-[#EDEDED]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={cover.thumbnailUrl || cover.url}
-                      alt="Cover preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[11px] font-extrabold shadow-sm">
-                      <Star className="w-3 h-3 fill-white" />
-                      <span>Cover Photo</span>
-                    </div>
-                    <div className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-bold inline-flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>{currentPhotos.length} photo{currentPhotos.length > 1 ? 's' : ''}</span>
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
-
-            <div className="space-y-3.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-[#86868B] font-semibold">Property Title</span>
-                <span className="font-bold text-[#1D1D1F] text-right truncate max-w-[240px]">
-                  {createdProperty.title}
-                </span>
+        <>
+          {isPublishedSuccess || createdProperty.status === 'published' ? (
+            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
+              <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-[#86868B] font-semibold">Property Format</span>
-                <span className="font-bold text-[#1D1D1F]">{getFormatLabel()}</span>
+              <div className="max-w-md mx-auto">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Listing is Live!</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
+                  Congratulations! Your Property is Published
+                </h2>
+                <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
+                  &ldquo;{createdProperty.title}&rdquo; is now active and ready to welcome prospective tenants on ApnaStay.
+                </p>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-[#86868B] font-semibold">Rental Offering</span>
-                <span className="font-bold text-[#1D1D1F]">{getRentalLabel()}</span>
-              </div>
-
-              {/* PRICING & DEPOSIT SUMMARY */}
-              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
+              {/* PUBLISHED SUMMARY CARD */}
+              <div className="max-w-md mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                    <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Monthly Rent</span>
+                  <span className="text-[#86868B] font-semibold">Status</span>
+                  <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-100/60 px-2.5 py-0.5 rounded-full text-[11px]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Published</span>
                   </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868B] font-semibold">Property Format</span>
+                  <span className="font-bold text-[#1D1D1F]">{getFormatLabel()}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868B] font-semibold">Rental Offering</span>
+                  <span className="font-bold text-[#1D1D1F]">{getRentalLabel()}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868B] font-semibold">Monthly Rent</span>
                   <span className="font-extrabold text-emerald-600">
                     {formatPricingDisplay(createdProperty.pricing, createdProperty.pricing?.monthlyRent || 0)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Security Deposit</span>
-                  </span>
-                  <span className="font-bold text-indigo-700">
-                    {formatCurrency(
-                      calculateEffectiveDeposit(
-                        createdProperty.pricing?.monthlyRent || 0,
-                        createdProperty.pricing?.securityDepositConfig,
-                        createdProperty.pricing?.securityDeposit
-                      )
-                    )}
-                  </span>
-                </div>
-
-                {createdProperty.pricing?.maintenanceChargesConfig && (
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                      <Wrench className="w-3.5 h-3.5 text-[#86868B]" />
-                      <span>Maintenance</span>
-                    </span>
-                    <span className="font-medium text-[#1D1D1F]">
-                      {createdProperty.pricing.maintenanceChargesConfig.type === 'fixed'
-                        ? formatCurrency(createdProperty.pricing.maintenanceChargesConfig.amount)
-                        : createdProperty.pricing.maintenanceChargesConfig.type === 'included'
-                        ? 'Included in rent'
-                        : createdProperty.pricing.maintenanceChargesConfig.type.replace('_', ' ')}
-                    </span>
-                  </div>
-                )}
-
-                {createdProperty.pricing?.electricityChargesConfig && (
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Electricity</span>
-                    </span>
-                    <span className="font-medium text-[#1D1D1F]">
-                      {createdProperty.pricing.electricityChargesConfig.type === 'fixed'
-                        ? formatCurrency(createdProperty.pricing.electricityChargesConfig.amount)
-                        : createdProperty.pricing.electricityChargesConfig.type === 'included'
-                        ? 'Included in rent'
-                        : createdProperty.pricing.electricityChargesConfig.type === 'meter_based'
-                        ? 'As per meter / actuals'
-                        : createdProperty.pricing.electricityChargesConfig.type}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* AVAILABILITY SUMMARY */}
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EDEDED]">
-                <span className="text-[#86868B] font-semibold">Move-In Availability</span>
-                <span className="font-bold text-[#1D1D1F] inline-flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{getPropertyAvailabilityLabel(createdProperty.availability)}</span>
-                </span>
-              </div>
-
-              {/* LOCATION DETAILS SECTION */}
-              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
-                <div className="flex items-start justify-between text-xs gap-3">
-                  <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Locality & City</span>
-                  </span>
-                  <span className="font-bold text-[#1D1D1F] text-right">
-                    {[createdProperty.location?.locality, createdProperty.location?.city]
-                      .filter(Boolean)
-                      .join(', ') || '—'}
-                  </span>
-                </div>
-
-                <div className="flex items-start justify-between text-xs gap-3">
-                  <span className="text-[#86868B] font-semibold shrink-0">State & PIN Code</span>
-                  <span className="font-bold text-[#1D1D1F] text-right">
-                    {[createdProperty.location?.state, createdProperty.location?.pincode]
-                      .filter(Boolean)
-                      .join(' - ') || '—'}
-                  </span>
-                </div>
-
-                {createdProperty.location?.landmark && (
-                  <div className="flex items-start justify-between text-xs gap-3">
-                    <span className="text-[#86868B] font-semibold shrink-0 flex items-center gap-1">
-                      <Navigation className="w-3.5 h-3.5 text-[#86868B]" />
-                      <span>Landmark</span>
-                    </span>
-                    <span className="font-medium text-[#1D1D1F] text-right">
-                      {createdProperty.location.landmark}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-start justify-between text-xs gap-3">
-                  <span className="text-[#86868B] font-semibold shrink-0">Address Privacy</span>
-                  <span className="font-semibold text-right">
-                    {createdProperty.location?.hideExactAddress ? (
-                      <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-[11px]">
-                        <EyeOff className="w-3 h-3" />
-                        <span>Protected (Private)</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px]">
-                        <Eye className="w-3 h-3" />
-                        <span>Public on listing</span>
-                      </span>
-                    )}
+                  <span className="text-[#86868B] font-semibold">Location</span>
+                  <span className="font-semibold text-[#1D1D1F]">
+                    {[createdProperty.location?.locality, createdProperty.location?.city].filter(Boolean).join(', ') || '—'}
                   </span>
                 </div>
               </div>
 
-              {/* MEDIA DETAILS */}
-              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                    <Camera className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Gallery Media</span>
-                  </span>
-                  <span className="font-bold text-[#1D1D1F]">
-                    {(photos.length > 0 ? photos.length : createdProperty.photos?.length) || 0} Photos Attached
-                  </span>
-                </div>
-              </div>
+              {/* ACTION BUTTONS */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+                <Link
+                  href="/owner/dashboard/properties"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  <span>Go to My Properties</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
 
-              {/* AMENITIES DETAILS (PHASE 6) */}
-              <div className="pt-3 border-t border-[#EDEDED] space-y-2.5">
-                {(() => {
-                  const currentAmenities =
-                    amenities.length > 0 ? amenities : createdProperty.amenities || [];
-                  const currentCustom =
-                    customAmenities.length > 0
-                      ? customAmenities
-                      : createdProperty.customAmenities || [];
-                  const totalCount = currentAmenities.length + currentCustom.length;
+                <button
+                  type="button"
+                  onClick={() => setIsPublishedSuccess(false)}
+                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
+                >
+                  <Eye className="w-4 h-4 text-[#86868B]" />
+                  <span>Review Details Again</span>
+                </button>
 
-                  return (
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-2">
-                        <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Amenities & Features</span>
-                        </span>
-                        <span className="font-bold text-emerald-600">
-                          {totalCount} Selected
-                        </span>
-                      </div>
-
-                      {totalCount > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {currentAmenities.map((amenityId) => {
-                            const def = AMENITY_REGISTRY[amenityId];
-                            return (
-                              <span
-                                key={amenityId}
-                                className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-100"
-                              >
-                                {def?.name || amenityId}
-                              </span>
-                            );
-                          })}
-                          {currentCustom.map((item, idx) => (
-                            <span
-                              key={`cust-sum-${idx}`}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-100"
-                            >
-                              <Sparkles className="w-2.5 h-2.5" />
-                              <span>{item}</span>
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-[11px] text-[#86868B] italic">No amenities specified</p>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* UNITS / ROOMS SUMMARY (PHASE 7) */}
-              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
-                {(() => {
-                  const currentUnits = units.length > 0 ? units : createdProperty.units || [];
-                  const totalBeds = currentUnits.reduce((sum: number, u: PropertyUnit) => sum + (u.beds?.length || 0), 0);
-                  const totalCapacity = currentUnits.reduce((sum: number, u: PropertyUnit) => sum + (u.capacity || 1), 0);
-                  const term = getUnitTerminology(selectedType, selectedStructure);
-
-                  return (
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-2">
-                        <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                          <Layers className="w-3.5 h-3.5 text-indigo-600" />
-                          <span>{term.plural} & Structure</span>
-                        </span>
-                        <span className="font-bold text-indigo-600">
-                          {currentUnits.length} {currentUnits.length === 1 ? term.singular : term.plural}
-                        </span>
-                      </div>
-                      {currentUnits.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 text-[11px] font-bold border border-indigo-100">
-                            <Building2 className="w-3 h-3" />
-                            {currentUnits.length} {currentUnits.length === 1 ? term.singular : term.plural}
-                          </span>
-                          {term.hasBeds && totalBeds > 0 && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-100">
-                              <BedDouble className="w-3 h-3" />
-                              {totalBeds} Beds
-                            </span>
-                          )}
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-100">
-                            Capacity: {totalCapacity}
-                          </span>
-                        </div>
-                      ) : (
-                        <p className="text-[11px] text-[#86868B] italic">No separate units configured (whole-property rental)</p>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* RULES & PREFERENCES DETAILS (PHASE 9) */}
-              <div className="pt-3 border-t border-[#EDEDED] space-y-2.5">
-                {(() => {
-                  const currentRules = rules || createdProperty.rules;
-                  if (!currentRules) {
-                    return (
-                      <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                            <ShieldAlert className="w-3.5 h-3.5 text-indigo-600" />
-                            <span>Rules & Preferences</span>
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-[#86868B] italic">No rules specified</p>
-                      </div>
-                    );
-                  }
-
-                  const guestBadge = getPolicyBadgeInfo(currentRules.guestPolicy);
-                  const petBadge = getPolicyBadgeInfo(currentRules.petPolicy);
-                  const smokingBadge = getPolicyBadgeInfo(currentRules.smokingPolicy);
-                  const alcoholBadge = getPolicyBadgeInfo(currentRules.alcoholPolicy);
-
-                  return (
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-2">
-                        <span className="text-[#86868B] font-semibold flex items-center gap-1">
-                          <ShieldAlert className="w-3.5 h-3.5 text-indigo-600" />
-                          <span>Rules & Preferences</span>
-                        </span>
-                        <span className="font-bold text-indigo-600">Configured</span>
-                      </div>
-
-                      {/* Suitability */}
-                      {currentRules.suitableFor && currentRules.suitableFor.length > 0 && (
-                        <div className="mb-2">
-                          <span className="text-[11px] text-[#86868B] font-semibold block mb-1">
-                            Suitable For:
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {currentRules.suitableFor.map((s) => (
-                              <span
-                                key={s}
-                                className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 text-[10px] font-bold border border-indigo-100"
-                              >
-                                {formatResidentSuitability(s)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Policies Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
-                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
-                          <span className="text-[#86868B] block">Guests:</span>
-                          <span className="font-bold text-[#1D1D1F]">{guestBadge.label}</span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
-                          <span className="text-[#86868B] block">Pets:</span>
-                          <span className="font-bold text-[#1D1D1F]">{petBadge.label}</span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
-                          <span className="text-[#86868B] block">Smoking:</span>
-                          <span className="font-bold text-[#1D1D1F]">{smokingBadge.label}</span>
-                        </div>
-                        <div className="p-1.5 rounded-lg bg-white border border-[#EDEDED] text-[10px]">
-                          <span className="text-[#86868B] block">Alcohol:</span>
-                          <span className="font-bold text-[#1D1D1F]">{alcoholBadge.label}</span>
-                        </div>
-                      </div>
-
-                      {/* Timing & Food summary */}
-                      {(currentRules.timingType || currentRules.foodPolicy) && (
-                        <div className="pt-2 flex flex-wrap gap-2 text-[11px]">
-                          {currentRules.timingType && (
-                            <span className="inline-flex items-center gap-1 text-[#1D1D1F] font-medium">
-                              <Clock className="w-3 h-3 text-[#86868B]" />
-                              <span>{formatTimingPolicy(currentRules.timingType, currentRules.gateClosingTime)}</span>
-                            </span>
-                          )}
-                          {currentRules.foodPolicy && currentRules.foodPolicy !== 'not_specified' && (
-                            <span className="inline-flex items-center gap-1 text-[#1D1D1F] font-medium">
-                              <Utensils className="w-3 h-3 text-[#86868B]" />
-                              <span>{formatFoodPolicy(currentRules.foodPolicy)}</span>
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Custom Rules */}
-                      {currentRules.customRules && currentRules.customRules.length > 0 && (
-                        <div className="pt-2">
-                          <span className="text-[11px] text-[#86868B] font-semibold block mb-1">
-                            House Rules ({currentRules.customRules.length}):
-                          </span>
-                          <ul className="list-disc list-inside text-[11px] text-[#1D1D1F] space-y-0.5 pl-1">
-                            {currentRules.customRules.slice(0, 3).map((r, idx) => (
-                              <li key={idx} className="truncate">{r}</li>
-                            ))}
-                            {currentRules.customRules.length > 3 && (
-                              <li className="text-[#86868B] italic">+{currentRules.customRules.length - 3} more</li>
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
-                <span className="text-[#86868B] font-semibold">Listing Completeness</span>
-                <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{createdProperty.completenessScore}% Complete</span>
-                </span>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl text-[#86868B] hover:text-[#1D1D1F] text-xs sm:text-sm font-semibold transition-all"
+                >
+                  List Another Property
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* ACTION BUTTONS */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(9);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=9`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
-            >
-              <ShieldAlert className="w-4 h-4 text-indigo-400" />
-              <span>Edit Rules & Guidelines</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(8);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=8`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-            >
-              <IndianRupee className="w-4 h-4 text-emerald-600" />
-              <span>Edit Pricing</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(7);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=7`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-            >
-              <Layers className="w-4 h-4 text-indigo-600" />
-              <span>Edit Units</span>
-            </button>
-
-            <Link
-              href="/owner/dashboard/properties"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-            >
-              <span>View in My Properties</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <button
-              type="button"
-              onClick={handleReset}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl text-[#86868B] hover:text-[#1D1D1F] text-xs sm:text-sm font-semibold transition-all"
-            >
-              List Another Property
-            </button>
-          </div>
-        </div>
+          ) : (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+              <StepReview
+                property={createdProperty}
+                onBack={() => {
+                  setCurrentStep(9);
+                  if (typeof window !== 'undefined') {
+                    const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=9`;
+                    window.history.replaceState(null, '', newUrl);
+                  }
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onEditSection={(step) => {
+                  setCurrentStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10);
+                  if (typeof window !== 'undefined') {
+                    const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=${step}`;
+                    window.history.replaceState(null, '', newUrl);
+                  }
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                onSaveDraft={handleSaveIncompleteDraft}
+                onPublish={handlePublishListing}
+                isSaving={isSubmitting}
+                isPublishing={isPublishing}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

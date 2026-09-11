@@ -592,14 +592,18 @@ export async function deleteBed(
  * Publish a property listing.
  * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/publish
  */
-export async function publishProperty(propertyId: string): Promise<PropertyApiResponse<Property>> {
+export async function publishProperty(
+  propertyId: string,
+  options?: { strict?: boolean }
+): Promise<PropertyApiResponse<Property>> {
   try {
     const res = await fetch(
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/publish`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
+        credentials: 'include',
+        body: JSON.stringify(options || {})
       }
     );
 
@@ -607,7 +611,7 @@ export async function publishProperty(propertyId: string): Promise<PropertyApiRe
     if (!res.ok) {
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
-        return propertyBackend.publishProperty(ctx, propertyId);
+        return propertyBackend.publishProperty(ctx, propertyId, options);
       }
       return {
         success: false,
@@ -623,7 +627,7 @@ export async function publishProperty(propertyId: string): Promise<PropertyApiRe
     };
   } catch (err) {
     const ctx = await resolveRequestContext();
-    return propertyBackend.publishProperty(ctx, propertyId);
+    return propertyBackend.publishProperty(ctx, propertyId, options);
   }
 }
 

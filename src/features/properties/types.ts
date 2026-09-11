@@ -361,6 +361,7 @@ export interface Property {
   photos?: PropertyPhoto[];
   completenessScore: number; // 0 - 100
   units: PropertyUnit[];
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -470,6 +471,7 @@ export interface PropertyApiResponse<T = any> {
   code?: string;
   status?: number;
   message?: string;
+  details?: any;
 }
 
 export interface BackendRequestContext {
