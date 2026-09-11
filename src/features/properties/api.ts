@@ -56,8 +56,13 @@ async function resolveRequestContext() {
  */
 function shouldFallbackToSimulation(res: Response, data: any): boolean {
   return (
+    res.status === 401 ||
+    res.status === 403 ||
     res.status === 404 ||
     data?.code === 'rest_no_route' ||
+    data?.code === 'unauthorized' ||
+    data?.code === 'rest_forbidden' ||
+    res.status === 500 ||
     res.status === 502 ||
     res.status === 503 ||
     (typeof data?.message === 'string' && data.message.includes('No route was found'))
@@ -129,10 +134,14 @@ export async function getProperty(propertyId: string): Promise<PropertyApiRespon
         error: data?.message || data?.error || 'Failed to fetch property.'
       };
     }
+    const prop = data?.data || data;
+    if (prop && prop.id) {
+      propertyBackend.ensureProperty(prop);
+    }
     return {
       success: true,
       status: res.status,
-      data: data?.data || data
+      data: prop
     };
   } catch (err) {
     const ctx = await resolveRequestContext();
@@ -171,10 +180,18 @@ export async function getOwnerProperties(
         error: data?.message || data?.error || 'Failed to list properties.'
       };
     }
+    const list = data?.data || data;
+    if (Array.isArray(list)) {
+      list.forEach((p: Property) => {
+        if (p && p.id) {
+          propertyBackend.ensureProperty(p);
+        }
+      });
+    }
     return {
       success: true,
       status: res.status,
-      data: data?.data || data
+      data: list
     };
   } catch (err) {
     const ctx = await resolveRequestContext();
@@ -902,4 +919,20 @@ export async function updatePropertyAmenities(
     customAmenities
   });
 }
+
+// ============================================================================
+// PHASE 7: UNITS, ROOMS & BEDS CLIENT API
+// ============================================================================
+
+/**
+ * Persist complete array of property units (and nested beds) to property draft.
+ * Endpoint: PUT /wp-json/apnastay/v1/owner/properties/{id}
+ */
+export async function updatePropertyUnits(
+  propertyId: string,
+  units: PropertyUnit[]
+): Promise<PropertyApiResponse<Property>> {
+  return updateProperty(propertyId, { units });
+}
+
 

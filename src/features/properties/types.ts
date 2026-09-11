@@ -263,6 +263,7 @@ export interface UpdatePropertyPayload {
   pricing?: Partial<PropertyPricing>;
   amenities?: string[];
   customAmenities?: string[];
+  units?: PropertyUnit[];
   rules?: Partial<PropertyRules>;
   photos?: PropertyPhoto[];
   status?: PropertyStatus;

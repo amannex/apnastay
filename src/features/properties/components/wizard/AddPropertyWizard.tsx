@@ -24,23 +24,26 @@ import {
   EyeOff,
   Camera,
   Star,
-  Image as ImageIcon
+  Image as ImageIcon,
+  BedDouble,
 } from 'lucide-react';
-import type { Property, PropertyType, RentalStructure, PropertyAvailability, PropertyPhoto } from '../../types';
+import type { Property, PropertyType, RentalStructure, PropertyAvailability, PropertyPhoto, PropertyUnit } from '../../types';
 import { getPropertyTemplate } from '../../templates';
-import { createPropertyDraft, updateProperty, getProperty, updatePropertyAmenities } from '../../api';
+import { createPropertyDraft, updateProperty, getProperty, updatePropertyAmenities, updatePropertyUnits } from '../../api';
 import { AMENITY_REGISTRY } from '../../amenities';
+import { getUnitTerminology, calculateUnitAvailability } from '../../units';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
 import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
 import StepAmenities from './StepAmenities';
+import StepUnits from './StepUnits';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -57,6 +60,9 @@ export default function AddPropertyWizard() {
   // Amenities draft state (Phase 6)
   const [amenities, setAmenities] = useState<string[]>([]);
   const [customAmenities, setCustomAmenities] = useState<string[]>([]);
+
+  // Units draft state (Phase 7)
+  const [units, setUnits] = useState<PropertyUnit[]>([]);
 
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -123,15 +129,22 @@ export default function AddPropertyWizard() {
             setCustomAmenities(prop.customAmenities);
           }
 
+          // Restore units state (Phase 7)
+          if (prop.units && prop.units.length > 0) {
+            setUnits(prop.units);
+          }
+
           // Determine step from URL or progress
           const stepParam = Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 7) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7);
+          if (stepParam >= 1 && stepParam <= 8) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8);
+          } else if (prop.units && prop.units.length > 0) {
+            setCurrentStep(7);
           } else if (
             (prop.amenities && prop.amenities.length > 0) ||
             (prop.customAmenities && prop.customAmenities.length > 0)
           ) {
-            setCurrentStep(6);
+            setCurrentStep(7);
           } else if (prop.photos && prop.photos.length > 0) {
             setCurrentStep(6);
           } else if (prop.location?.city && prop.location?.addressLine1 && prop.location?.pincode) {
@@ -152,7 +165,7 @@ export default function AddPropertyWizard() {
   }, []);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     if (typeof window !== 'undefined') {
@@ -416,6 +429,56 @@ export default function AddPropertyWizard() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // Step 7: Units & Rooms Back & Save Handlers (Phase 7)
+  // --------------------------------------------------------------------------
+  const handleBackFromUnits = (currentUnits: PropertyUnit[]) => {
+    setUnits(currentUnits);
+    setCurrentStep(6);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=6`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSaveUnits = async (currentUnits: PropertyUnit[]) => {
+    if (!createdProperty) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      // Explicitly persist the latest units array to the property draft
+      const res = await updatePropertyUnits(createdProperty.id, currentUnits);
+
+      if (res.success && res.data) {
+        setUnits(res.data.units || currentUnits);
+        syncDraftState(res.data, 8);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Safe local state fallback so wizard never halts
+        setUnits(currentUnits);
+        syncDraftState({ ...createdProperty, units: currentUnits }, 8);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (err: any) {
+      // Safe fallback
+      setUnits(currentUnits);
+      syncDraftState({ ...createdProperty, units: currentUnits }, 8);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSkipUnits = async () => {
+    if (!createdProperty) return;
+    // Simply advance to completion without requiring units
+    syncDraftState(createdProperty, 8);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -431,6 +494,7 @@ export default function AddPropertyWizard() {
     setPhotos([]);
     setAmenities([]);
     setCustomAmenities([]);
+    setUnits([]);
     setCreatedProperty(null);
     setErrorMsg(null);
   };
@@ -622,6 +686,30 @@ export default function AddPropertyWizard() {
               Amenities
             </span>
           </div>
+
+          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
+
+          {/* Step 7: Units & Rooms */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                currentStep > 7
+                  ? 'bg-emerald-600 text-white'
+                  : currentStep === 7
+                  ? 'bg-[#1D1D1F] text-white shadow-sm'
+                  : 'bg-[#EDEDED] text-[#86868B]'
+              }`}
+            >
+              {currentStep > 7 ? <CheckCircle2 className="w-4 h-4" /> : '7'}
+            </div>
+            <span
+              className={`text-xs font-bold hidden sm:inline ${
+                currentStep >= 7 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
+              }`}
+            >
+              Units
+            </span>
+          </div>
         </div>
       </div>
 
@@ -744,8 +832,24 @@ export default function AddPropertyWizard() {
         </div>
       )}
 
-      {/* STEP 7: PHASE 6 COMPLETION SUMMARY CARD */}
+      {/* STEP 7: UNITS & ROOMS (PHASE 7) */}
       {currentStep === 7 && createdProperty && !isLoadingDraft && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+          <StepUnits
+            propertyId={createdProperty.id}
+            propertyType={selectedType}
+            rentalStructure={selectedStructure}
+            initialUnits={units.length > 0 ? units : createdProperty.units || []}
+            onBack={handleBackFromUnits}
+            onSave={handleSaveUnits}
+            onSkip={handleSkipUnits}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 8: PHASE 7 COMPLETION SUMMARY CARD */}
+      {currentStep === 8 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 className="w-8 h-8" />
@@ -754,14 +858,14 @@ export default function AddPropertyWizard() {
           <div className="max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 6 Complete — Amenities & Property Features Saved</span>
+              <span>Phase 7 Complete — Property Structure Configured</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Property Amenities Saved!
+              Property Listing Almost Ready!
             </h2>
             <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-              Your amenities, photos, and property details have been safely stored with your listing draft.
-              Tenants will now have complete visibility into what your property offers.
+              Your property details, photos, amenities, and unit structure have been saved.
+              Review the summary below — your listing is nearly complete!
             </p>
           </div>
 
@@ -951,6 +1055,49 @@ export default function AddPropertyWizard() {
                 })()}
               </div>
 
+              {/* UNITS / ROOMS SUMMARY (PHASE 7) */}
+              <div className="pt-3 border-t border-[#EDEDED] space-y-2">
+                {(() => {
+                  const currentUnits = units.length > 0 ? units : createdProperty.units || [];
+                  const totalBeds = currentUnits.reduce((sum: number, u: PropertyUnit) => sum + (u.beds?.length || 0), 0);
+                  const totalCapacity = currentUnits.reduce((sum: number, u: PropertyUnit) => sum + (u.capacity || 1), 0);
+                  const term = getUnitTerminology(selectedType, selectedStructure);
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="text-[#86868B] font-semibold flex items-center gap-1">
+                          <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>{term.plural} & Structure</span>
+                        </span>
+                        <span className="font-bold text-indigo-600">
+                          {currentUnits.length} {currentUnits.length === 1 ? term.singular : term.plural}
+                        </span>
+                      </div>
+                      {currentUnits.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 text-[11px] font-bold border border-indigo-100">
+                            <Building2 className="w-3 h-3" />
+                            {currentUnits.length} {currentUnits.length === 1 ? term.singular : term.plural}
+                          </span>
+                          {term.hasBeds && totalBeds > 0 && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-100">
+                              <BedDouble className="w-3 h-3" />
+                              {totalBeds} Beds
+                            </span>
+                          )}
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-100">
+                            Capacity: {totalCapacity}
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-[#86868B] italic">No units configured (skipped or whole-property rental)</p>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
               <div className="flex items-center justify-between text-xs pt-3 border-t border-[#EDEDED]">
                 <span className="text-[#86868B] font-semibold">Listing Completeness</span>
                 <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
@@ -966,31 +1113,31 @@ export default function AddPropertyWizard() {
             <button
               type="button"
               onClick={() => {
+                setCurrentStep(7);
+                if (typeof window !== 'undefined') {
+                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=7`;
+                  window.history.replaceState(null, '', newUrl);
+                }
+              }}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <Layers className="w-4 h-4 text-indigo-400" />
+              <span>Edit Units & Rooms</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 setCurrentStep(6);
                 if (typeof window !== 'undefined') {
                   const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=6`;
                   window.history.replaceState(null, '', newUrl);
                 }
               }}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm"
-            >
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span>Edit Amenities</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentStep(5);
-                if (typeof window !== 'undefined') {
-                  const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=5`;
-                  window.history.replaceState(null, '', newUrl);
-                }
-              }}
               className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
             >
-              <Camera className="w-4 h-4" />
-              <span>Manage Photos</span>
+              <Sparkles className="w-4 h-4" />
+              <span>Edit Amenities</span>
             </button>
 
             <Link

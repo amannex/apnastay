@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { useApp } from '../../context/AppContext';
-import PropertyModal from '../properties/PropertyModal';
-import AiMatchmakerModal from '../ai/AiMatchmakerModal';
-import CompareDrawer from '../properties/CompareDrawer';
-import WishlistDrawer from '../properties/WishlistDrawer';
+import dynamic from 'next/dynamic';
+
+const PropertyModal = dynamic(() => import('../properties/PropertyModal'), { ssr: false });
+const AiMatchmakerModal = dynamic(() => import('../ai/AiMatchmakerModal'), { ssr: false });
+const CompareDrawer = dynamic(() => import('../properties/CompareDrawer'), { ssr: false });
+const WishlistDrawer = dynamic(() => import('../properties/WishlistDrawer'), { ssr: false });
 import { STATIC_CITIES, STATIC_PROPERTIES } from '../../data/staticProperties';
 import { CheckCircle2, Key, X } from 'lucide-react';
 

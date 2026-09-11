@@ -86,6 +86,75 @@ class PropertyBackendStore {
     }
   }
 
+  /**
+   * Synchronize / upsert a property into the backend store.
+   * Ensures that properties loaded from external CMS or restored from session
+   * are immediately available in the local store.
+   */
+  public ensureProperty(partial: Partial<Property> & { id: string }): Property {
+    const existing = this.properties.get(partial.id);
+    if (existing) {
+      const merged: Property = {
+        ...existing,
+        ...partial,
+        units: partial.units !== undefined ? partial.units : (existing.units || []),
+        photos: partial.photos !== undefined ? partial.photos : (existing.photos || []),
+        amenities: partial.amenities !== undefined ? partial.amenities : (existing.amenities || []),
+        customAmenities: partial.customAmenities !== undefined ? partial.customAmenities : (existing.customAmenities || []),
+        updatedAt: new Date().toISOString()
+      };
+      merged.completenessScore = this.computeCompletenessScore(merged);
+      this.properties.set(partial.id, merged);
+      this.persist();
+      return merged;
+    }
+
+    const now = new Date().toISOString();
+    const created: Property = {
+      id: partial.id,
+      ownerId: partial.ownerId || 24,
+      propertyType: partial.propertyType || 'apartment',
+      customPropertyType: partial.customPropertyType,
+      rentalStructure: partial.rentalStructure || 'multiple_units',
+      title: partial.title || `Property ${partial.id}`,
+      description: partial.description || '',
+      status: partial.status || 'draft',
+      location: partial.location,
+      availability: partial.availability,
+      pricing: partial.pricing,
+      amenities: partial.amenities || [],
+      customAmenities: partial.customAmenities || [],
+      rules: partial.rules || {
+        tenantPreference: 'all',
+        smokingAllowed: false,
+        alcoholAllowed: false,
+        petsAllowed: false,
+        visitorsAllowed: true
+      },
+      photos: partial.photos || [],
+      completenessScore: partial.completenessScore || 40,
+      units: partial.units || [],
+      createdAt: partial.createdAt || now,
+      updatedAt: now
+    };
+    created.completenessScore = this.computeCompletenessScore(created);
+    this.properties.set(partial.id, created);
+    this.persist();
+    return created;
+  }
+
+  /**
+   * Retrieve an existing property or auto-initialize a draft for this ID.
+   */
+  public getOrEnsureProperty(propertyId: string, ctx: BackendRequestContext): Property {
+    let property = this.properties.get(propertyId);
+    if (!property) {
+      property = this.ensureProperty({ id: propertyId, ownerId: ctx.userId });
+    }
+    this.assertOwnership(property, ctx);
+    return property;
+  }
+
   // --------------------------------------------------------------------------
   // Authorization Guards
   // --------------------------------------------------------------------------
@@ -215,17 +284,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       return {
         success: true,
@@ -288,17 +347,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       // Validate structure compatibility if propertyType or rentalStructure is updated
       const newType = payload.propertyType || property.propertyType;
@@ -381,6 +430,10 @@ class PropertyBackendStore {
         property.photos = normalized;
       }
 
+      if (payload.units !== undefined) {
+        property.units = payload.units;
+      }
+
       if (payload.status !== undefined) {
         property.status = payload.status;
       }
@@ -449,17 +502,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       // File format validation
       const supportedMimes = [
@@ -574,17 +617,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const photos = property.photos ? [...property.photos] : [];
       const index = photos.findIndex((p) => String(p.id) === String(photoId));
@@ -643,17 +676,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const existingPhotos = property.photos ? [...property.photos] : [];
       const photoMap = new Map<string, PropertyPhoto>();
@@ -712,17 +735,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const photos = property.photos ? [...property.photos] : [];
       const photo = photos.find((p) => String(p.id) === String(photoId));
@@ -799,17 +812,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const now = new Date().toISOString();
       const unitId = generateEntityId('unit');
@@ -887,17 +890,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       if (!payload.count || payload.count < 1 || payload.count > 100) {
         return {
@@ -991,17 +984,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const sourceUnit = property.units.find((u) => u.id === unitId);
       if (!sourceUnit) {
@@ -1067,17 +1050,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const unit = property.units.find((u) => u.id === unitId);
       if (!unit) {
@@ -1131,17 +1104,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const initialLength = property.units.length;
       property.units = property.units.filter((u) => u.id !== unitId);
@@ -1186,17 +1149,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const unit = property.units.find((u) => u.id === unitId);
       if (!unit) {
@@ -1258,17 +1211,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const unit = property.units.find((u) => u.id === unitId);
       if (!unit) {
@@ -1329,17 +1272,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
 
       const unit = property.units.find((u) => u.id === unitId);
       if (!unit) {
