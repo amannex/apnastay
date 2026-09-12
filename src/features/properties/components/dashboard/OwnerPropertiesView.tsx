@@ -874,6 +874,18 @@ export default function OwnerPropertiesView() {
                   {/* DRAFT ACTIONS */}
                   {isDraft && (
                     <>
+                      {prop.completenessScore >= 80 && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenActionModal(prop, 'publish')}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
+                          title="Publish listing live"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Publish Live</span>
+                        </button>
+                      )}
+
                       <Link
                         href={`/owner/dashboard/properties/${prop.id}/edit`}
                         className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"

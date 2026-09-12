@@ -641,7 +641,7 @@ export async function publishProperty(
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/publish`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify(options || {})
       }
@@ -649,6 +649,14 @@ export async function publishProperty(
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      // Graceful fallback to PUT status = 'published' if custom route returned 404
+      if (data?.code === 'rest_no_route' || res.status === 404) {
+        const updateRes = await updateProperty(propertyId, { status: 'published' });
+        if (updateRes.success) {
+          return updateRes;
+        }
+      }
+
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
         return propertyBackend.publishProperty(ctx, propertyId, options);
@@ -681,13 +689,20 @@ export async function unpublishProperty(propertyId: string): Promise<PropertyApi
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/unpublish`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include'
       }
     );
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (data?.code === 'rest_no_route' || res.status === 404) {
+        const updateRes = await updateProperty(propertyId, { status: 'unpublished' });
+        if (updateRes.success) {
+          return updateRes;
+        }
+      }
+
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
         return propertyBackend.unpublishProperty(ctx, propertyId);
@@ -720,13 +735,20 @@ export async function archiveProperty(propertyId: string): Promise<PropertyApiRe
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/archive`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include'
       }
     );
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (data?.code === 'rest_no_route' || res.status === 404) {
+        const updateRes = await updateProperty(propertyId, { status: 'archived' });
+        if (updateRes.success) {
+          return updateRes;
+        }
+      }
+
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
         return propertyBackend.archiveProperty(ctx, propertyId);
@@ -759,13 +781,20 @@ export async function restoreProperty(propertyId: string): Promise<PropertyApiRe
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/restore`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include'
       }
     );
 
     const data = await res.json().catch(() => null);
     if (!res.ok) {
+      if (data?.code === 'rest_no_route' || res.status === 404) {
+        const updateRes = await updateProperty(propertyId, { status: 'unpublished' });
+        if (updateRes.success) {
+          return updateRes;
+        }
+      }
+
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
         return propertyBackend.restoreProperty(ctx, propertyId);
@@ -798,7 +827,7 @@ export async function duplicateProperty(propertyId: string): Promise<PropertyApi
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/duplicate`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include'
       }
     );
