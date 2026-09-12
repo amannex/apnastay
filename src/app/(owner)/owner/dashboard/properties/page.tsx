@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Metadata } from 'next';
 import OwnerDashboardShell from '@/components/dashboard/OwnerDashboardShell';
@@ -6,7 +7,7 @@ import PropertyErrorBoundary from '@/features/properties/components/PropertyErro
 
 export const metadata: Metadata = {
   title: 'My Property Listings | ApnaStay India',
-  description: 'Manage your verified residential properties across Tier-2 Indian hubs.',
+  description: 'Manage, view, and monitor your listed properties across Indian cities.',
 };
 
 export default function PropertiesPage() {

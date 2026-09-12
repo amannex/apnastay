@@ -6,7 +6,7 @@ import PropertyErrorBoundary from '@/features/properties/components/PropertyErro
 
 export const metadata: Metadata = {
   title: 'Add New Property | ApnaStay Owner Portal',
-  description: 'List your house, apartment, PG, hostel, or commercial rental property on ApnaStay.'
+  description: 'List your property, rooms, PG, or co-living space on ApnaStay.',
 };
 
 export default function NewPropertyPage() {
