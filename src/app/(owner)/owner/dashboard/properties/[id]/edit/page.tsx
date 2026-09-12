@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import OwnerDashboardShell from '@/components/dashboard/OwnerDashboardShell';
 import AddPropertyWizard from '@/features/properties/components/wizard/AddPropertyWizard';
+import PropertyErrorBoundary from '@/features/properties/components/PropertyErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'Edit Property | ApnaStay Owner Portal',
@@ -22,11 +23,13 @@ export default async function EditPropertyPage({ params, searchParams }: EditPro
   return (
     <OwnerDashboardShell activeTab="properties">
       <div className="py-2 sm:py-4">
-        <AddPropertyWizard
-          mode={mode}
-          propertyId={resolvedParams.id}
-          initialStep={initialStep}
-        />
+        <PropertyErrorBoundary fallbackTitle="Unable to load property editor">
+          <AddPropertyWizard
+            mode={mode}
+            propertyId={resolvedParams.id}
+            initialStep={initialStep}
+          />
+        </PropertyErrorBoundary>
       </div>
     </OwnerDashboardShell>
   );

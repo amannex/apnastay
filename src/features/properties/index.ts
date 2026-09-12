@@ -36,6 +36,7 @@ export { default as AddPropertyWizard } from './components/wizard/AddPropertyWiz
 export type { AddPropertyWizardProps } from './components/wizard/AddPropertyWizard';
 export { default as OwnerPropertiesView } from './components/dashboard/OwnerPropertiesView';
 export { default as PropertyPreviewModal } from './components/dialogs/PropertyPreviewModal';
+export { default as PropertyErrorBoundary } from './components/PropertyErrorBoundary';
 export * from './form/formConfig';
 
 
