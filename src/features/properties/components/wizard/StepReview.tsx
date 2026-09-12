@@ -442,7 +442,7 @@ export default function StepReview({
         </button>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          {/* Save as Draft (Always Allowed) */}
+          {/* Save as Draft / Save Changes */}
           <button
             type="button"
             onClick={onSaveDraft}
@@ -452,14 +452,18 @@ export default function StepReview({
             {isSaving ? (
               <>
                 <div className="w-4 h-4 border-2 border-[#1D1D1F] border-t-transparent rounded-full animate-spin" />
-                <span>Saving Draft...</span>
+                <span>Saving...</span>
               </>
             ) : (
-              <span>Save Incomplete Draft</span>
+              <span>
+                {property.status === 'published'
+                  ? 'Save & Exit'
+                  : 'Save Incomplete Draft'}
+              </span>
             )}
           </button>
 
-          {/* Publish Listing Button */}
+          {/* Publish / Update Listing Button */}
           <button
             type="button"
             onClick={onPublish}
@@ -473,12 +477,20 @@ export default function StepReview({
             {isPublishing ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Publishing Listing...</span>
+                <span>
+                  {property.status === 'published'
+                    ? 'Updating Live Listing...'
+                    : 'Publishing Listing...'}
+                </span>
               </>
             ) : (
               <>
                 <Globe className="w-4 h-4" />
-                <span>Publish Listing Live</span>
+                <span>
+                  {property.status === 'published'
+                    ? 'Save & Update Live Listing'
+                    : 'Publish Listing Live'}
+                </span>
               </>
             )}
           </button>

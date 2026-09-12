@@ -86,11 +86,32 @@ import StepPricing from './StepPricing';
 import StepRules from './StepRules';
 import StepReview from './StepReview';
 import { determineNextIncompleteStep } from '../../completeness';
+import {
+  PropertyFormMode,
+  WIZARD_STEPS,
+  isStepApplicable
+} from '../../form/formConfig';
 
-export default function AddPropertyWizard() {
+export interface AddPropertyWizardProps {
+  mode?: PropertyFormMode;
+  propertyId?: string;
+  initialStep?: number;
+  onSaved?: (property: Property) => void;
+  onExit?: () => void;
+}
+
+export default function AddPropertyWizard({
+  mode = 'create',
+  propertyId: propPropertyId,
+  initialStep: propInitialStep,
+  onSaved,
+  onExit
+}: AddPropertyWizardProps = {}) {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(
+    (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10 ? propInitialStep : 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+  );
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -122,22 +143,42 @@ export default function AddPropertyWizard() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
 
+  // Phase 13: Structural change guard and unsaved changes tracking
+  const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
+  const [pendingTypeChange, setPendingTypeChange] = useState<PropertyType | null>(null);
+  const [pendingStructureChange, setPendingStructureChange] = useState<RentalStructure | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
+  const isEditMode = mode === 'edit' || (createdProperty ? createdProperty.status !== 'draft' : false);
 
   // --------------------------------------------------------------------------
-  // Draft Restoration on Mount / Page Refresh
+  // Unsaved Changes Listener (beforeunload)
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // --------------------------------------------------------------------------
+  // Draft Restoration & Existing Property Hydration
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const params = new URLSearchParams(window.location.search);
-    const draftIdFromUrl = params.get('draftId');
-    const savedDraftId = draftIdFromUrl || window.sessionStorage?.getItem('apnastay_active_draft_id');
+    const draftIdFromUrl = params.get('draftId') || params.get('propertyId');
+    const targetPropertyId = propPropertyId || draftIdFromUrl || (mode === 'create' ? window.sessionStorage?.getItem('apnastay_active_draft_id') : null);
 
-    if (!savedDraftId) return;
+    if (!targetPropertyId) return;
 
     setIsLoadingDraft(true);
-    getProperty(savedDraftId)
+    getProperty(targetPropertyId)
       .then((res) => {
         if (res.success && res.data) {
           const prop = res.data;
@@ -194,15 +235,22 @@ export default function AddPropertyWizard() {
             setRules(prop.rules);
           }
 
-          // Determine step from URL or intelligent progress evaluation
-          const stepParam = Number(params.get('step'));
+          // Determine step from props, URL, or intelligent progress evaluation
+          const stepParam = propInitialStep || Number(params.get('step'));
           if (stepParam >= 1 && stepParam <= 10) {
             setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10);
+          } else if (mode === 'review') {
+            setCurrentStep(10);
+          } else if (mode === 'edit' || prop.status !== 'draft') {
+            setCurrentStep(3); // Start on basic details for established listings
           } else {
             const nextStep = determineNextIncompleteStep(prop);
             setCurrentStep(nextStep);
           }
-          setHasResumedDraft(true);
+
+          if (prop.status === 'draft') {
+            setHasResumedDraft(true);
+          }
         }
       })
       .catch(() => {
@@ -211,47 +259,99 @@ export default function AddPropertyWizard() {
       .finally(() => {
         setIsLoadingDraft(false);
       });
-  }, []);
-
+  }, [propPropertyId, propInitialStep, mode]);
 
   // Update browser history and session storage whenever draft or step updates
   const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
+    setHasUnsavedChanges(false);
+    onSaved?.(prop);
+
     if (typeof window !== 'undefined') {
-      window.sessionStorage?.setItem('apnastay_active_draft_id', prop.id);
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(prop.id)}&step=${step}`;
+      if (prop.status === 'draft') {
+        window.sessionStorage?.setItem('apnastay_active_draft_id', prop.id);
+      }
+      const params = new URLSearchParams(window.location.search);
+      params.set('step', String(step));
+      if (!window.location.pathname.includes(prop.id)) {
+        params.set('draftId', prop.id);
+      }
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState(null, '', newUrl);
     }
   };
 
+  // Direct Stepper Navigation
+  const handleJumpToStep = (targetStep: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
+    if (!createdProperty && targetStep > 2) return;
+    if (targetStep === 7 && !isStepApplicable(7, selectedType, selectedStructure)) {
+      return;
+    }
+    setCurrentStep(targetStep);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      params.set('step', String(targetStep));
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // --------------------------------------------------------------------------
-  // Step 1: Type Selection
+  // Step 1: Type Selection with Structural Guard
   // --------------------------------------------------------------------------
   const handleSelectType = (type: PropertyType) => {
+    if (units.length > 0 && selectedType && selectedType !== type) {
+      setPendingTypeChange(type);
+      setShowStructuralGuard(true);
+      return;
+    }
     setSelectedType(type);
+    setHasUnsavedChanges(true);
     setErrorMsg(null);
     const template = getPropertyTemplate(type);
     setSelectedStructure(template.defaultRentalStructure);
   };
 
+  const handleSelectStructure = (structure: RentalStructure) => {
+    if (units.length > 0 && selectedStructure && selectedStructure !== structure) {
+      setPendingStructureChange(structure);
+      setShowStructuralGuard(true);
+      return;
+    }
+    setSelectedStructure(structure);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleConfirmStructuralChange = () => {
+    if (pendingTypeChange) {
+      setSelectedType(pendingTypeChange);
+      const template = getPropertyTemplate(pendingTypeChange);
+      setSelectedStructure(template.defaultRentalStructure);
+      setPendingTypeChange(null);
+    }
+    if (pendingStructureChange) {
+      setSelectedStructure(pendingStructureChange);
+      setPendingStructureChange(null);
+    }
+    setHasUnsavedChanges(true);
+    setShowStructuralGuard(false);
+  };
+
+  const handleCancelStructuralChange = () => {
+    setPendingTypeChange(null);
+    setPendingStructureChange(null);
+    setShowStructuralGuard(false);
+  };
+
   const handleProceedToRentalStructure = () => {
     if (!selectedType) return;
-    setCurrentStep(2);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=2`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleJumpToStep(2);
   };
 
   const handleBackToPropertyType = () => {
-    setCurrentStep(1);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=1`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleJumpToStep(1);
   };
 
   // --------------------------------------------------------------------------
@@ -641,11 +741,21 @@ export default function AddPropertyWizard() {
     }
   };
 
-  const handleSaveIncompleteDraft = async () => {
+  const handleSaveAndExit = async () => {
     if (createdProperty && typeof window !== 'undefined') {
-      window.sessionStorage?.setItem('apnastay_active_draft_id', createdProperty.id);
+      if (createdProperty.status === 'draft') {
+        window.sessionStorage?.setItem('apnastay_active_draft_id', createdProperty.id);
+      }
     }
-    router.push('/owner/dashboard/properties');
+    if (onExit) {
+      onExit();
+    } else {
+      router.push('/owner/dashboard/properties');
+    }
+  };
+
+  const handleSaveIncompleteDraft = async () => {
+    await handleSaveAndExit();
   };
 
   // Reset wizard to create another property
@@ -669,7 +779,6 @@ export default function AddPropertyWizard() {
     setIsPublishedSuccess(false);
     setErrorMsg(null);
   };
-
 
   const getFormatLabel = () => {
     if (selectedType === 'other' && customPropertyType) {
@@ -709,287 +818,122 @@ export default function AddPropertyWizard() {
                 My Properties
               </Link>
               <span>/</span>
-              <span className="text-[#1D1D1F] font-bold">List New Property</span>
+              <span className="text-[#1D1D1F] font-bold">
+                {isEditMode ? `Edit: ${createdProperty?.title || 'Property'}` : 'List New Property'}
+              </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Add Property
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
+                {isEditMode ? 'Edit Property' : 'Add Property'}
+              </h1>
+              {createdProperty && (
+                <span
+                  className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                    createdProperty.status === 'published'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : createdProperty.status === 'draft'
+                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                      : createdProperty.status === 'archived'
+                      ? 'bg-slate-100 text-slate-700 border border-slate-200'
+                      : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
+                  }`}
+                >
+                  {createdProperty.status === 'published' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                  )}
+                  <span>{createdProperty.status}</span>
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Mobile Save Draft & Exit */}
-          {createdProperty && createdProperty.status === 'draft' && (
-            <button
-              type="button"
-              onClick={handleSaveIncompleteDraft}
-              disabled={isSubmitting}
-              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50"
-            >
-              <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
-              <span>Save & Exit</span>
-            </button>
-          )}
+          {/* Mobile Save & Exit */}
+          <button
+            type="button"
+            onClick={handleSaveAndExit}
+            disabled={isSubmitting}
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50"
+          >
+            <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
+            <span>{isEditMode ? 'Exit' : 'Save & Exit'}</span>
+          </button>
         </div>
 
         {/* PROGRESS STEPPER (10 STEPS) & DESKTOP SAVE DRAFT */}
         <div className="flex items-center gap-4 flex-wrap justify-between lg:justify-end">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-          {/* Step 1: Format */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 1
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 1
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 1 ? <CheckCircle2 className="w-4 h-4" /> : '1'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 1 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Format
-            </span>
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+            {WIZARD_STEPS.map((stepDef, idx) => {
+              const isCurrent = currentStep === stepDef.stepNumber;
+              const isApplicable = stepDef.isApplicable(selectedType, selectedStructure);
+              const isCompleted = createdProperty ? stepDef.isCompleted(createdProperty) : false;
+              const canNavigate = isApplicable && (Boolean(createdProperty) || stepDef.stepNumber <= 2 || isEditMode);
+
+              return (
+                <React.Fragment key={stepDef.key}>
+                  {idx > 0 && (
+                    <div
+                      className={`w-1.5 sm:w-2.5 md:w-3 h-[2px] transition-colors ${
+                        isCompleted ? 'bg-emerald-500' : currentStep > stepDef.stepNumber ? 'bg-[#1D1D1F]' : 'bg-[#EDEDED]'
+                      }`}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => canNavigate && handleJumpToStep(stepDef.stepNumber)}
+                    disabled={!canNavigate}
+                    title={`${stepDef.title} (${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Incomplete'})`}
+                    className={`flex items-center gap-1 group transition-all text-left ${
+                      !canNavigate ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'
+                    }`}
+                  >
+                    <div
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${
+                        isCurrent
+                          ? 'bg-[#1D1D1F] text-white shadow-sm ring-2 ring-black/10 scale-105'
+                          : isCompleted
+                          ? 'bg-emerald-600 text-white group-hover:bg-emerald-700'
+                          : canNavigate
+                          ? 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED] group-hover:bg-[#EDEDED]'
+                          : 'bg-[#EDEDED] text-[#86868B]'
+                      }`}
+                    >
+                      {isCompleted && !isCurrent ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      ) : (
+                        stepDef.stepNumber
+                      )}
+                    </div>
+                    <span
+                      className={`text-[11px] font-bold hidden xl:inline transition-colors ${
+                        isCurrent
+                          ? 'text-[#1D1D1F] underline decoration-2 underline-offset-4'
+                          : isCompleted
+                          ? 'text-emerald-700'
+                          : canNavigate
+                          ? 'text-[#86868B] group-hover:text-[#1D1D1F]'
+                          : 'text-[#86868B]'
+                      }`}
+                    >
+                      {stepDef.shortLabel}
+                    </span>
+                  </button>
+                </React.Fragment>
+              );
+            })}
           </div>
 
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 2: Rental Model */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 2
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 2
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 2 ? <CheckCircle2 className="w-4 h-4" /> : '2'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 2 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Rental Model
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 3: Basic Details */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 3
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 3
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 3 ? <CheckCircle2 className="w-4 h-4" /> : '3'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 3 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Basic Details
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 4: Location */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 4
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 4
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 4 ? <CheckCircle2 className="w-4 h-4" /> : '4'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 4 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Location
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 5: Photos */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 5
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 5
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 5 ? <CheckCircle2 className="w-4 h-4" /> : '5'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 5 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Photos
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 6: Amenities */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 6
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 6
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 6 ? <CheckCircle2 className="w-4 h-4" /> : '6'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 6 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Amenities
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 7: Units & Rooms */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 7
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 7
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 7 ? <CheckCircle2 className="w-4 h-4" /> : '7'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 7 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Units
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 8: Pricing */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 8
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 8
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 8 ? <CheckCircle2 className="w-4 h-4" /> : '8'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 8 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Pricing
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 9: Rules */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                currentStep > 9
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 9
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {currentStep > 9 ? <CheckCircle2 className="w-4 h-4" /> : '9'}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 9 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Rules
-            </span>
-          </div>
-
-          <div className="w-3 sm:w-5 h-[2px] bg-[#EDEDED]" />
-
-          {/* Step 10: Review */}
-          <div className="flex items-center gap-1.5">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                createdProperty?.status === 'published' || isPublishedSuccess
-                  ? 'bg-emerald-600 text-white'
-                  : currentStep === 10
-                  ? 'bg-[#1D1D1F] text-white shadow-sm'
-                  : 'bg-[#EDEDED] text-[#86868B]'
-              }`}
-            >
-              {createdProperty?.status === 'published' || isPublishedSuccess ? (
-                <CheckCircle2 className="w-4 h-4" />
-              ) : (
-                '10'
-              )}
-            </div>
-            <span
-              className={`text-xs font-bold hidden sm:inline ${
-                currentStep >= 10 ? 'text-[#1D1D1F]' : 'text-[#86868B]'
-              }`}
-            >
-              Review
-            </span>
-          </div>
-        </div>
-
-        {/* Desktop Save Draft & Exit */}
-        {createdProperty && createdProperty.status === 'draft' && (
+          {/* Desktop Save/Exit */}
           <button
             type="button"
-            onClick={handleSaveIncompleteDraft}
+            onClick={handleSaveAndExit}
             disabled={isSubmitting}
             className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0"
           >
             <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
-            <span>Save Draft & Exit</span>
+            <span>{isEditMode ? 'Done & Exit' : 'Save Draft & Exit'}</span>
           </button>
-        )}
+        </div>
       </div>
-    </div>
 
 
       {/* RESUMED DRAFT NOTIFICATION BANNER */}
@@ -1016,6 +960,42 @@ export default function AddPropertyWizard() {
         <div className="p-4 rounded-2xl bg-white border border-[#EDEDED] shadow-apple-sm flex items-center justify-center gap-2 text-xs font-semibold text-[#86868B]">
           <Loader2 className="w-4 h-4 animate-spin text-[#1D1D1F]" />
           <span>Restoring your saved property draft...</span>
+        </div>
+      )}
+
+      {/* STRUCTURAL CHANGE CONFIRMATION MODAL */}
+      {showStructuralGuard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 border border-[#EDEDED] shadow-apple-xl space-y-5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-extrabold text-[#1D1D1F]">
+                Confirm Structural Change
+              </h3>
+              <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 leading-relaxed">
+                This property currently has <strong className="text-[#1D1D1F]">{units.length} unit(s) or room(s)</strong> configured. Changing the rental model or property format may alter unit availability and pricing hierarchy.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleCancelStructuralChange}
+                className="px-4 py-2.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] transition-all"
+              >
+                Keep Current Setup
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmStructuralChange}
+                className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-xs font-bold text-white transition-all shadow-sm"
+              >
+                Proceed with Change
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1046,7 +1026,7 @@ export default function AddPropertyWizard() {
           <StepRentalStructure
             selectedType={selectedType}
             selectedStructure={selectedStructure}
-            onSelectStructure={setSelectedStructure}
+            onSelectStructure={handleSelectStructure}
             onBack={handleBackToPropertyType}
             onContinue={handleCreateOrUpdateDraft}
             isSubmitting={isSubmitting}
@@ -1173,7 +1153,7 @@ export default function AddPropertyWizard() {
       {/* STEP 10: LISTING REVIEW & PUBLISHING (PHASE 10) */}
       {currentStep === 10 && createdProperty && !isLoadingDraft && (
         <>
-          {isPublishedSuccess || createdProperty.status === 'published' ? (
+          {isPublishedSuccess ? (
             <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
               <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
                 <CheckCircle2 className="w-8 h-8" />
@@ -1182,13 +1162,15 @@ export default function AddPropertyWizard() {
               <div className="max-w-md mx-auto">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Listing is Live!</span>
+                  <span>{isEditMode ? 'Listing Updated!' : 'Listing is Live!'}</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-                  Congratulations! Your Property is Published
+                  {isEditMode
+                    ? 'Listing Updated Successfully'
+                    : 'Congratulations! Your Property is Published'}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-                  &ldquo;{createdProperty.title}&rdquo; is now active and ready to welcome prospective tenants on ApnaStay.
+                  &ldquo;{createdProperty.title}&rdquo; changes have been saved live on ApnaStay.
                 </p>
               </div>
 
@@ -1198,7 +1180,7 @@ export default function AddPropertyWizard() {
                   <span className="text-[#86868B] font-semibold">Status</span>
                   <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-100/60 px-2.5 py-0.5 rounded-full text-[11px]">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Published</span>
+                    <span className="capitalize">{createdProperty.status}</span>
                   </span>
                 </div>
 
@@ -1246,35 +1228,23 @@ export default function AddPropertyWizard() {
                   <span>Review Details Again</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl text-[#86868B] hover:text-[#1D1D1F] text-xs sm:text-sm font-semibold transition-all"
-                >
-                  List Another Property
-                </button>
+                {!isEditMode && (
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="w-full sm:w-auto px-5 py-3.5 rounded-2xl text-[#86868B] hover:text-[#1D1D1F] text-xs sm:text-sm font-semibold transition-all"
+                  >
+                    List Another Property
+                  </button>
+                )}
               </div>
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
               <StepReview
                 property={createdProperty}
-                onBack={() => {
-                  setCurrentStep(9);
-                  if (typeof window !== 'undefined') {
-                    const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=9`;
-                    window.history.replaceState(null, '', newUrl);
-                  }
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                onEditSection={(step) => {
-                  setCurrentStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10);
-                  if (typeof window !== 'undefined') {
-                    const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=${step}`;
-                    window.history.replaceState(null, '', newUrl);
-                  }
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+                onBack={() => handleJumpToStep(9)}
+                onEditSection={(step) => handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10)}
                 onSaveDraft={handleSaveIncompleteDraft}
                 onPublish={handlePublishListing}
                 isSaving={isSubmitting}

@@ -854,7 +854,7 @@ export default function OwnerPropertiesView() {
                   {isDraft && (
                     <>
                       <Link
-                        href={`/owner/dashboard/properties/new?draftId=${encodeURIComponent(prop.id)}`}
+                        href={`/owner/dashboard/properties/${prop.id}/edit`}
                         className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
                       >
                         <span>Continue Setup</span>
@@ -876,7 +876,7 @@ export default function OwnerPropertiesView() {
                   {isPublished && (
                     <>
                       <Link
-                        href={`/owner/dashboard/properties/new?draftId=${encodeURIComponent(prop.id)}&step=10`}
+                        href={`/owner/dashboard/properties/${prop.id}/edit`}
                         className="px-3.5 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold transition-all inline-flex items-center gap-1.5"
                       >
                         <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
@@ -916,7 +916,7 @@ export default function OwnerPropertiesView() {
                       </button>
 
                       <Link
-                        href={`/owner/dashboard/properties/new?draftId=${encodeURIComponent(prop.id)}&step=10`}
+                        href={`/owner/dashboard/properties/${prop.id}/edit`}
                         className="px-3.5 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold transition-all inline-flex items-center gap-1.5"
                       >
                         <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
