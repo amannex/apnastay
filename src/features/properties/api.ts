@@ -749,6 +749,49 @@ export async function restoreProperty(propertyId: string): Promise<PropertyApiRe
   }
 }
 
+/**
+ * Duplicate an existing property along with all child units, beds, media, and configurations.
+ * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/duplicate
+ */
+export async function duplicateProperty(
+  propertyId: string,
+  newTitle?: string
+): Promise<PropertyApiResponse<Property>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/duplicate`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ newTitle })
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.duplicateProperty(ctx, propertyId, newTitle);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'DUPLICATE_FAILED',
+        error: data?.message || data?.error || 'Failed to duplicate property.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.duplicateProperty(ctx, propertyId, newTitle);
+  }
+}
+
 
 // ============================================================================
 // PHASE 5: PROPERTY PHOTO MANAGEMENT CLIENT API

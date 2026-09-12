@@ -1847,7 +1847,8 @@ class PropertyBackendStore {
         }
 
         const template = getPropertyTemplate(property.propertyType);
-        if (template?.hasUnits && property.units.length === 0) {
+        const requiresUnits = template?.hasUnits && property.rentalStructure !== 'entire_property';
+        if (requiresUnits && property.units.length === 0) {
           return {
             success: false,
             status: 400,
@@ -2020,6 +2021,94 @@ class PropertyBackendStore {
         status: err.status || 500,
         code: err.code || 'RESTORE_PROPERTY_ERROR',
         error: err.message || 'Failed to restore property.'
+      };
+    }
+  }
+
+  /**
+   * Duplicate an existing property along with all its child units, beds, media, pricing, and rules.
+   * The new clone is always created in 'draft' status with fresh entity IDs.
+   */
+  public duplicateProperty(
+    ctx: BackendRequestContext,
+    propertyId: string,
+    newTitle?: string
+  ): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const source = this.properties.get(propertyId);
+      if (!source) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(source, ctx);
+
+      const now = new Date().toISOString();
+      const newPropertyId = generateEntityId('prop');
+
+      // Deep clone child units & beds with new IDs
+      const clonedUnits: PropertyUnit[] = (source.units || []).map((u) => {
+        const newUnitId = generateEntityId('unit');
+        const clonedBeds: PropertyBed[] = (u.beds || []).map((b) => ({
+          ...b,
+          id: generateEntityId('bed'),
+          unitId: newUnitId,
+          createdAt: now,
+          updatedAt: now
+        }));
+
+        return {
+          ...u,
+          id: newUnitId,
+          propertyId: newPropertyId,
+          beds: clonedBeds,
+          createdAt: now,
+          updatedAt: now
+        };
+      });
+
+      // Deep clone photos with new IDs
+      const clonedPhotos: PropertyPhoto[] = (source.photos || []).map((p) => ({
+        ...p,
+        id: generateEntityId('photo')
+      }));
+
+      // Assemble cloned draft property
+      const clonedProperty: Property = {
+        ...source,
+        id: newPropertyId,
+        ownerId: ctx.userId,
+        title: newTitle?.trim() || `${source.title} (Copy)`,
+        status: 'draft',
+        publishedAt: undefined,
+        units: clonedUnits,
+        photos: clonedPhotos,
+        createdAt: now,
+        updatedAt: now
+      };
+
+      clonedProperty.completenessScore = this.computeCompletenessScore(clonedProperty);
+      this.properties.set(newPropertyId, clonedProperty);
+      this.persist();
+
+      return {
+        success: true,
+        status: 201,
+        data: clonedProperty,
+        message: 'Property duplicated successfully as draft.'
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'DUPLICATE_PROPERTY_ERROR',
+        error: err.message || 'Failed to duplicate property.'
       };
     }
   }

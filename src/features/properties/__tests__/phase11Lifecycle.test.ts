@@ -202,13 +202,18 @@ async function runPhase11Tests() {
       units: [
         {
           id: 'unit-1',
-          name: 'Flat 101',
-          type: 'double_sharing',
+          propertyId,
+          nameOrNumber: 'Flat 101',
+          unitType: 'double_sharing',
+          capacity: 2,
+          status: 'available',
           pricing: { monthlyRent: 8500 },
-          availability: { type: 'immediate' },
+          availability: 'available',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           beds: [
-            { id: 'bed-1', label: 'Bed A', pricing: { monthlyRent: 8500 }, availability: { type: 'immediate' } },
-            { id: 'bed-2', label: 'Bed B', pricing: { monthlyRent: 8500 }, availability: { type: 'immediate' } }
+            { id: 'bed-1', unitId: 'unit-1', label: 'Bed A', pricing: { monthlyRent: 8500 }, availability: 'available', status: 'available', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+            { id: 'bed-2', unitId: 'unit-1', label: 'Bed B', pricing: { monthlyRent: 8500 }, availability: 'available', status: 'available', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
           ]
         }
       ]
