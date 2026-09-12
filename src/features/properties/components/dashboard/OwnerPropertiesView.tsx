@@ -42,6 +42,7 @@ import {
 import { getPropertyTemplate } from '../../templates';
 import { getSafeImageUrl } from '../wizard/StepPhotos';
 import { formatPricingDisplay } from '../../pricing';
+import { normalizePropertyError } from '../../errorMessages';
 import LifecycleConfirmationModal, { LifecycleActionType } from '../dialogs/LifecycleConfirmationModal';
 import PropertyPreviewModal from '../dialogs/PropertyPreviewModal';
 
@@ -110,10 +111,12 @@ export default function OwnerPropertiesView() {
       if (res.success && res.data) {
         setProperties(res.data);
       } else {
-        setError(res.error || 'Failed to load your properties.');
+        const norm = normalizePropertyError(res.status, res, 'Failed to load your properties.');
+        setError(norm.message + (norm.hint ? ` (${norm.hint})` : ''));
       }
     } catch (err: any) {
-      setError(err.message || 'Network error while fetching properties.');
+      const norm = normalizePropertyError(null, err, 'Network error while fetching properties.');
+      setError(norm.message + (norm.hint ? ` (${norm.hint})` : ''));
     } finally {
       setLoading(false);
     }
@@ -385,7 +388,11 @@ export default function OwnerPropertiesView() {
 
       {/* ERROR STATE WITH RETRY */}
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-semibold flex items-center justify-between gap-3">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 animate-fade-in"
+        >
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{error}</span>
@@ -393,7 +400,7 @@ export default function OwnerPropertiesView() {
           <button
             type="button"
             onClick={fetchProperties}
-            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shrink-0"
+            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shrink-0 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Try Again</span>
@@ -405,11 +412,17 @@ export default function OwnerPropertiesView() {
       {!loading && properties.length > 0 && (
         <div className="space-y-4">
           {/* STATUS TABS */}
-          <div className="flex items-center gap-1 sm:gap-2 p-1.5 bg-[#F5F5F7] rounded-2xl overflow-x-auto border border-[#EDEDED] scrollbar-none">
+          <div
+            role="tablist"
+            aria-label="Filter properties by status"
+            className="flex items-center gap-1 sm:gap-2 p-1.5 bg-[#F5F5F7] rounded-2xl overflow-x-auto border border-[#EDEDED] scrollbar-none"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'active'}
               onClick={() => setActiveTab('active')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
                 activeTab === 'active'
                   ? 'bg-white text-[#1D1D1F] shadow-sm'
                   : 'text-[#86868B] hover:text-[#1D1D1F]'
@@ -423,8 +436,10 @@ export default function OwnerPropertiesView() {
 
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'published'}
               onClick={() => setActiveTab('published')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
                 activeTab === 'published'
                   ? 'bg-white text-emerald-700 shadow-sm'
                   : 'text-[#86868B] hover:text-[#1D1D1F]'
@@ -438,8 +453,10 @@ export default function OwnerPropertiesView() {
 
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'draft'}
               onClick={() => setActiveTab('draft')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
                 activeTab === 'draft'
                   ? 'bg-white text-amber-800 shadow-sm'
                   : 'text-[#86868B] hover:text-[#1D1D1F]'
@@ -453,8 +470,10 @@ export default function OwnerPropertiesView() {
 
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'unpublished'}
               onClick={() => setActiveTab('unpublished')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
                 activeTab === 'unpublished'
                   ? 'bg-white text-[#1D1D1F] shadow-sm'
                   : 'text-[#86868B] hover:text-[#1D1D1F]'
@@ -468,8 +487,10 @@ export default function OwnerPropertiesView() {
 
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'archived'}
               onClick={() => setActiveTab('archived')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
                 activeTab === 'archived'
                   ? 'bg-white text-slate-800 shadow-sm'
                   : 'text-[#86868B] hover:text-[#1D1D1F]'

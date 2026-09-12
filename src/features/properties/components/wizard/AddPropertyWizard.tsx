@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -37,8 +37,10 @@ import {
   Wine,
   FileCheck2,
   ListPlus,
-  Bookmark
+  Bookmark,
+  X
 } from 'lucide-react';
+import { normalizePropertyError, NormalizedPropertyError } from '../../errorMessages';
 import type {
   Property,
   PropertyType,
@@ -140,7 +142,9 @@ export default function AddPropertyWizard({
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isPublishedSuccess, setIsPublishedSuccess] = useState<boolean>(false);
   const [hasResumedDraft, setHasResumedDraft] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<NormalizedPropertyError | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const errorBannerRef = useRef<HTMLDivElement>(null);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
 
   // Phase 13: Structural change guard and unsaved changes tracking
@@ -150,6 +154,26 @@ export default function AddPropertyWizard({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
   const isEditMode = mode === 'edit' || (createdProperty ? createdProperty.status !== 'draft' : false);
+
+  const clearError = () => setErrorState(null);
+
+  const setAppError = (errOrRes: any, fallback: string) => {
+    const status = errOrRes?.status || (typeof errOrRes === 'number' ? errOrRes : null);
+    const errorData = errOrRes?.error
+      ? { code: errOrRes?.code, message: errOrRes?.error }
+      : errOrRes?.message
+      ? { message: errOrRes.message }
+      : errOrRes;
+    const norm = normalizePropertyError(status, errorData, fallback);
+    setErrorState(norm);
+  };
+
+  // Auto-scroll to error banner whenever an error occurs
+  useEffect(() => {
+    if (errorState && errorBannerRef.current) {
+      errorBannerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [errorState]);
 
   // --------------------------------------------------------------------------
   // Unsaved Changes Listener (beforeunload)
@@ -266,6 +290,8 @@ export default function AddPropertyWizard({
     setCreatedProperty(prop);
     setCurrentStep(step);
     setHasUnsavedChanges(false);
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus('idle'), 2500);
     onSaved?.(prop);
 
     if (typeof window !== 'undefined') {
@@ -309,7 +335,7 @@ export default function AddPropertyWizard({
     }
     setSelectedType(type);
     setHasUnsavedChanges(true);
-    setErrorMsg(null);
+    clearError();
     const template = getPropertyTemplate(type);
     setSelectedStructure(template.defaultRentalStructure);
   };
@@ -358,10 +384,10 @@ export default function AddPropertyWizard({
   // Step 2: Rental Structure & Draft Creation/Update
   // --------------------------------------------------------------------------
   const handleCreateOrUpdateDraft = async () => {
-    if (!selectedType || !selectedStructure) return;
+    if (!selectedType || !selectedStructure || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const template = getPropertyTemplate(selectedType);
@@ -378,7 +404,7 @@ export default function AddPropertyWizard({
           syncDraftState(res.data, 3);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          setErrorMsg(res.error || 'Failed to update property draft.');
+          setAppError(res, 'Failed to update property draft.');
         }
       } else {
         // Create new draft
@@ -398,11 +424,11 @@ export default function AddPropertyWizard({
           syncDraftState(res.data, 3);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-          setErrorMsg(res.error || 'Failed to create property draft. Please try again.');
+          setAppError(res, 'Failed to create property draft. Please try again.');
         }
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while initializing draft.');
+      setAppError(err, 'Network error while initializing draft.');
     } finally {
       setIsSubmitting(false);
     }
@@ -422,10 +448,10 @@ export default function AddPropertyWizard({
   };
 
   const handleSaveBasicDetails = async (data: BasicDetailsFormData) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const res = await updateProperty(createdProperty.id, {
@@ -442,10 +468,10 @@ export default function AddPropertyWizard({
         syncDraftState(res.data, 4);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to save basic property details.');
+        setAppError(res, 'Failed to save basic property details.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while saving details.');
+      setAppError(err, 'Network error while saving details.');
     } finally {
       setIsSubmitting(false);
     }
@@ -465,10 +491,10 @@ export default function AddPropertyWizard({
   };
 
   const handleSaveLocation = async (data: LocationFormData) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const res = await updateProperty(createdProperty.id, {
@@ -490,10 +516,10 @@ export default function AddPropertyWizard({
         syncDraftState(res.data, 5);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to save property location.');
+        setAppError(res, 'Failed to save property location.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while saving location.');
+      setAppError(err, 'Network error while saving location.');
     } finally {
       setIsSubmitting(false);
     }
@@ -513,10 +539,10 @@ export default function AddPropertyWizard({
   };
 
   const handleSavePhotos = async (currentPhotos: PropertyPhoto[]) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const res = await updateProperty(createdProperty.id, {
@@ -528,10 +554,10 @@ export default function AddPropertyWizard({
         syncDraftState(res.data, 6);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to save property photos.');
+        setAppError(res, 'Failed to save property photos.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while saving photos.');
+      setAppError(err, 'Network error while saving photos.');
     } finally {
       setIsSubmitting(false);
     }
@@ -552,10 +578,10 @@ export default function AddPropertyWizard({
   };
 
   const handleSaveAmenities = async (currentAmenities: string[], currentCustom: string[]) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const res = await updatePropertyAmenities(
@@ -570,10 +596,10 @@ export default function AddPropertyWizard({
         syncDraftState(res.data, 7);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to save property amenities.');
+        setAppError(res, 'Failed to save property amenities.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while saving amenities.');
+      setAppError(err, 'Network error while saving amenities.');
     } finally {
       setIsSubmitting(false);
     }
@@ -593,10 +619,10 @@ export default function AddPropertyWizard({
   };
 
   const handleSaveUnits = async (currentUnits: PropertyUnit[]) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       // Explicitly persist the latest units array to the property draft
@@ -646,10 +672,10 @@ export default function AddPropertyWizard({
     propertyAvailability: PropertyAvailability;
     units?: PropertyUnit[];
   }) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       if (data.units && data.units.length > 0) {
@@ -667,10 +693,10 @@ export default function AddPropertyWizard({
         syncDraftState(res.data, 9);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to save property pricing.');
+        setAppError(res, 'Failed to save property pricing.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while saving pricing.');
+      setAppError(err, 'Network error while saving pricing.');
     } finally {
       setIsSubmitting(false);
     }
@@ -689,10 +715,10 @@ export default function AddPropertyWizard({
   };
 
   const handleSaveRules = async (rulesPayload: PropertyRules) => {
-    if (!createdProperty) return;
+    if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const res = await updatePropertyRules(createdProperty.id, rulesPayload);
@@ -703,10 +729,10 @@ export default function AddPropertyWizard({
         syncDraftState(updated, 10);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to save property rules.');
+        setAppError(res, 'Failed to save property rules.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while saving rules.');
+      setAppError(err, 'Network error while saving rules.');
     } finally {
       setIsSubmitting(false);
     }
@@ -716,10 +742,10 @@ export default function AddPropertyWizard({
   // Step 10: Review & Publishing (Phase 10)
   // --------------------------------------------------------------------------
   const handlePublishListing = async () => {
-    if (!createdProperty) return;
+    if (!createdProperty || isPublishing) return;
 
     setIsPublishing(true);
-    setErrorMsg(null);
+    clearError();
 
     try {
       const res = await publishProperty(createdProperty.id, { strict: true });
@@ -732,10 +758,10 @@ export default function AddPropertyWizard({
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setErrorMsg(res.error || 'Failed to publish listing. Please check required fields.');
+        setAppError(res, 'Failed to publish listing. Please check required fields.');
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Network error while publishing listing.');
+      setAppError(err, 'Network error while publishing listing.');
     } finally {
       setIsPublishing(false);
     }
@@ -777,7 +803,7 @@ export default function AddPropertyWizard({
     setRules(null);
     setCreatedProperty(null);
     setIsPublishedSuccess(false);
-    setErrorMsg(null);
+    clearError();
   };
 
   const getFormatLabel = () => {
@@ -844,6 +870,12 @@ export default function AddPropertyWizard({
                   <span>{createdProperty.status}</span>
                 </span>
               )}
+              {saveStatus === 'saved' && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full animate-fade-in">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Draft saved</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -852,7 +884,7 @@ export default function AddPropertyWizard({
             type="button"
             onClick={handleSaveAndExit}
             disabled={isSubmitting}
-            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50"
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
           >
             <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
             <span>{isEditMode ? 'Exit' : 'Save & Exit'}</span>
@@ -861,7 +893,11 @@ export default function AddPropertyWizard({
 
         {/* PROGRESS STEPPER (10 STEPS) & DESKTOP SAVE DRAFT */}
         <div className="flex items-center gap-4 flex-wrap justify-between lg:justify-end">
-          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <div
+            role="tablist"
+            aria-label="Property listing wizard progress"
+            className="flex items-center gap-1 sm:gap-1.5 flex-wrap"
+          >
             {WIZARD_STEPS.map((stepDef, idx) => {
               const isCurrent = currentStep === stepDef.stepNumber;
               const isApplicable = stepDef.isApplicable(selectedType, selectedStructure);
@@ -879,10 +915,13 @@ export default function AddPropertyWizard({
                   )}
                   <button
                     type="button"
+                    role="tab"
+                    aria-selected={isCurrent}
+                    aria-label={`${stepDef.title}: step ${stepDef.stepNumber} of 10 ${isCompleted ? '(completed)' : isCurrent ? '(current step)' : ''}`}
                     onClick={() => canNavigate && handleJumpToStep(stepDef.stepNumber)}
                     disabled={!canNavigate}
                     title={`${stepDef.title} (${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Incomplete'})`}
-                    className={`flex items-center gap-1 group transition-all text-left ${
+                    className={`flex items-center gap-1 group transition-all text-left rounded-full focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
                       !canNavigate ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'
                     }`}
                   >
@@ -927,7 +966,7 @@ export default function AddPropertyWizard({
             type="button"
             onClick={handleSaveAndExit}
             disabled={isSubmitting}
-            className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0"
+            className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
           >
             <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
             <span>{isEditMode ? 'Done & Exit' : 'Save Draft & Exit'}</span>
@@ -1000,10 +1039,32 @@ export default function AddPropertyWizard({
       )}
 
       {/* ERROR BANNER */}
-      {errorMsg && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm font-semibold flex items-center gap-3 animate-fade-in">
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-          <span>{errorMsg}</span>
+      {errorState && (
+        <div
+          ref={errorBannerRef}
+          role="alert"
+          aria-live="polite"
+          className="p-4 sm:p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 shadow-apple-xs animate-fade-in space-y-2"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm font-bold text-rose-950">{errorState.message}</p>
+                {errorState.hint && (
+                  <p className="text-xs text-rose-700 font-medium">{errorState.hint}</p>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={clearError}
+              className="text-rose-500 hover:text-rose-800 p-1 rounded-lg hover:bg-rose-100 transition-colors shrink-0"
+              aria-label="Dismiss error banner"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 

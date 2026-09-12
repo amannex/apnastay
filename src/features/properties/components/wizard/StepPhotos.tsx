@@ -119,6 +119,33 @@ export default function StepPhotos({
 
   // Hidden file input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const blobUrlsRef = useRef<Set<string>>(new Set());
+
+  // Clean up object URLs on component unmount
+  useEffect(() => {
+    const urls = blobUrlsRef.current;
+    return () => {
+      urls.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          // ignore
+        }
+      });
+      urls.clear();
+    };
+  }, []);
+
+  const revokeBlobUrl = (url?: string) => {
+    if (url && url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+      blobUrlsRef.current.delete(url);
+    }
+  };
 
   // Keep photos synchronized with initialPhotos if refreshed
   useEffect(() => {
@@ -213,8 +240,12 @@ export default function StepPhotos({
         return next;
       });
 
-      // Remove from upload queue
-      setUploadQueue((prev) => prev.filter((item) => item.clientId !== clientId));
+      // Remove from upload queue and revoke preview blob
+      setUploadQueue((prev) => {
+        const item = prev.find((i) => i.clientId === clientId);
+        revokeBlobUrl(item?.previewUrl);
+        return prev.filter((i) => i.clientId !== clientId);
+      });
     } else {
       // Mark as failed in queue
       setUploadQueue((prev) =>
@@ -244,6 +275,7 @@ export default function StepPhotos({
       } else {
         const clientId = `queue_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const previewUrl = URL.createObjectURL(file);
+        blobUrlsRef.current.add(previewUrl);
         validFiles.push({ file, clientId, previewUrl });
       }
     });
@@ -281,7 +313,11 @@ export default function StepPhotos({
 
   // Remove a failed item from the upload queue
   const handleDismissFailedQueue = (clientId: string) => {
-    setUploadQueue((prev) => prev.filter((item) => item.clientId !== clientId));
+    setUploadQueue((prev) => {
+      const item = prev.find((i) => i.clientId === clientId);
+      revokeBlobUrl(item?.previewUrl);
+      return prev.filter((i) => i.clientId !== clientId);
+    });
   };
 
   // --------------------------------------------------------------------------
@@ -679,8 +715,9 @@ export default function StepPhotos({
                         e.stopPropagation();
                         handleDeletePhoto(photo.id);
                       }}
-                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-rose-600 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100"
+                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-rose-600 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
                       title="Delete photo"
+                      aria-label={`Delete photo ${index + 1}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -716,7 +753,8 @@ export default function StepPhotos({
                         <button
                           type="button"
                           onClick={() => handleSetCover(photo.id)}
-                          className="text-[11px] font-bold text-[#86868B] hover:text-amber-600 inline-flex items-center gap-1 transition-colors"
+                          className="text-[11px] font-bold text-[#86868B] hover:text-amber-600 inline-flex items-center gap-1 transition-colors rounded-lg focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
+                          aria-label={`Set photo ${index + 1} as cover photo`}
                         >
                           <Star className="w-3 h-3" />
                           <span>Make Cover</span>
@@ -734,8 +772,9 @@ export default function StepPhotos({
                           type="button"
                           disabled={index === 0}
                           onClick={() => handleMovePhoto(index, 'left')}
-                          className="w-7 h-7 rounded-lg border border-[#EDEDED] hover:bg-[#F5F5F7] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[#1D1D1F] transition-all"
+                          className="w-7 h-7 rounded-lg border border-[#EDEDED] hover:bg-[#F5F5F7] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[#1D1D1F] transition-all focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
                           title="Move earlier"
+                          aria-label={`Move photo ${index + 1} earlier`}
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
@@ -743,8 +782,9 @@ export default function StepPhotos({
                           type="button"
                           disabled={index === photos.length - 1}
                           onClick={() => handleMovePhoto(index, 'right')}
-                          className="w-7 h-7 rounded-lg border border-[#EDEDED] hover:bg-[#F5F5F7] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[#1D1D1F] transition-all"
+                          className="w-7 h-7 rounded-lg border border-[#EDEDED] hover:bg-[#F5F5F7] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[#1D1D1F] transition-all focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
                           title="Move later"
+                          aria-label={`Move photo ${index + 1} later`}
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>

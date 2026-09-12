@@ -10,6 +10,7 @@ export * from './pricing';
 export * from './rules';
 export * from './completeness';
 export * from './validation';
+export * from './errorMessages';
 export * from './backend';
 export * from './api';
 

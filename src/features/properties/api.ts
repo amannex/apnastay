@@ -27,7 +27,8 @@ import type {
   PropertySummary
 } from './types';
 import { propertyBackend, toPropertySummary } from './backend';
-export { toPropertySummary };
+import { normalizePropertyError } from './errorMessages';
+export { toPropertySummary, normalizePropertyError };
 import { getCurrentUser } from '../auth/api';
 import { fetchSession } from '../../lib/auth/session';
 import { siteConfig } from '../../config/site';
@@ -94,6 +95,23 @@ function shouldFallbackToSimulation(res: Response, data: any): boolean {
     res.status === 503 ||
     (typeof data?.message === 'string' && data.message.includes('No route was found'))
   );
+}
+
+/**
+ * Standardize error responses using normalizePropertyError.
+ */
+export function toNormalizedApiError<T>(
+  res: Response,
+  data: any,
+  fallbackMsg: string
+): PropertyApiResponse<T> {
+  const norm = normalizePropertyError(res, data, fallbackMsg);
+  return {
+    success: false,
+    status: norm.status,
+    code: norm.code,
+    error: norm.message
+  };
 }
 
 /**

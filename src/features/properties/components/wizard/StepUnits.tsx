@@ -125,11 +125,29 @@ export default function StepUnits({
   };
 
   // --------------------------------------------------------------------------
-  // Totals
+  // Memoized Totals & Incomplete Unit Tracking
   // --------------------------------------------------------------------------
-  const totalUnits = units.length;
-  const totalBeds = units.reduce((sum, u) => sum + (u.beds?.length || 0), 0);
-  const totalCapacity = units.reduce((sum, u) => sum + (u.capacity || 1), 0);
+  const { totalUnits, totalBeds, totalCapacity, incompleteCount } = useMemo(() => {
+    let beds = 0;
+    let cap = 0;
+    let inc = 0;
+    for (const u of units) {
+      beds += u.beds?.length || 0;
+      cap += u.capacity || 1;
+      const rent = u.pricing?.monthlyRent || 0;
+      const hasBeds = Boolean(u.beds && u.beds.length > 0);
+      const bedsConfigured = !hasBeds || (u.beds?.some((b) => (b.pricing?.monthlyRent || 0) > 0) ?? false);
+      if (!u.nameOrNumber || (rent === 0 && !bedsConfigured)) {
+        inc++;
+      }
+    }
+    return {
+      totalUnits: units.length,
+      totalBeds: beds,
+      totalCapacity: cap,
+      incompleteCount: inc
+    };
+  }, [units]);
 
   // --------------------------------------------------------------------------
   // Refresh units from backend
@@ -620,6 +638,12 @@ export default function StepUnits({
           <Users className="w-3.5 h-3.5 text-emerald-600" />
           <span>Capacity: {totalCapacity}</span>
         </div>
+        {incompleteCount > 0 && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-800">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>{incompleteCount} incomplete</span>
+          </div>
+        )}
       </div>
 
       {/* ACTION BUTTONS */}
@@ -628,7 +652,7 @@ export default function StepUnits({
           type="button"
           onClick={handleOpenAddModal}
           disabled={isLoading}
-          className="px-4 py-2.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50"
+          className="px-4 py-2.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{terminology.addLabel}</span>
@@ -637,7 +661,7 @@ export default function StepUnits({
           type="button"
           onClick={handleOpenBulkModal}
           disabled={isLoading}
-          className="px-4 py-2.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold inline-flex items-center gap-1.5 transition-all disabled:opacity-50"
+          className="px-4 py-2.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold inline-flex items-center gap-1.5 transition-all disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
         >
           <Layers className="w-3.5 h-3.5" />
           <span>{terminology.bulkLabel}</span>
@@ -673,6 +697,10 @@ export default function StepUnits({
             const badge = availabilityBadge(avail);
             const isExpanded = expandedUnits.has(unit.id);
             const isEditing = editingUnitId === unit.id;
+            const rent = unit.pricing?.monthlyRent || 0;
+            const hasBeds = Boolean(unit.beds && unit.beds.length > 0);
+            const bedsConfigured = !hasBeds || (unit.beds?.some((b) => (b.pricing?.monthlyRent || 0) > 0) ?? false);
+            const isUnitIncomplete = !unit.nameOrNumber || (rent === 0 && !bedsConfigured);
 
             return (
               <div
@@ -711,6 +739,17 @@ export default function StepUnits({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    {/* INCOMPLETE WARNING PILL */}
+                    {isUnitIncomplete && (
+                      <span
+                        className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 inline-flex items-center gap-1"
+                        title="Rent or unit details missing"
+                      >
+                        <AlertCircle className="w-3 h-3 text-amber-600" />
+                        <span>Needs Rent</span>
+                      </span>
+                    )}
+
                     {/* AVAILABILITY BADGE */}
                     <span
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border ${badge.bg} ${badge.text} ${badge.border} hidden sm:inline-flex`}
