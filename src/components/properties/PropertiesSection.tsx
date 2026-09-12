@@ -1,9 +1,66 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import FeaturedProperties from './FeaturedProperties';
 import { STATIC_PROPERTIES } from '../../data/staticProperties';
-import { Building2, Sparkles } from 'lucide-react';
+import { getPublicProperties } from '../../features/properties/api';
+import { Building2, Sparkles, Loader2 } from 'lucide-react';
+
+function mapApiPropertyToCard(apiProp: any) {
+  const photoUrls = (apiProp.photos || [])
+    .map((p: any) => (typeof p === 'string' ? p : p.url))
+    .filter(Boolean);
+
+  const images =
+    photoUrls.length > 0
+      ? photoUrls
+      : apiProp.coverPhotoUrl
+      ? [apiProp.coverPhotoUrl]
+      : ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80'];
+
+  const city = apiProp.location?.city || apiProp.city || 'Jhansi';
+  const locality = apiProp.location?.locality || apiProp.location?.addressLine1 || '';
+  const neighborhood = locality ? `${locality}, ${city}` : city;
+  const price = apiProp.pricing?.monthlyRent || apiProp.rent || apiProp.price || 0;
+
+  const rawAmenities = apiProp.amenities || [];
+  const amenities = rawAmenities.map((a: any) =>
+    typeof a === 'string' ? { name: a.replace(/_/g, ' '), icon: 'ShieldCheck', verified: true } : a
+  );
+
+  const rawId = String(apiProp.id || apiProp.numericId || '');
+  const id = rawId.startsWith('prop-') ? rawId : `prop-${rawId}`;
+
+  return {
+    id,
+    title: apiProp.title || 'Verified Property',
+    tagline: apiProp.description
+      ? apiProp.description.length > 120
+        ? `${apiProp.description.slice(0, 120)}...`
+        : apiProp.description
+      : 'Zero-brokerage verified accommodation with verified amenities.',
+    neighborhood,
+    city,
+    price,
+    rating: 4.95,
+    reviewsCount: 12,
+    reviewCount: 12,
+    verified: true,
+    isInstantBook: true,
+    nfcSelfTour: true,
+    images,
+    amenities:
+      amenities.length > 0
+        ? amenities
+        : [
+            { name: 'Zero Brokerage', icon: 'ShieldCheck', verified: true },
+            { name: 'Verified Amenities', icon: 'ShieldCheck', verified: true }
+          ],
+    roomType: apiProp.propertyType ? apiProp.propertyType.replace(/_/g, ' ').toUpperCase() : 'Apartment',
+    type: apiProp.propertyType || 'apartment',
+    rawApiProperty: apiProp
+  };
+}
 
 export default function PropertiesSection({
   activeTab = 'All',
@@ -18,15 +75,66 @@ export default function PropertiesSection({
   onToggleWishlist
 }: any) {
   const [selectedCityTab, setSelectedCityTab] = useState('All');
+  const [liveProperties, setLiveProperties] = useState<any[]>([]);
+  const [loadingLive, setLoadingLive] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveProperties() {
+      try {
+        const res = await getPublicProperties();
+        if (isMounted && res.success && res.data) {
+          const mapped = (res.data as any[]).map(mapApiPropertyToCard);
+          setLiveProperties(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to load dynamic properties, using static showcase:', err);
+      } finally {
+        if (isMounted) setLoadingLive(false);
+      }
+    }
+    loadLiveProperties();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Combine live published listings first, followed by static curated listings
+  const combinedProperties = useMemo(() => {
+    const liveIds = new Set(liveProperties.map((p) => p.id));
+    const nonDuplicatedStatic = STATIC_PROPERTIES.filter((p) => !liveIds.has(p.id));
+    return [...liveProperties, ...nonDuplicatedStatic];
+  }, [liveProperties]);
+
+  // Dynamically compute city tabs including cities from published listings (e.g. Jhansi)
+  const availableCities = useMemo(() => {
+    const citySet = new Set<string>();
+    combinedProperties.forEach((p) => {
+      if (p.city && typeof p.city === 'string' && p.city.trim()) {
+        // Capitalize city name
+        const normalized = p.city.trim();
+        citySet.add(normalized);
+      }
+    });
+
+    const standardCities = ['Indore', 'Jaipur', 'Coimbatore', 'Kochi', 'Chandigarh', 'Pune'];
+    const otherCities = Array.from(citySet).filter((c) => !standardCities.includes(c));
+
+    return ['All', ...otherCities, ...standardCities];
+  }, [combinedProperties]);
 
   const filteredProperties = useMemo(() => {
-    return STATIC_PROPERTIES.filter((p) => {
+    return combinedProperties.filter((p) => {
       // 1. City tab filter
-      if (selectedCityTab !== 'All' && p.city !== selectedCityTab) {
+      if (selectedCityTab !== 'All' && p.city?.toLowerCase() !== selectedCityTab.toLowerCase()) {
         return false;
       }
       // 2. SearchBar city filter
-      if (searchFilters?.selectedCity && searchFilters.selectedCity !== 'all' && p.city !== searchFilters.selectedCity) {
+      if (
+        searchFilters?.selectedCity &&
+        searchFilters.selectedCity !== 'all' &&
+        p.city?.toLowerCase() !== searchFilters.selectedCity.toLowerCase()
+      ) {
         return false;
       }
       // 3. SearchBar maxPrice filter
@@ -42,7 +150,7 @@ export default function PropertiesSection({
       }
       return true;
     });
-  }, [selectedCityTab, searchFilters]);
+  }, [combinedProperties, selectedCityTab, searchFilters]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -71,7 +179,7 @@ export default function PropertiesSection({
       {/* 2. SLEEK FILTER OPTION PILL BAR BELOW HEADER */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#EDEDED]">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 max-w-full">
-          {['All', 'Indore', 'Jaipur', 'Coimbatore', 'Kochi', 'Chandigarh', 'Pune'].map((c) => (
+          {availableCities.map((c) => (
             <button
               key={c}
               onClick={() => setSelectedCityTab(c)}
