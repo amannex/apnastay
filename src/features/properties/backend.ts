@@ -313,10 +313,11 @@ class PropertyBackendStore {
 
   /**
    * List all properties belonging to an owner.
+   * By default or with 'active', hides archived listings.
    */
   public getOwnerProperties(
     ctx: BackendRequestContext,
-    filterStatus?: PropertyStatus
+    filterStatus?: PropertyStatus | 'active' | 'all'
   ): PropertyApiResponse<Property[]> {
     try {
       this.assertAuthenticated(ctx);
@@ -324,8 +325,15 @@ class PropertyBackendStore {
       const list = Array.from(this.properties.values()).filter((p) => {
         const belongsToOwner = Number(p.ownerId) === Number(ctx.userId);
         if (!belongsToOwner) return false;
-        if (filterStatus && p.status !== filterStatus) return false;
-        return true;
+
+        if (!filterStatus || filterStatus === 'active') {
+          // Default: hide archived listings from the active portfolio
+          return p.status !== 'archived';
+        }
+        if (filterStatus === 'all') {
+          return true;
+        }
+        return p.status === filterStatus;
       });
 
       // Sort newest first
@@ -440,9 +448,30 @@ class PropertyBackendStore {
         property.units = payload.units;
       }
 
-      if (payload.status !== undefined) {
+      if (payload.status !== undefined && payload.status !== property.status) {
+        if (property.status === 'archived' && payload.status !== 'unpublished') {
+          return {
+            success: false,
+            status: 400,
+            code: 'INVALID_STATUS_TRANSITION',
+            error: 'Archived properties must be restored before changing status.'
+          };
+        }
+        if (payload.status === 'published') {
+          const evalRes = evaluateListingCompleteness(property);
+          if (!evalRes.isPublishable) {
+            return {
+              success: false,
+              status: 400,
+              code: 'LISTING_INCOMPLETE',
+              error: 'Cannot publish listing: required fields are missing.'
+            };
+          }
+          property.publishedAt = now;
+        }
         property.status = payload.status;
       }
+
 
       property.completenessScore = this.computeCompletenessScore(property);
       property.updatedAt = now;
@@ -1772,6 +1801,25 @@ class PropertyBackendStore {
 
       this.assertOwnership(property, ctx);
 
+      // Validate status transition
+      if (property.status === 'archived') {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_STATUS_TRANSITION',
+          error: 'Archived properties cannot be published directly. Please restore the listing first.'
+        };
+      }
+
+      if (property.status === 'published') {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_STATUS_TRANSITION',
+          error: 'Listing is already published.'
+        };
+      }
+
       // In strict mode (enforced in Phase 10 review), run full completeness evaluation
       if (options?.strict) {
         const evaluation = evaluateListingCompleteness(property);
@@ -1851,6 +1899,15 @@ class PropertyBackendStore {
 
       this.assertOwnership(property, ctx);
 
+      if (property.status !== 'published') {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_STATUS_TRANSITION',
+          error: `Cannot unpublish listing with status '${property.status}'. Only active published listings can be unpublished.`
+        };
+      }
+
       const now = new Date().toISOString();
       property.status = 'unpublished';
       property.updatedAt = now;
@@ -1872,7 +1929,7 @@ class PropertyBackendStore {
   }
 
   /**
-   * Soft-archive a property. Preserves history, units, and visits.
+   * Soft-archive a property. Preserves history, units, beds, media, and configuration.
    */
   public archiveProperty(ctx: BackendRequestContext, propertyId: string): PropertyApiResponse<Property> {
     try {
@@ -1889,6 +1946,15 @@ class PropertyBackendStore {
       }
 
       this.assertOwnership(property, ctx);
+
+      if (property.status === 'archived') {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_STATUS_TRANSITION',
+          error: 'Listing is already archived.'
+        };
+      }
 
       const now = new Date().toISOString();
       property.status = 'archived';
@@ -1909,6 +1975,55 @@ class PropertyBackendStore {
       };
     }
   }
+
+  /**
+   * Restore an archived property back to active management (unpublished status).
+   */
+  public restoreProperty(ctx: BackendRequestContext, propertyId: string): PropertyApiResponse<Property> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      if (property.status !== 'archived') {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_STATUS_TRANSITION',
+          error: `Cannot restore property with status '${property.status}'. Only archived properties can be restored.`
+        };
+      }
+
+      const now = new Date().toISOString();
+      property.status = 'unpublished';
+      property.updatedAt = now;
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: property
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'RESTORE_PROPERTY_ERROR',
+        error: err.message || 'Failed to restore property.'
+      };
+    }
+  }
+
 
   // --------------------------------------------------------------------------
   // Phase 6: Amenity Management Operations

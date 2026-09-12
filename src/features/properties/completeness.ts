@@ -538,3 +538,40 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
     sections
   };
 }
+
+/**
+ * Intelligently determines the best step to resume an in-progress draft.
+ * Inspects section completeness from Step 1 to 9; returns the first step
+ * with missing required or unconfigured fields, or defaults to Step 10 (Review)
+ * if all required sections are satisfied.
+ */
+export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 {
+  const result = evaluateListingCompleteness(property);
+
+  // If there are missing required items, navigate directly to the earliest one
+  if (result.missingRequired.length > 0) {
+    const earliestStep = Math.min(...result.missingRequired.map((i) => i.stepNumber));
+    if (earliestStep >= 1 && earliestStep <= 10) {
+      return earliestStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    }
+  }
+
+  // If all required items are satisfied, check if any recommended section has 0 data configured:
+  // Check amenities
+  if (!property.amenities || (property.amenities.length === 0 && (!property.customAmenities || property.customAmenities.length === 0))) {
+    return 6;
+  }
+
+  // Check house rules
+  if (!property.rules || (
+    (!property.rules.suitableFor || property.rules.suitableFor.length === 0) &&
+    (!property.rules.guestPolicy || property.rules.guestPolicy === 'not_specified') &&
+    (!property.rules.customRules || property.rules.customRules.length === 0)
+  )) {
+    return 9;
+  }
+
+  // If everything is populated or publishable, resume to Step 10 (Review & Publishing)
+  return 10;
+}
+

@@ -36,7 +36,8 @@ import {
   Cigarette,
   Wine,
   FileCheck2,
-  ListPlus
+  ListPlus,
+  Bookmark
 } from 'lucide-react';
 import type {
   Property,
@@ -84,6 +85,7 @@ import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRules from './StepRules';
 import StepReview from './StepReview';
+import { determineNextIncompleteStep } from '../../completeness';
 
 export default function AddPropertyWizard() {
   const router = useRouter();
@@ -116,8 +118,10 @@ export default function AddPropertyWizard() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isPublishedSuccess, setIsPublishedSuccess] = useState<boolean>(false);
+  const [hasResumedDraft, setHasResumedDraft] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
+
 
 
   // --------------------------------------------------------------------------
@@ -190,40 +194,15 @@ export default function AddPropertyWizard() {
             setRules(prop.rules);
           }
 
-          // Determine step from URL or progress
+          // Determine step from URL or intelligent progress evaluation
           const stepParam = Number(params.get('step'));
           if (stepParam >= 1 && stepParam <= 10) {
             setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10);
-          } else if (
-            prop.rules &&
-            (
-              (prop.rules.suitableFor && prop.rules.suitableFor.length > 0) ||
-              (prop.rules.customRules && prop.rules.customRules.length > 0) ||
-              (prop.rules.guestPolicy && prop.rules.guestPolicy !== 'not_specified')
-            )
-          ) {
-            setCurrentStep(10);
-          } else if (
-            prop.pricing?.securityDepositConfig ||
-            (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0 && prop.availability)
-          ) {
-            setCurrentStep(9);
-          } else if (prop.units && prop.units.length > 0) {
-            setCurrentStep(8);
-          } else if (
-            (prop.amenities && prop.amenities.length > 0) ||
-            (prop.customAmenities && prop.customAmenities.length > 0)
-          ) {
-            setCurrentStep(7);
-          } else if (prop.photos && prop.photos.length > 0) {
-            setCurrentStep(6);
-          } else if (prop.location?.city && prop.location?.addressLine1 && prop.location?.pincode) {
-            setCurrentStep(5);
-          } else if (prop.pricing?.monthlyRent && prop.pricing.monthlyRent > 0) {
-            setCurrentStep(4);
           } else {
-            setCurrentStep(3);
+            const nextStep = determineNextIncompleteStep(prop);
+            setCurrentStep(nextStep);
           }
+          setHasResumedDraft(true);
         }
       })
       .catch(() => {
@@ -233,6 +212,7 @@ export default function AddPropertyWizard() {
         setIsLoadingDraft(false);
       });
   }, []);
+
 
   // Update browser history and session storage whenever draft or step updates
   const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
@@ -718,25 +698,41 @@ export default function AddPropertyWizard() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* TOP HEADER & BREADCRUMBS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EDEDED]">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#86868B] mb-1">
-            <Link
-              href="/owner/dashboard/properties"
-              className="hover:text-[#1D1D1F] transition-colors"
-            >
-              My Properties
-            </Link>
-            <span>/</span>
-            <span className="text-[#1D1D1F] font-bold">List New Property</span>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#EDEDED]">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#86868B] mb-1">
+              <Link
+                href="/owner/dashboard/properties"
+                className="hover:text-[#1D1D1F] transition-colors"
+              >
+                My Properties
+              </Link>
+              <span>/</span>
+              <span className="text-[#1D1D1F] font-bold">List New Property</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
+              Add Property
+            </h1>
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-            Add Property
-          </h1>
+
+          {/* Mobile Save Draft & Exit */}
+          {createdProperty && createdProperty.status === 'draft' && (
+            <button
+              type="button"
+              onClick={handleSaveIncompleteDraft}
+              disabled={isSubmitting}
+              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
+              <span>Save & Exit</span>
+            </button>
+          )}
         </div>
 
-        {/* PROGRESS STEPPER (5 STEPS) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        {/* PROGRESS STEPPER (10 STEPS) & DESKTOP SAVE DRAFT */}
+        <div className="flex items-center gap-4 flex-wrap justify-between lg:justify-end">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {/* Step 1: Format */}
           <div className="flex items-center gap-1.5">
             <div
@@ -979,8 +975,41 @@ export default function AddPropertyWizard() {
             </span>
           </div>
         </div>
-      </div>
 
+        {/* Desktop Save Draft & Exit */}
+        {createdProperty && createdProperty.status === 'draft' && (
+          <button
+            type="button"
+            onClick={handleSaveIncompleteDraft}
+            disabled={isSubmitting}
+            className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0"
+          >
+            <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
+            <span>Save Draft & Exit</span>
+          </button>
+        )}
+      </div>
+    </div>
+
+
+      {/* RESUMED DRAFT NOTIFICATION BANNER */}
+      {hasResumedDraft && createdProperty && (
+        <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3 text-xs text-sky-900 animate-fade-in shadow-apple-xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-sky-600 shrink-0" />
+            <span>
+              Resumed draft for <strong>{createdProperty.title || 'Untitled Property'}</strong> at Step {currentStep}.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHasResumedDraft(false)}
+            className="text-sky-700 hover:text-sky-950 font-semibold underline text-[11px]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* DRAFT LOADING INDICATOR */}
       {isLoadingDraft && (

@@ -160,12 +160,13 @@ export async function getProperty(propertyId: string): Promise<PropertyApiRespon
  * Endpoint: GET /wp-json/apnastay/v1/owner/properties
  */
 export async function getOwnerProperties(
-  statusFilter?: PropertyStatus
+  statusFilter?: PropertyStatus | 'active' | 'all'
 ): Promise<PropertyApiResponse<Property[]>> {
   try {
     const url = statusFilter
       ? `${APNASTAY_API_BASE}/owner/properties?status=${encodeURIComponent(statusFilter)}`
       : `${APNASTAY_API_BASE}/owner/properties`;
+
 
     const res = await fetch(url, {
       method: 'GET',
@@ -708,6 +709,46 @@ export async function archiveProperty(propertyId: string): Promise<PropertyApiRe
     return propertyBackend.archiveProperty(ctx, propertyId);
   }
 }
+
+/**
+ * Restore an archived property listing back to active management (unpublished).
+ * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/restore
+ */
+export async function restoreProperty(propertyId: string): Promise<PropertyApiResponse<Property>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/restore`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.restoreProperty(ctx, propertyId);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'RESTORE_FAILED',
+        error: data?.message || data?.error || 'Failed to restore property.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.restoreProperty(ctx, propertyId);
+  }
+}
+
 
 // ============================================================================
 // PHASE 5: PROPERTY PHOTO MANAGEMENT CLIENT API
