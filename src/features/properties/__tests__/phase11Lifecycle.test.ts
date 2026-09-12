@@ -206,9 +206,9 @@ async function runPhase11Tests() {
           nameOrNumber: 'Flat 101',
           unitType: 'double_sharing',
           capacity: 2,
-          status: 'available',
           pricing: { monthlyRent: 8500 },
           availability: 'available',
+          status: 'available',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           beds: [

@@ -478,3 +478,41 @@ export interface BackendRequestContext {
   userId: number; // The authenticated user making the request
   isAdmin?: boolean;
 }
+
+// ----------------------------------------------------------------------------
+// Phase 12: My Properties Portfolio & Management Models
+// ----------------------------------------------------------------------------
+
+export interface PropertySummary {
+  id: string;
+  ownerId: number | string;
+  title: string;
+  propertyType: PropertyType;
+  customPropertyType?: string;
+  rentalStructure: RentalStructure;
+  status: PropertyStatus;
+  completenessScore: number;
+  location?: {
+    addressLine1?: string;
+    locality?: string;
+    city: string;
+    state?: string;
+    pincode?: string;
+  };
+  coverPhotoUrl?: string;
+  photosCount: number;
+  unitsCount: number;
+  displayPrice: string;
+  monthlyRent?: number;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PropertySortOption =
+  | 'updated_desc'
+  | 'title_asc'
+  | 'price_asc'
+  | 'price_desc'
+  | 'completeness_desc';
+

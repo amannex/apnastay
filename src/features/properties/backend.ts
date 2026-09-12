@@ -29,14 +29,67 @@ import type {
   BulkPricingPayload,
   BackendRequestContext,
   PropertyApiResponse,
-  PropertyRules
+  PropertyRules,
+  PropertySummary
 } from './types';
 import { getPropertyTemplate, validateStructureForTemplate } from './templates';
-import { validatePricingPayload, calculateEffectiveDeposit } from './pricing';
+import { validatePricingPayload, calculateEffectiveDeposit, formatPricingDisplay } from './pricing';
 import { validatePropertyRules, sanitizePropertyRules } from './rules';
 import { evaluateListingCompleteness } from './completeness';
 
 export type { BackendRequestContext };
+
+/**
+ * Convert a full Property entity into a lightweight PropertySummary projection for listing cards.
+ */
+export function toPropertySummary(property: Property): PropertySummary {
+  const coverPhoto = property.photos?.find((p) => p.isCover) || property.photos?.[0];
+  const unitsCount = property.units?.length || 0;
+  const photosCount = property.photos?.length || 0;
+
+  let displayPrice = 'Price on Request';
+  let monthlyRent: number | undefined = undefined;
+
+  if (property.pricing && property.pricing.monthlyRent !== undefined && property.pricing.monthlyRent > 0) {
+    monthlyRent = property.pricing.monthlyRent;
+    displayPrice = formatPricingDisplay(property.pricing, property.pricing.monthlyRent);
+  } else if (property.units && property.units.length > 0) {
+    const unitPrices = property.units
+      .map((u) => u.pricing?.monthlyRent)
+      .filter((p): p is number => typeof p === 'number' && p > 0);
+    if (unitPrices.length > 0) {
+      const minPrice = Math.min(...unitPrices);
+      displayPrice = `Starts at ₹${minPrice.toLocaleString('en-IN')}/mo`;
+      monthlyRent = minPrice;
+    }
+  }
+
+  return {
+    id: property.id,
+    ownerId: property.ownerId,
+    title: property.title,
+    propertyType: property.propertyType,
+    customPropertyType: property.customPropertyType,
+    rentalStructure: property.rentalStructure,
+    status: property.status,
+    completenessScore: property.completenessScore,
+    location: property.location ? {
+      addressLine1: property.location.addressLine1,
+      locality: property.location.locality,
+      city: property.location.city,
+      state: property.location.state,
+      pincode: property.location.pincode
+    } : undefined,
+    coverPhotoUrl: coverPhoto?.thumbnailUrl || coverPhoto?.url,
+    photosCount,
+    unitsCount,
+    displayPrice,
+    monthlyRent,
+    publishedAt: property.publishedAt,
+    createdAt: property.createdAt,
+    updatedAt: property.updatedAt
+  };
+}
 
 /**
  * Generate lightweight unique IDs (cryptographically secure where available, RFC4122 v4 fallback).
@@ -1847,8 +1900,7 @@ class PropertyBackendStore {
         }
 
         const template = getPropertyTemplate(property.propertyType);
-        const requiresUnits = template?.hasUnits && property.rentalStructure !== 'entire_property';
-        if (requiresUnits && property.units.length === 0) {
+        if (template?.hasUnits && property.units.length === 0) {
           return {
             success: false,
             status: 400,
@@ -2026,13 +2078,12 @@ class PropertyBackendStore {
   }
 
   /**
-   * Duplicate an existing property along with all its child units, beds, media, pricing, and rules.
-   * The new clone is always created in 'draft' status with fresh entity IDs.
+   * Duplicate an existing property into a new draft listing.
+   * Deep-clones property data with fresh IDs for property, units, and beds.
    */
   public duplicateProperty(
     ctx: BackendRequestContext,
-    propertyId: string,
-    newTitle?: string
+    propertyId: string
   ): PropertyApiResponse<Property> {
     try {
       this.assertAuthenticated(ctx);
@@ -2052,39 +2103,34 @@ class PropertyBackendStore {
       const now = new Date().toISOString();
       const newPropertyId = generateEntityId('prop');
 
-      // Deep clone child units & beds with new IDs
+      // Deep clone units and beds with brand new entity IDs
       const clonedUnits: PropertyUnit[] = (source.units || []).map((u) => {
         const newUnitId = generateEntityId('unit');
         const clonedBeds: PropertyBed[] = (u.beds || []).map((b) => ({
           ...b,
           id: generateEntityId('bed'),
-          unitId: newUnitId,
-          createdAt: now,
-          updatedAt: now
+          unitId: newUnitId
         }));
 
         return {
           ...u,
           id: newUnitId,
           propertyId: newPropertyId,
-          beds: clonedBeds,
-          createdAt: now,
-          updatedAt: now
+          beds: clonedBeds
         };
       });
 
-      // Deep clone photos with new IDs
+      // Clone photos with new IDs if present
       const clonedPhotos: PropertyPhoto[] = (source.photos || []).map((p) => ({
         ...p,
         id: generateEntityId('photo')
       }));
 
-      // Assemble cloned draft property
       const clonedProperty: Property = {
         ...source,
         id: newPropertyId,
         ownerId: ctx.userId,
-        title: newTitle?.trim() || `${source.title} (Copy)`,
+        title: source.title ? `Copy of ${source.title}` : `Copy of Property ${source.id}`,
         status: 'draft',
         publishedAt: undefined,
         units: clonedUnits,
@@ -2101,7 +2147,7 @@ class PropertyBackendStore {
         success: true,
         status: 201,
         data: clonedProperty,
-        message: 'Property duplicated successfully as draft.'
+        message: 'Property duplicated successfully as a new draft.'
       };
     } catch (err: any) {
       return {

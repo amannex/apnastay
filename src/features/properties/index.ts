@@ -32,4 +32,6 @@ export { default as HybridMapPicker } from './components/wizard/HybridMapPicker'
 export type { DetectedAddressComponents } from './components/wizard/HybridMapPicker';
 export { default as AddPropertyWizard } from './components/wizard/AddPropertyWizard';
 export { default as OwnerPropertiesView } from './components/dashboard/OwnerPropertiesView';
+export { default as PropertyPreviewModal } from './components/dialogs/PropertyPreviewModal';
+
 

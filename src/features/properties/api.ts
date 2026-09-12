@@ -23,9 +23,11 @@ import type {
   PropertyAvailability,
   BulkPricingPayload,
   PropertyApiResponse,
-  PropertyRules
+  PropertyRules,
+  PropertySummary
 } from './types';
-import { propertyBackend } from './backend';
+import { propertyBackend, toPropertySummary } from './backend';
+export { toPropertySummary };
 import { getCurrentUser } from '../auth/api';
 import { fetchSession } from '../../lib/auth/session';
 import { siteConfig } from '../../config/site';
@@ -750,21 +752,17 @@ export async function restoreProperty(propertyId: string): Promise<PropertyApiRe
 }
 
 /**
- * Duplicate an existing property along with all child units, beds, media, and configurations.
+ * Duplicate a property into a new draft listing.
  * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/duplicate
  */
-export async function duplicateProperty(
-  propertyId: string,
-  newTitle?: string
-): Promise<PropertyApiResponse<Property>> {
+export async function duplicateProperty(propertyId: string): Promise<PropertyApiResponse<Property>> {
   try {
     const res = await fetch(
       `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}/duplicate`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ newTitle })
+        credentials: 'include'
       }
     );
 
@@ -772,7 +770,7 @@ export async function duplicateProperty(
     if (!res.ok) {
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
-        return propertyBackend.duplicateProperty(ctx, propertyId, newTitle);
+        return propertyBackend.duplicateProperty(ctx, propertyId);
       }
       return {
         success: false,
@@ -788,9 +786,10 @@ export async function duplicateProperty(
     };
   } catch (err) {
     const ctx = await resolveRequestContext();
-    return propertyBackend.duplicateProperty(ctx, propertyId, newTitle);
+    return propertyBackend.duplicateProperty(ctx, propertyId);
   }
 }
+
 
 
 // ============================================================================

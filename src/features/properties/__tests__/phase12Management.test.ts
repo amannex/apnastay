@@ -1,11 +1,11 @@
 // ============================================================================
 // APNASTAY PROPERTY ENGINE — PHASE 12 MY PROPERTIES MANAGEMENT TEST SUITE
-// Tests property duplication engine, deep cloning of units/beds/photos,
-// ownership isolation, status reset to draft, multi-criteria filtering & search.
+// Tests property duplication with deep unit/bed cloning, ownership security,
+// lightweight PropertySummary projection, search, filtering, and sorting logic.
 // ============================================================================
 
-import { propertyBackend, BackendRequestContext } from '../backend';
-import type { Property } from '../types';
+import { propertyBackend, BackendRequestContext, toPropertySummary } from '../backend';
+import type { Property, PropertySortOption } from '../types';
 
 let passed = 0;
 let failed = 0;
@@ -22,7 +22,7 @@ function assert(condition: any, message: string) {
 
 async function runPhase12Tests() {
   console.log('\n====================================================================');
-  console.log('APNASTAY PROPERTY ENGINE — PHASE 12 MANAGEMENT & DUPLICATION SUITE');
+  console.log('APNASTAY PROPERTY ENGINE — PHASE 12 MY PROPERTIES MANAGEMENT SUITE');
   console.log('====================================================================\n');
 
   const ownerAlice: BackendRequestContext = { userId: 101, isAdmin: false };
@@ -32,317 +32,270 @@ async function runPhase12Tests() {
   // Reset store
   (propertyBackend as any).properties.clear();
 
-  // --------------------------------------------------------------------------
-  // TEST 1: Property Duplication Engine (Single-Unit Property)
-  // --------------------------------------------------------------------------
-  console.log('🧪 TEST 1: Property Duplication Engine (Single-Unit Property)');
-  {
-    // Alice creates a single-unit villa
-    const draftRes = await propertyBackend.createDraft(ownerAlice, {
-      propertyType: 'villa',
-      rentalStructure: 'entire_property',
-      title: 'Pine Valley Villa'
-    });
-    assert(draftRes.success && !!draftRes.data, 'Created source villa draft');
-    const sourceId = draftRes.data!.id;
-
-    await propertyBackend.updateProperty(ownerAlice, sourceId, {
-      description: 'Luxury villa with scenic forest views.',
-      location: {
-        addressLine1: '45 Pine Valley Lane',
-        locality: 'Upper Mussoorie',
-        city: 'Mussoorie',
-        state: 'Uttarakhand',
-        pincode: '248179'
-      },
-      photos: [
-        { id: 'photo-1', url: 'https://images.unsplash.com/villa-front', isCover: true, order: 0 },
-        { id: 'photo-2', url: 'https://images.unsplash.com/villa-living', isCover: false, order: 1 }
-      ],
-      amenities: ['wifi', 'power_backup', 'parking'],
-      pricing: {
-        monthlyRent: 45000,
-        securityDepositConfig: { type: 'months', monthsCount: 2 }
-      },
-      rules: {
-        suitableFor: ['families'],
-        petPolicy: 'allowed',
-        smokingPolicy: 'not_allowed'
-      }
-    });
-
-    // Duplicate property with default copy title
-    const dupRes = await propertyBackend.duplicateProperty(ownerAlice, sourceId);
-    assert(dupRes.success && dupRes.status === 201, 'Duplication returned 201 Created');
-    assert(!!dupRes.data, 'Duplication returned cloned property data');
-
-    const clone = dupRes.data!;
-    assert(clone.id !== sourceId, 'Cloned property has unique entity ID');
-    assert(clone.id.startsWith('prop_'), 'Cloned property ID has prop prefix');
-    assert(clone.title === 'Pine Valley Villa (Copy)', 'Cloned property title is formatted with (Copy)');
-    assert(clone.status === 'draft', 'Cloned property status is always set to "draft"');
-    assert(clone.publishedAt === undefined, 'Cloned property has no publishedAt timestamp');
-    assert(clone.ownerId === 101, 'Cloned property belongs to Alice');
-
-    // Verify photos deep cloned with new IDs
-    assert(clone.photos.length === 2, 'Cloned property preserves all photos');
-    assert(clone.photos[0].id !== 'photo-1', 'First photo received fresh entity ID');
-    assert(clone.photos[0].url === 'https://images.unsplash.com/villa-front', 'Photo URL preserved');
-    assert(clone.photos[0].isCover === true, 'Cover photo designation preserved');
-
-    // Verify pricing and rules preserved
-    assert(clone.pricing?.monthlyRent === 45000, 'Monthly rent preserved in clone');
-    assert(clone.rules?.petPolicy === 'allowed', 'Pet policy preserved in clone');
-    assert(clone.location?.city === 'Mussoorie', 'City preserved in clone');
-  }
-
-  // --------------------------------------------------------------------------
-  // TEST 2: Multi-Unit & Bed Relational Deep Duplication
-  // --------------------------------------------------------------------------
-  console.log('\n🧪 TEST 2: Multi-Unit & Bed Relational Deep Duplication');
-  {
-    const buildingRes = await propertyBackend.createDraft(ownerAlice, {
+  // Helper to create a comprehensive property with units and beds
+  const createTestBuilding = async (ctx: BackendRequestContext): Promise<Property> => {
+    const draftRes = await propertyBackend.createDraft(ctx, {
       propertyType: 'building',
       rentalStructure: 'multiple_units',
-      title: 'Heritage Residency'
+      title: 'Pineview Residency'
     });
-    const buildingId = buildingRes.data!.id;
 
-    await propertyBackend.updateProperty(ownerAlice, buildingId, {
-      location: { addressLine1: '88 MG Road', city: 'Bengaluru', pincode: '560001' },
+    const propertyId = draftRes.data!.id;
+
+    const updateRes = await propertyBackend.updateProperty(ctx, propertyId, {
+      description: 'Modern residential complex near City Center with furnished flats.',
+      location: {
+        addressLine1: '45 Lake View Road',
+        locality: 'Civil Lines',
+        city: 'Jaipur',
+        state: 'Rajasthan',
+        pincode: '302006'
+      },
+      photos: [
+        { id: 'p1', url: 'https://images.unsplash.com/lakeview-exterior', isCover: true, order: 0 },
+        { id: 'p2', url: 'https://images.unsplash.com/lakeview-lobby', isCover: false, order: 1 }
+      ],
+      amenities: ['wifi', 'cctv', 'parking', 'power_backup'],
+      pricing: {
+        monthlyRent: 22000,
+        securityDepositConfig: { type: 'months', monthsCount: 2 }
+      },
+      availability: {
+        type: 'immediate'
+      },
       units: [
         {
-          id: 'u-1',
-          propertyId: buildingId,
+          id: 'unit-101',
+          propertyId,
           nameOrNumber: 'Flat 101',
-          unitType: 'double_sharing',
-          capacity: 2,
-          status: 'available',
-          pricing: { monthlyRent: 12000 },
+          unitType: '2BHK',
+          capacity: 4,
+          pricing: { monthlyRent: 22000 },
           availability: 'available',
+          status: 'available',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           beds: [
-            {
-              id: 'b-1',
-              unitId: 'u-1',
-              label: 'Bed A',
-              pricing: { monthlyRent: 12000 },
-              availability: 'available',
-              status: 'available',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            },
-            {
-              id: 'b-2',
-              unitId: 'u-1',
-              label: 'Bed B',
-              pricing: { monthlyRent: 12000 },
-              availability: 'available',
-              status: 'available',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            }
+            { id: 'bed-1', unitId: 'unit-101', label: 'Master Bed', pricing: { monthlyRent: 12000 }, availability: 'available', status: 'available', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+            { id: 'bed-2', unitId: 'unit-101', label: 'Guest Bed', pricing: { monthlyRent: 10000 }, availability: 'available', status: 'available', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
           ]
+        },
+        {
+          id: 'unit-102',
+          propertyId,
+          nameOrNumber: 'Flat 102',
+          unitType: '1BHK',
+          capacity: 2,
+          pricing: { monthlyRent: 15000 },
+          availability: 'available',
+          status: 'available',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          beds: []
         }
       ]
     });
 
-    // Duplicate multi-unit building with custom title
-    const dupRes = await propertyBackend.duplicateProperty(
-      ownerAlice,
-      buildingId,
-      'Heritage Residency - Block B'
-    );
-    assert(dupRes.success, 'Multi-unit building duplicated successfully');
+    return updateRes.data!;
+  };
 
+  // --------------------------------------------------------------------------
+  // TEST 1: Property Duplication with Deep Entity Cloning
+  // --------------------------------------------------------------------------
+  console.log('🧪 TEST 1: Property Duplication & Deep Entity Cloning');
+  {
+    const original = await createTestBuilding(ownerAlice);
+    await propertyBackend.publishProperty(ownerAlice, original.id);
+
+    // Verify original is published
+    const originalFetched = (await propertyBackend.getProperty(ownerAlice, original.id)).data!;
+    assert(originalFetched.status === 'published', 'Original property is in published status');
+    assert(!!originalFetched.publishedAt, 'Original property has publishedAt timestamp');
+
+    // Duplicate property
+    const dupRes = await propertyBackend.duplicateProperty(ownerAlice, original.id);
+    assert(dupRes.status === 201 && dupRes.success, 'Duplication API returned HTTP 201 Success');
+    
     const clone = dupRes.data!;
-    assert(clone.title === 'Heritage Residency - Block B', 'Custom title respected on duplicate');
-    assert(clone.units.length === 1, 'Cloned property has 1 unit');
+    assert(clone.id !== original.id, `Clone received unique ID (${clone.id} !== ${original.id})`);
+    assert(clone.title === `Copy of ${original.title}`, `Title has "Copy of" prefix: "${clone.title}"`);
+    assert(clone.status === 'draft', 'Cloned property is always created in "draft" status');
+    assert(!clone.publishedAt, 'Cloned property does NOT copy publishedAt timestamp');
+    assert(clone.location?.city === 'Jaipur', 'Location data preserved in clone');
+    assert(clone.location?.locality === 'Civil Lines', 'Locality preserved in clone');
+    assert(clone.pricing?.monthlyRent === 22000, 'Pricing configuration preserved in clone');
+    assert(clone.photos?.length === 2, 'Photos array cloned');
+    assert(clone.photos?.[0].id !== original.photos?.[0].id, 'Cloned photo received a fresh photo ID');
 
-    const clonedUnit = clone.units[0];
-    assert(clonedUnit.id !== 'u-1', 'Cloned unit received fresh entity ID');
-    assert(clonedUnit.propertyId === clone.id, 'Cloned unit references new cloned property ID');
-    assert(clonedUnit.nameOrNumber === 'Flat 101', 'Unit name preserved');
-    assert(clonedUnit.beds.length === 2, 'Cloned unit contains both beds');
-
-    const clonedBed1 = clonedUnit.beds[0];
-    assert(clonedBed1.id !== 'b-1', 'First bed received fresh entity ID');
-    assert(clonedBed1.unitId === clonedUnit.id, 'First bed references new cloned unit ID');
-    assert(clonedBed1.label === 'Bed A', 'Bed label preserved');
+    // Unit & Bed deep ID cloning
+    assert(clone.units?.length === 2, 'Cloned property preserves all units (2)');
+    const cloneUnit1 = clone.units?.[0]!;
+    const origUnit1 = original.units?.[0]!;
+    assert(cloneUnit1.id !== origUnit1.id, `Cloned unit received new ID (${cloneUnit1.id} !== ${origUnit1.id})`);
+    assert(cloneUnit1.propertyId === clone.id, 'Cloned unit references new parent property ID');
+    assert(cloneUnit1.beds.length === 2, 'Cloned unit preserves its beds');
+    
+    const cloneBed1 = cloneUnit1.beds[0]!;
+    const origBed1 = origUnit1.beds[0]!;
+    assert(cloneBed1.id !== origBed1.id, `Cloned bed received new ID (${cloneBed1.id} !== ${origBed1.id})`);
+    assert(cloneBed1.unitId === cloneUnit1.id, 'Cloned bed references new parent unit ID');
   }
 
   // --------------------------------------------------------------------------
-  // TEST 3: Duplicating Published and Archived Properties
+  // TEST 2: Duplication Security & Authorization Enforcement
   // --------------------------------------------------------------------------
-  console.log('\n🧪 TEST 3: Duplicating Published & Archived Properties');
+  console.log('\n🧪 TEST 2: Duplication Security & Authorization Enforcement');
   {
-    // 1. Published property duplication
-    const pubDraftRes = await propertyBackend.createDraft(ownerAlice, {
-      propertyType: 'apartment',
-      rentalStructure: 'entire_property',
-      title: 'Sunny Studio Flat'
-    });
-    const pubId = pubDraftRes.data!.id;
+    const aliceProp = await createTestBuilding(ownerAlice);
 
-    await propertyBackend.updateProperty(ownerAlice, pubId, {
-      description: 'Cozy fully furnished studio flat near tech park.',
-      location: { addressLine1: '12 IT Highway', city: 'Chennai', pincode: '600001' },
-      photos: [{ id: 'p-studio', url: 'https://images.unsplash.com/studio', isCover: true, order: 0 }],
-      pricing: { monthlyRent: 18000 },
-      availability: { type: 'immediate' }
-    });
+    // 1. Anonymous user blocked
+    const anonRes = await propertyBackend.duplicateProperty(anonymousUser, aliceProp.id);
+    assert(anonRes.status === 401 && anonRes.code === 'UNAUTHENTICATED', 'Anonymous user blocked from duplicating property');
 
-    await propertyBackend.publishProperty(ownerAlice, pubId);
-    const publishedSource = (await propertyBackend.getProperty(ownerAlice, pubId)).data!;
-    assert(publishedSource.status === 'published', 'Source property is published');
+    // 2. Non-owner (Bob) blocked from duplicating Alice's property
+    const bobRes = await propertyBackend.duplicateProperty(ownerBob, aliceProp.id);
+    assert(bobRes.status === 403 && bobRes.code === 'NOT_PROPERTY_OWNER', 'Non-owner blocked from duplicating another owner property');
 
-    const dupFromPubRes = await propertyBackend.duplicateProperty(ownerAlice, pubId);
-    assert(dupFromPubRes.success, 'Duplicated published property');
-    assert(dupFromPubRes.data?.status === 'draft', 'Duplicate of published property starts as "draft"');
-    assert(!dupFromPubRes.data?.publishedAt, 'Duplicate of published property has no publishedAt');
-
-    // 2. Archived property duplication
-    await propertyBackend.archiveProperty(ownerAlice, pubId);
-    const archivedSource = (await propertyBackend.getProperty(ownerAlice, pubId)).data!;
-    assert(archivedSource.status === 'archived', 'Source property is now archived');
-
-    const dupFromArchRes = await propertyBackend.duplicateProperty(ownerAlice, pubId);
-    assert(dupFromArchRes.success, 'Duplicated archived property');
-    assert(dupFromArchRes.data?.status === 'draft', 'Duplicate of archived property is created in active "draft" status');
+    // 3. Non-existent property ID
+    const notFoundRes = await propertyBackend.duplicateProperty(ownerAlice, 'non_existent_id');
+    assert(notFoundRes.status === 404 && notFoundRes.code === 'PROPERTY_NOT_FOUND', 'Returns 404 for non-existent property ID');
   }
 
   // --------------------------------------------------------------------------
-  // TEST 4: Ownership Isolation & Access Control
+  // TEST 3: Lightweight PropertySummary Projection
   // --------------------------------------------------------------------------
-  console.log('\n🧪 TEST 4: Ownership Isolation & Access Control');
+  console.log('\n🧪 TEST 3: Lightweight PropertySummary Projection');
   {
-    const alicePropRes = await propertyBackend.createDraft(ownerAlice, {
-      propertyType: 'house',
-      rentalStructure: 'entire_property',
-      title: 'Alice Cottage'
-    });
-    const alicePropId = alicePropRes.data!.id;
+    const prop = await createTestBuilding(ownerAlice);
+    const summary = toPropertySummary(prop);
 
-    // 1. Anonymous user cannot duplicate
-    const anonDup = await propertyBackend.duplicateProperty(anonymousUser, alicePropId);
-    assert(anonDup.status === 401 && anonDup.code === 'UNAUTHENTICATED', 'Anonymous user rejected from duplicating with 401');
-
-    // 2. Bob cannot duplicate Alice's property
-    const bobDup = await propertyBackend.duplicateProperty(ownerBob, alicePropId);
-    assert(bobDup.status === 403 && bobDup.code === 'NOT_PROPERTY_OWNER', 'Bob rejected from duplicating Alice property with 403');
-
-    // 3. Bob creates his own property
-    const bobPropRes = await propertyBackend.createDraft(ownerBob, {
-      propertyType: 'apartment',
-      rentalStructure: 'entire_property',
-      title: 'Bob Penthouse'
-    });
-    const bobPropId = bobPropRes.data!.id;
-
-    // 4. Portfolio isolation check
-    const aliceList = await propertyBackend.getOwnerProperties(ownerAlice, 'all');
-    const bobList = await propertyBackend.getOwnerProperties(ownerBob, 'all');
-
-    assert(!aliceList.data?.some((p) => p.id === bobPropId), 'Alice portfolio contains NO properties of Bob');
-    assert(!bobList.data?.some((p) => p.id === alicePropId), 'Bob portfolio contains NO properties of Alice');
-    assert(bobList.data?.every((p) => p.ownerId === 202), 'All properties in Bob portfolio belong strictly to Bob');
-    assert(aliceList.data?.every((p) => p.ownerId === 101), 'All properties in Alice portfolio belong strictly to Alice');
+    assert(summary.id === prop.id, 'Summary ID matches property ID');
+    assert(summary.title === prop.title, 'Summary title matches');
+    assert(summary.propertyType === 'building', 'Summary propertyType matches');
+    assert(summary.rentalStructure === 'multiple_units', 'Summary rentalStructure matches');
+    assert(summary.status === 'draft', 'Summary status matches');
+    assert(summary.location?.city === 'Jaipur', 'Summary location city matches');
+    assert(summary.coverPhotoUrl === 'https://images.unsplash.com/lakeview-exterior', 'Summary cover photo identified');
+    assert(summary.photosCount === 2, 'Summary photosCount calculated');
+    assert(summary.unitsCount === 2, 'Summary unitsCount calculated');
+    assert(summary.displayPrice.includes('22,000'), `Summary displayPrice formatted: "${summary.displayPrice}"`);
+    assert((summary as any).units === undefined, 'Summary does not contain heavy nested units');
+    assert((summary as any).rules === undefined, 'Summary does not contain heavy nested rules');
   }
 
   // --------------------------------------------------------------------------
-  // TEST 5: Multi-Criteria Filtering & Search Logic Verification
+  // TEST 4: Backend Portfolio Ownership Isolation
   // --------------------------------------------------------------------------
-  console.log('\n🧪 TEST 5: Multi-Criteria Filtering & Search Simulation');
+  console.log('\n🧪 TEST 4: Backend Portfolio Ownership Isolation');
   {
-    // Reset store for controlled dataset
     (propertyBackend as any).properties.clear();
 
-    // Alice creates 4 properties in different states & locations
-    const p1 = await propertyBackend.createDraft(ownerAlice, {
+    // Alice creates 2 properties
+    await createTestBuilding(ownerAlice);
+    await createTestBuilding(ownerAlice);
+
+    // Bob creates 1 property
+    await createTestBuilding(ownerBob);
+
+    // Alice fetches her properties
+    const aliceList = await propertyBackend.getOwnerProperties(ownerAlice, 'all');
+    assert(aliceList.data?.length === 2, 'Alice sees exactly 2 properties');
+    assert(aliceList.data?.every((p) => Number(p.ownerId) === 101), 'All properties belong to Alice (101)');
+
+    // Bob fetches his properties
+    const bobList = await propertyBackend.getOwnerProperties(ownerBob, 'all');
+    assert(bobList.data?.length === 1, 'Bob sees exactly 1 property');
+    assert(bobList.data?.[0].ownerId === 202, 'Bob only sees his own property (202)');
+  }
+
+  // --------------------------------------------------------------------------
+  // TEST 5: Search & Filtering Logic Verification
+  // --------------------------------------------------------------------------
+  console.log('\n🧪 TEST 5: Search & Filtering Logic Verification');
+  {
+    (propertyBackend as any).properties.clear();
+
+    // Create 3 distinct properties for Alice
+    const prop1 = await propertyBackend.createDraft(ownerAlice, {
       propertyType: 'villa',
       rentalStructure: 'entire_property',
-      title: 'Serene Mountain Villa'
+      title: 'Green Meadows Villa'
     });
-    await propertyBackend.updateProperty(ownerAlice, p1.data!.id, {
-      location: { addressLine1: '1 Mall Rd', city: 'Shimla', locality: 'Jakhu', pincode: '171001' }
+    await propertyBackend.updateProperty(ownerAlice, prop1.data!.id, {
+      location: { city: 'Dehradun', locality: 'Rajpur Road', addressLine1: '12 Hill View', pincode: '248001' }
     });
 
-    const p2 = await propertyBackend.createDraft(ownerAlice, {
-      propertyType: 'apartment',
-      rentalStructure: 'entire_property',
-      title: 'Urban Heights 3BHK'
-    });
-    await propertyBackend.updateProperty(ownerAlice, p2.data!.id, {
-      location: { addressLine1: '40 Koramangala Main Rd', city: 'Bengaluru', locality: 'Koramangala', pincode: '560034' },
-      photos: [{ id: 'p2-photo', url: 'https://images.unsplash.com/apt', isCover: true, order: 0 }],
-      pricing: { monthlyRent: 38000 },
-      availability: { type: 'immediate' }
-    });
-    await propertyBackend.publishProperty(ownerAlice, p2.data!.id);
-
-    const p3 = await propertyBackend.createDraft(ownerAlice, {
-      propertyType: 'apartment',
-      rentalStructure: 'entire_property',
-      title: 'Lakeside Studio Apartment'
-    });
-    await propertyBackend.updateProperty(ownerAlice, p3.data!.id, {
-      location: { addressLine1: '8 Lake View', city: 'Udaipur', locality: 'Fateh Sagar', pincode: '313001' },
-      photos: [{ id: 'p3-photo', url: 'https://images.unsplash.com/apt2', isCover: true, order: 0 }],
-      pricing: { monthlyRent: 15000 },
-      availability: { type: 'immediate' }
-    });
-    await propertyBackend.publishProperty(ownerAlice, p3.data!.id);
-    await propertyBackend.unpublishProperty(ownerAlice, p3.data!.id);
-
-    const p4 = await propertyBackend.createDraft(ownerAlice, {
-      propertyType: 'hostel',
+    const prop2 = await propertyBackend.createDraft(ownerAlice, {
+      propertyType: 'pg',
       rentalStructure: 'individual_bed',
-      title: 'Scholars Hostel & PG'
+      title: 'Sunrise Heights PG'
     });
-    await propertyBackend.archiveProperty(ownerAlice, p4.data!.id);
+    await propertyBackend.updateProperty(ownerAlice, prop2.data!.id, {
+      location: { city: 'Pune', locality: 'Kothrud', addressLine1: '45 Tech Park', pincode: '411038' }
+    });
 
-    // Fetch all for Alice
-    const allAlice = (await propertyBackend.getOwnerProperties(ownerAlice, 'all')).data!;
-    assert(allAlice.length === 4, 'Total portfolio has 4 properties');
+    const prop3 = await propertyBackend.createDraft(ownerAlice, {
+      propertyType: 'apartment',
+      rentalStructure: 'entire_property',
+      title: 'Silicon Vista Apartment'
+    });
+    await propertyBackend.updateProperty(ownerAlice, prop3.data!.id, {
+      location: { city: 'Bengaluru', locality: 'Indiranagar', addressLine1: '77 100ft Road', pincode: '560038' }
+    });
 
-    // 1. Status Filter: active (excludes archived)
-    const activeProps = allAlice.filter((p) => p.status !== 'archived');
-    assert(activeProps.length === 3, 'Active filter returns 3 properties');
+    const allProps = (await propertyBackend.getOwnerProperties(ownerAlice, 'all')).data!;
 
-    // 2. Status Filter: published
-    const publishedProps = allAlice.filter((p) => p.status === 'published');
-    assert(publishedProps.length === 1 && publishedProps[0].id === p2.data!.id, 'Published filter returns only p2');
+    // 1. Search by title substring
+    const titleResults = allProps.filter((p) => (p.title || '').toLowerCase().includes('meadows'));
+    assert(titleResults.length === 1 && titleResults[0].title === 'Green Meadows Villa', 'Search by title substring matches correctly');
 
-    // 3. Status Filter: unpublished
-    const unpublishedProps = allAlice.filter((p) => p.status === 'unpublished');
-    assert(unpublishedProps.length === 1 && unpublishedProps[0].id === p3.data!.id, 'Unpublished filter returns only p3');
+    // 2. Search by city substring
+    const cityResults = allProps.filter((p) => (p.location?.city || '').toLowerCase().includes('pune'));
+    assert(cityResults.length === 1 && cityResults[0].title === 'Sunrise Heights PG', 'Search by city matches correctly');
 
-    // 4. Status Filter: archived
-    const archivedProps = allAlice.filter((p) => p.status === 'archived');
-    assert(archivedProps.length === 1 && archivedProps[0].id === p4.data!.id, 'Archived filter returns only p4');
+    // 3. Search by locality substring
+    const localityResults = allProps.filter((p) => (p.location?.locality || '').toLowerCase().includes('indira'));
+    assert(localityResults.length === 1 && localityResults[0].title === 'Silicon Vista Apartment', 'Search by locality matches correctly');
 
-    // 5. Property Type Filter: 'apartment' across active
-    const apartmentProps = activeProps.filter((p) => p.propertyType === 'apartment');
-    assert(apartmentProps.length === 2, 'Apartment type filter returns 2 active apartments');
+    // 4. Filter by property type
+    const pgResults = allProps.filter((p) => p.propertyType === 'pg');
+    assert(pgResults.length === 1 && pgResults[0].propertyType === 'pg', 'Filter by propertyType "pg" works');
 
-    // 6. Text Search: "Bengaluru" (city search)
-    const bengaluruSearch = activeProps.filter((p) =>
-      (p.location?.city || '').toLowerCase().includes('bengaluru')
-    );
-    assert(bengaluruSearch.length === 1 && bengaluruSearch[0].title === 'Urban Heights 3BHK', 'City search "Bengaluru" matched correct property');
+    const villaResults = allProps.filter((p) => p.propertyType === 'villa');
+    assert(villaResults.length === 1 && villaResults[0].propertyType === 'villa', 'Filter by propertyType "villa" works');
+  }
 
-    // 7. Text Search: "Villa" (title search)
-    const villaSearch = activeProps.filter((p) =>
-      p.title.toLowerCase().includes('villa')
-    );
-    assert(villaSearch.length === 1 && villaSearch[0].title === 'Serene Mountain Villa', 'Title search "Villa" matched correct property');
+  // --------------------------------------------------------------------------
+  // TEST 6: Sorting Logic Verification
+  // --------------------------------------------------------------------------
+  console.log('\n🧪 TEST 6: Sorting Logic Verification');
+  {
+    (propertyBackend as any).properties.clear();
 
-    // 8. Text Search with no matches
-    const noMatch = activeProps.filter((p) =>
-      p.title.toLowerCase().includes('nonexistent query')
-    );
-    assert(noMatch.length === 0, 'Non-existent search returns 0 properties');
+    const pA = await propertyBackend.createDraft(ownerAlice, { propertyType: 'apartment', rentalStructure: 'entire_property', title: 'Alpha Towers' });
+    await propertyBackend.updateProperty(ownerAlice, pA.data!.id, { pricing: { monthlyRent: 15000 } });
+
+    const pB = await propertyBackend.createDraft(ownerAlice, { propertyType: 'villa', rentalStructure: 'entire_property', title: 'Beta Bungalow' });
+    await propertyBackend.updateProperty(ownerAlice, pB.data!.id, { pricing: { monthlyRent: 50000 } });
+
+    const pC = await propertyBackend.createDraft(ownerAlice, { propertyType: 'pg', rentalStructure: 'individual_room', title: 'Gamma House' });
+    await propertyBackend.updateProperty(ownerAlice, pC.data!.id, { pricing: { monthlyRent: 8000 } });
+
+    const props = (await propertyBackend.getOwnerProperties(ownerAlice, 'all')).data!;
+
+    // Sort: Title A to Z
+    const sortedTitle = [...props].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    assert(sortedTitle[0].title === 'Alpha Towers', 'First item in Title A-Z is Alpha Towers');
+    assert(sortedTitle[2].title === 'Gamma House', 'Last item in Title A-Z is Gamma House');
+
+    // Sort: Price Low to High
+    const sortedPriceAsc = [...props].sort((a, b) => (a.pricing?.monthlyRent || 0) - (b.pricing?.monthlyRent || 0));
+    assert(sortedPriceAsc[0].title === 'Gamma House', 'Lowest price item is Gamma House (₹8,000)');
+    assert(sortedPriceAsc[2].title === 'Beta Bungalow', 'Highest price item is Beta Bungalow (₹50,000)');
+
+    // Sort: Price High to Low
+    const sortedPriceDesc = [...props].sort((a, b) => (b.pricing?.monthlyRent || 0) - (a.pricing?.monthlyRent || 0));
+    assert(sortedPriceDesc[0].title === 'Beta Bungalow', 'Highest price item first in Price Desc (Beta Bungalow)');
   }
 
   // Summary
