@@ -32,14 +32,19 @@ export type PropertyStatus =
 export type UnitStatus =
   | 'draft'
   | 'available'
+  | 'partially_occupied'
   | 'occupied'
   | 'reserved'
-  | 'under_maintenance';
+  | 'under_maintenance'
+  | 'fully_occupied'
+  | 'unavailable';
 
 export type BedStatus =
   | 'available'
   | 'occupied'
-  | 'reserved';
+  | 'reserved'
+  | 'fully_occupied'
+  | 'unavailable';
 
 export type TemplateStructure =
   | 'single_unit'
@@ -60,53 +65,238 @@ export interface PropertyLocation {
   hideExactAddress?: boolean;
 }
 
-export type PropertyAvailabilityType = 'immediate' | 'specific_date';
+export type PropertyAvailabilityType =
+  | 'immediate'
+  | 'specific_date'
+  | 'currently_unavailable'
+  | 'temporarily_unavailable';
 
 export interface PropertyAvailability {
   type: PropertyAvailabilityType;
   availableFrom?: string; // YYYY-MM-DD ISO date string
+  reason?: string;
 }
 
-export interface PropertyPricing {
+export type UnitAvailabilityStatus =
+  | 'available'
+  | 'partially_occupied'
+  | 'fully_occupied'
+  | 'unavailable';
+
+// ----------------------------------------------------------------------------
+// Phase 8: Generic Rentable Entity Pricing Definitions
+// ----------------------------------------------------------------------------
+export type PricingMode = 'fixed' | 'starting_from' | 'on_request';
+
+export type BillingPeriod = 'monthly' | 'weekly' | 'daily' | 'one_time' | 'custom';
+
+export type SecurityDepositType = 'none' | 'fixed' | 'months' | 'custom';
+
+export type MaintenanceChargesType =
+  | 'included'
+  | 'excluded'
+  | 'fixed'
+  | 'variable'
+  | 'not_applicable';
+
+export type ElectricityChargesType =
+  | 'included'
+  | 'excluded'
+  | 'meter_based'
+  | 'fixed'
+  | 'not_applicable';
+
+export interface OtherRecurringCharge {
+  id: string;
+  name: string;
+  amount: number;
+  period?: BillingPeriod;
+}
+
+export interface SecurityDepositConfig {
+  type: SecurityDepositType;
+  amount?: number;
+  monthsCount?: number;
+  customDetails?: string;
+}
+
+export interface MaintenanceChargesConfig {
+  type: MaintenanceChargesType;
+  amount?: number;
+}
+
+export interface ElectricityChargesConfig {
+  type: ElectricityChargesType;
+  amount?: number;
+}
+
+export interface GenericRentablePricing {
+  pricingMode?: PricingMode;
+  amount?: number;
+  currency?: string; // e.g. 'INR'
+  billingPeriod?: BillingPeriod;
   monthlyRent: number;
   securityDeposit?: number;
+  securityDepositConfig?: SecurityDepositConfig;
+  maintenanceChargesConfig?: MaintenanceChargesConfig;
   maintenance?: number;
+  electricityChargesConfig?: ElectricityChargesConfig;
+  otherCharges?: OtherRecurringCharge[];
+}
+
+export interface PropertyPricing extends GenericRentablePricing {
   lockInMonths?: number;
   noticePeriodDays?: number;
   foodIncluded?: boolean;
   foodChargesMonthly?: number;
 }
 
-export interface UnitPricing {
-  monthlyRent: number;
-  securityDeposit: number;
-  maintenance?: number;
-}
+export interface UnitPricing extends GenericRentablePricing {}
 
-export interface BedPricing {
-  monthlyRent: number;
-  securityDeposit: number;
-}
+export interface BedPricing extends GenericRentablePricing {}
+
+export type PhotoCategory =
+  | 'exterior'
+  | 'bedroom'
+  | 'bathroom'
+  | 'kitchen'
+  | 'living_room'
+  | 'room'
+  | 'common_area'
+  | 'parking'
+  | 'other';
 
 export interface PropertyPhoto {
   id: string | number;
   url: string;
   thumbnailUrl?: string;
-  category?:
-    | 'exterior'
-    | 'bedroom'
-    | 'bathroom'
-    | 'kitchen'
-    | 'living_room'
-    | 'room'
-    | 'common_area'
-    | 'parking'
-    | 'other';
+  category?: PhotoCategory;
   isCover: boolean;
   order: number;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  uploadedAt?: string;
 }
 
+export interface UploadPhotoPayload {
+  file?: File;
+  dataUrl?: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  category?: PhotoCategory;
+  isCover?: boolean;
+}
+
+export interface UpdatePhotoPayload {
+  category?: PhotoCategory;
+  isCover?: boolean;
+  order?: number;
+}
+
+// ----------------------------------------------------------------------------
+// Phase 6: Amenity Definitions
+// ----------------------------------------------------------------------------
+export type AmenityCategory =
+  | 'basic'
+  | 'comfort'
+  | 'building'
+  | 'services'
+  | 'safety'
+  | 'outdoor'
+  | 'custom';
+
+export interface AmenityDefinition {
+  id: string;
+  name: string;
+  category: AmenityCategory;
+  iconName: string;
+  description?: string;
+  defaultSuggestedFor?: PropertyType[];
+}
+
+export type PolicyStatus = 'allowed' | 'not_allowed' | 'with_restrictions' | 'not_specified';
+
+export type ResidentSuitability =
+  | 'individuals'
+  | 'couples'
+  | 'families'
+  | 'students'
+  | 'working_professionals'
+  | 'bachelors';
+
+export type FoodIncludedPolicy =
+  | 'all_meals'
+  | 'breakfast_only'
+  | 'breakfast_dinner'
+  | 'no_meals'
+  | 'on_demand'
+  | 'not_specified';
+
+export type KitchenAccessPolicy =
+  | 'private'
+  | 'shared'
+  | 'not_available'
+  | 'not_specified';
+
+export type CookingAllowedPolicy =
+  | 'veg_only'
+  | 'veg_and_nonveg'
+  | 'not_allowed'
+  | 'not_specified';
+
+export type TimingRestrictionType =
+  | 'curfew'
+  | 'gate_closing'
+  | 'open_24_7'
+  | 'flexible'
+  | 'not_specified';
+
 export interface PropertyRules {
+  // Occupancy & Residents
+  maxOccupants?: number;
+  suitableFor?: ResidentSuitability[];
+  genderPreference?: 'any' | 'male_only' | 'female_only';
+
+  // Guest Policy
+  guestPolicy?: PolicyStatus;
+  guestRestrictions?: string;
+
+  // Pet Policy
+  petPolicy?: PolicyStatus;
+  petRestrictions?: string;
+
+  // Smoking & Alcohol
+  smokingPolicy?: PolicyStatus;
+  smokingRestrictions?: string;
+  alcoholPolicy?: PolicyStatus;
+  alcoholRestrictions?: string;
+
+  // Timing & Access
+  timingType?: TimingRestrictionType;
+  gateClosingTime?: string;
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+  timingNotes?: string;
+
+  // Food & Kitchen
+  foodPolicy?: FoodIncludedPolicy;
+  kitchenAccess?: KitchenAccessPolicy;
+  cookingPolicy?: CookingAllowedPolicy;
+  foodNotes?: string;
+
+  // Move-in & Verification
+  requiresIdProof?: boolean;
+  requiresPoliceVerification?: boolean;
+  requiresEmploymentOrCollegeProof?: boolean;
+  verificationNotes?: string;
+
+  // Custom Rules & Notes
+  customRules?: string[];
+  additionalNotes?: string;
+
+  // Backward compatibility fields
   tenantPreference?:
     | 'all'
     | 'bachelors_male'
@@ -118,8 +308,8 @@ export interface PropertyRules {
   alcoholAllowed?: boolean;
   petsAllowed?: boolean;
   visitorsAllowed?: boolean;
-  gateClosingTime?: string;
-  customRules?: string[];
+  noticePeriodDays?: number;
+  lockInPeriodMonths?: number;
 }
 
 export interface PropertyBed {
@@ -127,7 +317,7 @@ export interface PropertyBed {
   unitId: string;
   label: string; // e.g., "Bed A", "Bed 1", "Upper Bunk"
   bedType?: 'single' | 'bunk_lower' | 'bunk_upper' | 'queen';
-  availability: 'available' | 'occupied' | 'reserved';
+  availability: 'available' | 'occupied' | 'reserved' | 'fully_occupied' | 'unavailable';
   pricing: BedPricing;
   status: BedStatus;
   createdAt: string;
@@ -145,7 +335,7 @@ export interface PropertyUnit {
   floor?: string | number;
   carpetAreaSqft?: number;
   pricing: UnitPricing;
-  availability: 'available' | 'occupied' | 'reserved' | 'under_maintenance';
+  availability: 'available' | 'partially_occupied' | 'occupied' | 'reserved' | 'under_maintenance' | 'fully_occupied' | 'unavailable';
   availableFrom?: string;
   status: UnitStatus;
   beds: PropertyBed[];
@@ -166,10 +356,12 @@ export interface Property {
   availability?: PropertyAvailability;
   pricing?: PropertyPricing;
   amenities?: string[];
+  customAmenities?: string[];
   rules?: PropertyRules;
   photos?: PropertyPhoto[];
   completenessScore: number; // 0 - 100
   units: PropertyUnit[];
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -200,7 +392,7 @@ export interface PropertyTemplate {
 export interface CreatePropertyDraftPayload {
   propertyType: PropertyType;
   customPropertyType?: string;
-  rentalStructure: RentalStructure;
+  rentalStructure?: RentalStructure;
   title?: string;
   description?: string;
   availability?: PropertyAvailability;
@@ -218,6 +410,8 @@ export interface UpdatePropertyPayload {
   location?: Partial<PropertyLocation>;
   pricing?: Partial<PropertyPricing>;
   amenities?: string[];
+  customAmenities?: string[];
+  units?: PropertyUnit[];
   rules?: Partial<PropertyRules>;
   photos?: PropertyPhoto[];
   status?: PropertyStatus;
@@ -258,10 +452,67 @@ export interface BulkCreateUnitsPayload {
   bedDeposit?: number;
 }
 
+export interface UpdatePropertyPricingPayload {
+  pricing: PropertyPricing;
+  availability?: PropertyAvailability;
+}
+
+export interface BulkPricingPayload {
+  defaultPricing: GenericRentablePricing;
+  defaultAvailability?: PropertyAvailabilityType | UnitAvailabilityStatus;
+  unitOverrides?: Record<string, Partial<UnitPricing> & { availability?: string }>;
+  bedOverrides?: Record<string, Partial<BedPricing> & { availability?: string }>;
+}
+
 export interface PropertyApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
   code?: string;
   status?: number;
+  message?: string;
+  details?: any;
 }
+
+export interface BackendRequestContext {
+  userId: number; // The authenticated user making the request
+  isAdmin?: boolean;
+}
+
+// ----------------------------------------------------------------------------
+// Phase 12: My Properties Portfolio & Management Models
+// ----------------------------------------------------------------------------
+
+export interface PropertySummary {
+  id: string;
+  ownerId: number | string;
+  title: string;
+  propertyType: PropertyType;
+  customPropertyType?: string;
+  rentalStructure: RentalStructure;
+  status: PropertyStatus;
+  completenessScore: number;
+  location?: {
+    addressLine1?: string;
+    locality?: string;
+    city: string;
+    state?: string;
+    pincode?: string;
+  };
+  coverPhotoUrl?: string;
+  photosCount: number;
+  unitsCount: number;
+  displayPrice: string;
+  monthlyRent?: number;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PropertySortOption =
+  | 'updated_desc'
+  | 'title_asc'
+  | 'price_asc'
+  | 'price_desc'
+  | 'completeness_desc';
+

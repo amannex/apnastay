@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next';
 import { STATIC_PROPERTIES } from '../data/staticProperties';
+import { siteConfig } from '../config/site';
 
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://apnastay-eight.vercel.app';
+  const baseUrl = siteConfig.url;
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {

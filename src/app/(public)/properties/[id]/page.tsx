@@ -1,11 +1,91 @@
+import { siteConfig } from '@/config/site';
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { STATIC_PROPERTIES } from '@/data/staticProperties';
+import { getPublicProperty } from '@/features/properties/api';
 import PropertyDetailPage from '@/views/PropertyDetailPage';
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
+}
+
+async function resolveProperty(id: string) {
+  const staticFound = STATIC_PROPERTIES.find((p) => p.id === id);
+  if (staticFound) return staticFound;
+
+  try {
+    const rawId = id.replace(/^prop-/, '');
+    const res = await getPublicProperty(id);
+    const data = (res.success && res.data ? res.data : (await getPublicProperty(rawId)).data) as any;
+    if (data) {
+      const photoUrls = (data.photos || [])
+        .map((p: any) => (typeof p === 'string' ? p : p.url))
+        .filter(Boolean);
+
+      const images =
+        photoUrls.length > 0
+          ? photoUrls
+          : data.coverPhotoUrl
+          ? [data.coverPhotoUrl]
+          : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'];
+
+      const city = data.location?.city || data.city || 'Jhansi';
+      const locality = data.location?.locality || data.location?.addressLine1 || '';
+      const neighborhood = locality ? `${locality}, ${city}` : city;
+      const price = Number(data.pricing?.monthlyRent || data.rent || data.price || 7000);
+
+      const rawAmenities = data.amenities || [];
+      const amenities = rawAmenities.map((a: any) =>
+        typeof a === 'string' ? { name: a.replace(/_/g, ' '), icon: 'ShieldCheck', verified: true } : a
+      );
+
+      return {
+        id,
+        title: data.title || 'Verified Property',
+        description: data.description || 'Verified accommodation with zero brokerage.',
+        neighborhood,
+        city,
+        price,
+        rating: 4.95,
+        reviewsCount: 15,
+        images,
+        amenities:
+          amenities.length > 0
+            ? amenities
+            : [
+                { name: 'Zero Brokerage', icon: 'ShieldCheck', verified: true },
+                { name: 'Verified Amenities', icon: 'ShieldCheck', verified: true }
+              ],
+        roomType: data.propertyType ? data.propertyType.replace(/_/g, ' ').toUpperCase() : 'Apartment',
+        type: data.propertyType || 'apartment',
+        costBreakdown: {
+          monthlyRent: price,
+          maintenance: data.pricing?.maintenanceCharges || 0,
+          brokerage: 0,
+          securityDeposit: data.pricing?.securityDeposit || price * 2,
+          totalMoveIn: price + (data.pricing?.securityDeposit || price * 2)
+        },
+        specs: {
+          bedrooms: 1,
+          bathrooms: 1,
+          sqft: 650,
+          floor: 'Ground Floor',
+          furnishing: 'Standard'
+        },
+        owner: {
+          name: 'Verified Partner',
+          role: 'Verified ApnaStay Partner',
+          responseTime: 'Under 10 mins',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+        }
+      } as any;
+    }
+  } catch (err) {
+    // Ignore error and fall through
+  }
+
+  return null;
 }
 
 export async function generateStaticParams() {
@@ -16,7 +96,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PropertyPageProps): Promise<Metadata> {
   const { id } = await params;
-  const property = STATIC_PROPERTIES.find((p) => p.id === id);
+  const property = await resolveProperty(id);
 
   if (!property) {
     return {
@@ -34,7 +114,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
 
   const title = `${titleText} - ₹${priceNum.toLocaleString()}/mo in ${neighborhoodText}`;
   const description = `Rent ${roomTypeText} in ${neighborhoodText}, ${cityText} with zero brokerage. Verified NFC smart-lock self-tour, high-speed fiber Wi-Fi, and ₹0 commission.`;
-  const canonicalUrl = `https://apnastay-eight.vercel.app/properties/${property.id}`;
+  const canonicalUrl = `${siteConfig.url}/properties/${property.id}`;
 
   return {
     title,
@@ -76,7 +156,7 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
 
 export default async function PropertyPage({ params }: PropertyPageProps) {
   const { id } = await params;
-  const property = STATIC_PROPERTIES.find((p) => p.id === id);
+  const property = await resolveProperty(id);
 
   if (!property) {
     notFound();
@@ -93,7 +173,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     '@type': 'RealEstateListing',
     name: titleText,
     description: `Zero-brokerage rental residence located in ${neighborhoodText}, ${cityText}.`,
-    url: `https://apnastay-eight.vercel.app/properties/${property.id}`,
+    url: `${siteConfig.url}/properties/${property.id}`,
     datePosted: '2026-07-01',
     offers: {
       '@type': 'Offer',

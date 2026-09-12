@@ -17,15 +17,14 @@ import {
 import { fetchSession, getSessionRole } from '../lib/auth/session';
 import type { UserProfile } from '../features/auth/types';
 import { STATIC_ADMIN_ANALYTICS } from '../services/wordpressCms';
+import { siteConfig } from '../config/site';
 
 export default function AdminPortalPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
-  const wpAdminUrl =
-    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WP_ADMIN_URL) ||
-    'http://localhost:8888/wp-admin/';
+  const wpAdminUrl = siteConfig.api.wpAdmin;
 
   useEffect(() => {
     fetchSession().then((profile) => {
