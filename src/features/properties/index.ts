@@ -9,6 +9,7 @@ export * from './units';
 export * from './pricing';
 export * from './rules';
 export * from './completeness';
+export * from './validation';
 export * from './backend';
 export * from './api';
 

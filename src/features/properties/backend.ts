@@ -36,6 +36,16 @@ import { getPropertyTemplate, validateStructureForTemplate } from './templates';
 import { validatePricingPayload, calculateEffectiveDeposit, formatPricingDisplay } from './pricing';
 import { validatePropertyRules, sanitizePropertyRules } from './rules';
 import { evaluateListingCompleteness } from './completeness';
+import {
+  sanitizeText,
+  validateAndSanitizePincode,
+  isValidIsoDateString,
+  validatePropertyTitle,
+  validatePropertyDescription,
+  validateTypeAndStructure,
+  sanitizeStringArray,
+  sanitizeMediaUrl
+} from './validation';
 
 export type { BackendRequestContext };
 
@@ -207,19 +217,22 @@ class PropertyBackendStore {
   }
 
   /**
-   * Retrieve an existing property or auto-initialize a draft for this ID.
+   * Retrieve an existing property with strict 404 if missing and ownership enforcement.
    */
   public getOrEnsureProperty(propertyId: string, ctx: BackendRequestContext): Property {
-    let property = this.properties.get(propertyId);
+    const property = this.properties.get(propertyId);
     if (!property) {
-      property = this.ensureProperty({ id: propertyId, ownerId: ctx.userId });
+      const error: any = new Error(`Property with ID '${propertyId}' not found.`);
+      error.code = 'PROPERTY_NOT_FOUND';
+      error.status = 404;
+      throw error;
     }
     this.assertOwnership(property, ctx);
     return property;
   }
 
   // --------------------------------------------------------------------------
-  // Authorization Guards
+  // Authorization & Relational Guards
   // --------------------------------------------------------------------------
   private assertOwnership(property: Property, ctx: BackendRequestContext): void {
     if (ctx.isAdmin) {
@@ -242,6 +255,37 @@ class PropertyBackendStore {
     }
   }
 
+  private assertNotArchived(property: Property): void {
+    if (property.status === 'archived') {
+      const error: any = new Error('Archived properties cannot be modified. Please restore the listing first.');
+      error.code = 'INVALID_STATUS_TRANSITION';
+      error.status = 400;
+      throw error;
+    }
+  }
+
+  private assertUnitBelongsToProperty(property: Property, unitId: string): PropertyUnit {
+    const unit = (property.units || []).find((u) => u.id === unitId);
+    if (!unit) {
+      const error: any = new Error(`Unit with ID '${unitId}' does not belong to property '${property.id}'.`);
+      error.code = 'RELATIONSHIP_MISMATCH';
+      error.status = 404;
+      throw error;
+    }
+    return unit;
+  }
+
+  private assertBedBelongsToUnit(unit: PropertyUnit, bedId: string): PropertyBed {
+    const bed = (unit.beds || []).find((b) => b.id === bedId);
+    if (!bed) {
+      const error: any = new Error(`Bed with ID '${bedId}' does not belong to unit '${unit.id}'.`);
+      error.code = 'RELATIONSHIP_MISMATCH';
+      error.status = 404;
+      throw error;
+    }
+    return bed;
+  }
+
   // --------------------------------------------------------------------------
   // Property Operations
   // --------------------------------------------------------------------------
@@ -256,41 +300,71 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const template = getPropertyTemplate(payload.propertyType);
-      const rentalStructure = payload.rentalStructure || template.defaultRentalStructure;
-
-      // Validate rental structure against template configuration
-      if (!validateStructureForTemplate(payload.propertyType, rentalStructure)) {
+      const typeValidation = validateTypeAndStructure(payload.propertyType, payload.rentalStructure);
+      if (!typeValidation.isValid) {
         return {
           success: false,
           status: 400,
-          code: 'INVALID_RENTAL_STRUCTURE',
-          error: `Rental structure '${rentalStructure}' is not supported for property type '${payload.propertyType}'.`
+          code: typeValidation.error?.includes('Rental structure') ? 'INVALID_RENTAL_STRUCTURE' : 'INVALID_PROPERTY_TYPE',
+          error: typeValidation.error || `Rental structure '${payload.rentalStructure}' is not supported for property type '${payload.propertyType}'.`
+        };
+      }
+
+      const template = getPropertyTemplate(payload.propertyType);
+      const rentalStructure = payload.rentalStructure || template.defaultRentalStructure;
+
+      // Pincode validation if provided
+      if (payload.location?.pincode) {
+        const pinRes = validateAndSanitizePincode(payload.location.pincode);
+        if (!pinRes.isValid) {
+          return {
+            success: false,
+            status: 400,
+            code: 'INVALID_PINCODE',
+            error: 'Pincode must be a valid 6-digit Indian postal code.'
+          };
+        }
+      }
+
+      // Availability date validation
+      if (
+        payload.availability?.type === 'specific_date' &&
+        payload.availability.availableFrom &&
+        !isValidIsoDateString(payload.availability.availableFrom)
+      ) {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_DATE_FORMAT',
+          error: 'availableFrom date must be in YYYY-MM-DD format.'
         };
       }
 
       const now = new Date().toISOString();
       const id = generateEntityId('prop');
 
+      const sanitizedTitle = payload.title ? sanitizeText(payload.title, 150) : `New ${template.label} Draft`;
+      const sanitizedDesc = payload.description ? sanitizeText(payload.description, 5000) : '';
+
       const property: Property = {
         id,
         ownerId: ctx.userId,
         propertyType: payload.propertyType,
-        customPropertyType: payload.propertyType === 'other' ? payload.customPropertyType : undefined,
+        customPropertyType: payload.propertyType === 'other' && payload.customPropertyType ? sanitizeText(payload.customPropertyType, 100) : undefined,
         rentalStructure,
-        title: payload.title?.trim() || `New ${template.label} Draft`,
-        description: payload.description?.trim() || '',
+        title: sanitizedTitle,
+        description: sanitizedDesc,
         status: 'draft',
         location: payload.location ? {
-          addressLine1: payload.location.addressLine1 || '',
-          locality: payload.location.locality,
-          addressLine2: payload.location.addressLine2,
-          city: payload.location.city || '',
-          state: payload.location.state,
-          pincode: payload.location.pincode || '',
+          addressLine1: sanitizeText(payload.location.addressLine1 || '', 200),
+          locality: payload.location.locality ? sanitizeText(payload.location.locality, 150) : undefined,
+          addressLine2: payload.location.addressLine2 ? sanitizeText(payload.location.addressLine2, 200) : undefined,
+          city: sanitizeText(payload.location.city || '', 100),
+          state: payload.location.state ? sanitizeText(payload.location.state, 100) : undefined,
+          pincode: payload.location.pincode ? validateAndSanitizePincode(payload.location.pincode).value : '',
           latitude: payload.location.latitude,
           longitude: payload.location.longitude,
-          landmark: payload.location.landmark,
+          landmark: payload.location.landmark ? sanitizeText(payload.location.landmark, 150) : undefined,
           hideExactAddress: payload.location.hideExactAddress
         } : undefined,
         availability: payload.availability ? {
@@ -419,43 +493,74 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       // Validate structure compatibility if propertyType or rentalStructure is updated
       const newType = payload.propertyType || property.propertyType;
       const newStructure = payload.rentalStructure || property.rentalStructure;
-      if (!validateStructureForTemplate(newType, newStructure)) {
+      const typeValidation = validateTypeAndStructure(newType, newStructure);
+      if (!typeValidation.isValid) {
         return {
           success: false,
           status: 400,
-          code: 'INVALID_RENTAL_STRUCTURE',
-          error: `Rental structure '${newStructure}' is not supported for property type '${newType}'.`
+          code: typeValidation.error?.includes('Rental structure') ? 'INVALID_RENTAL_STRUCTURE' : 'INVALID_PROPERTY_TYPE',
+          error: typeValidation.error || `Rental structure '${newStructure}' is not supported for property type '${newType}'.`
         };
       }
 
       const now = new Date().toISOString();
 
-      if (payload.title !== undefined) property.title = payload.title.trim();
-      if (payload.description !== undefined) property.description = payload.description.trim();
+      if (payload.title !== undefined) {
+        property.title = sanitizeText(payload.title, 150);
+      }
+      if (payload.description !== undefined) {
+        property.description = sanitizeText(payload.description, 5000);
+      }
       if (payload.propertyType !== undefined) property.propertyType = payload.propertyType;
-      if (payload.customPropertyType !== undefined) property.customPropertyType = payload.customPropertyType;
+      if (payload.customPropertyType !== undefined) {
+        property.customPropertyType = payload.customPropertyType ? sanitizeText(payload.customPropertyType, 100) : undefined;
+      }
       if (payload.rentalStructure !== undefined) property.rentalStructure = payload.rentalStructure;
 
       if (payload.location !== undefined) {
+        if (payload.location.pincode) {
+          const pinRes = validateAndSanitizePincode(payload.location.pincode);
+          if (!pinRes.isValid) {
+            return {
+              success: false,
+              status: 400,
+              code: 'INVALID_PINCODE',
+              error: 'Pincode must be a valid 6-digit Indian postal code.'
+            };
+          }
+        }
         property.location = {
-          addressLine1: payload.location.addressLine1 ?? property.location?.addressLine1 ?? '',
-          locality: payload.location.locality ?? property.location?.locality,
-          addressLine2: payload.location.addressLine2 ?? property.location?.addressLine2,
-          city: payload.location.city ?? property.location?.city ?? '',
-          state: payload.location.state ?? property.location?.state,
-          pincode: payload.location.pincode ?? property.location?.pincode ?? '',
+          addressLine1: payload.location.addressLine1 !== undefined ? sanitizeText(payload.location.addressLine1, 200) : (property.location?.addressLine1 ?? ''),
+          locality: payload.location.locality !== undefined ? (payload.location.locality ? sanitizeText(payload.location.locality, 150) : undefined) : property.location?.locality,
+          addressLine2: payload.location.addressLine2 !== undefined ? (payload.location.addressLine2 ? sanitizeText(payload.location.addressLine2, 200) : undefined) : property.location?.addressLine2,
+          city: payload.location.city !== undefined ? sanitizeText(payload.location.city, 100) : (property.location?.city ?? ''),
+          state: payload.location.state !== undefined ? (payload.location.state ? sanitizeText(payload.location.state, 100) : undefined) : property.location?.state,
+          pincode: payload.location.pincode !== undefined ? validateAndSanitizePincode(payload.location.pincode).value : (property.location?.pincode ?? ''),
           latitude: payload.location.latitude ?? property.location?.latitude,
           longitude: payload.location.longitude ?? property.location?.longitude,
-          landmark: payload.location.landmark ?? property.location?.landmark,
+          landmark: payload.location.landmark !== undefined ? (payload.location.landmark ? sanitizeText(payload.location.landmark, 150) : undefined) : property.location?.landmark,
           hideExactAddress: payload.location.hideExactAddress ?? property.location?.hideExactAddress
         };
       }
 
       if (payload.availability !== undefined) {
+        if (
+          payload.availability.type === 'specific_date' &&
+          payload.availability.availableFrom &&
+          !isValidIsoDateString(payload.availability.availableFrom)
+        ) {
+          return {
+            success: false,
+            status: 400,
+            code: 'INVALID_DATE_FORMAT',
+            error: 'availableFrom date must be in YYYY-MM-DD format.'
+          };
+        }
         property.availability = {
           type: payload.availability.type,
           availableFrom: payload.availability.type === 'specific_date' ? payload.availability.availableFrom : undefined
@@ -471,11 +576,11 @@ class PropertyBackendStore {
       }
 
       if (payload.amenities !== undefined) {
-        property.amenities = payload.amenities;
+        property.amenities = sanitizeStringArray(payload.amenities, 100, 100);
       }
 
       if (payload.customAmenities !== undefined) {
-        property.customAmenities = payload.customAmenities;
+        property.customAmenities = sanitizeStringArray(payload.customAmenities, 50, 100);
       }
 
       if (payload.rules !== undefined) {
@@ -488,6 +593,7 @@ class PropertyBackendStore {
       if (payload.photos !== undefined) {
         const normalized = payload.photos.map((p, idx) => ({
           ...p,
+          fileName: p.fileName ? sanitizeText(p.fileName, 255) : undefined,
           order: typeof p.order === 'number' ? p.order : idx
         }));
         const hasCover = normalized.some((p) => p.isCover);
@@ -508,6 +614,14 @@ class PropertyBackendStore {
             status: 400,
             code: 'INVALID_STATUS_TRANSITION',
             error: 'Archived properties must be restored before changing status.'
+          };
+        }
+        if (payload.status === 'unpublished' && property.status !== 'published') {
+          return {
+            success: false,
+            status: 400,
+            code: 'INVALID_STATUS_TRANSITION',
+            error: `Cannot unpublish listing with status '${property.status}'. Only active published listings can be unpublished.`
           };
         }
         if (payload.status === 'published') {
@@ -630,6 +744,7 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       // File format validation
       const supportedMimes = [
@@ -706,7 +821,7 @@ class PropertyBackendStore {
         category: payload.category,
         isCover,
         order: existingPhotos.length,
-        fileName: payload.fileName,
+        fileName: payload.fileName ? sanitizeText(payload.fileName, 255) : undefined,
         fileSize: payload.fileSize,
         mimeType: payload.mimeType,
         uploadedAt: now
@@ -745,6 +860,7 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       const photos = property.photos ? [...property.photos] : [];
       const index = photos.findIndex((p) => String(p.id) === String(photoId));
@@ -804,10 +920,23 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       const existingPhotos = property.photos ? [...property.photos] : [];
       const photoMap = new Map<string, PropertyPhoto>();
       existingPhotos.forEach((p) => photoMap.set(String(p.id), { ...p }));
+
+      // Relational check: ensure all requested photo IDs belong to this property
+      for (const id of orderedPhotoIds) {
+        if (!photoMap.has(String(id))) {
+          return {
+            success: false,
+            status: 404,
+            code: 'RELATIONSHIP_MISMATCH',
+            error: `Photo with ID '${id}' does not belong to property '${property.id}'.`
+          };
+        }
+      }
 
       const reordered: PropertyPhoto[] = [];
       orderedPhotoIds.forEach((id, idx) => {
@@ -863,6 +992,7 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       const photos = property.photos ? [...property.photos] : [];
       const photo = photos.find((p) => String(p.id) === String(photoId));
@@ -940,6 +1070,17 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
+
+      const sanitizedName = sanitizeText(payload.nameOrNumber, 100);
+      if (!sanitizedName) {
+        return {
+          success: false,
+          status: 400,
+          code: 'INVALID_UNIT_NAME',
+          error: 'Unit name or number is required.'
+        };
+      }
 
       const now = new Date().toISOString();
       const unitId = generateEntityId('unit');
@@ -968,9 +1109,9 @@ class PropertyBackendStore {
       const unit: PropertyUnit = {
         id: unitId,
         propertyId,
-        nameOrNumber: payload.nameOrNumber.trim(),
+        nameOrNumber: sanitizedName,
         unitType: payload.unitType,
-        description: payload.description?.trim(),
+        description: payload.description ? sanitizeText(payload.description, 500) : undefined,
         capacity: payload.capacity || (bedsCount > 0 ? bedsCount : 1),
         furnishing: payload.furnishing || 'semi_furnished',
         floor: payload.floor,
@@ -1018,6 +1159,7 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       if (!payload.count || payload.count < 1 || payload.count > 100) {
         return {
@@ -1029,7 +1171,7 @@ class PropertyBackendStore {
       }
 
       const now = new Date().toISOString();
-      const prefix = payload.prefix || 'Room';
+      const prefix = payload.prefix ? sanitizeText(payload.prefix, 50) : 'Room';
       const startNum = payload.startingNumber || 101;
       const createdUnits: PropertyUnit[] = [];
 
@@ -1112,16 +1254,9 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const sourceUnit = property.units.find((u) => u.id === unitId);
-      if (!sourceUnit) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
+      const sourceUnit = this.assertUnitBelongsToProperty(property, unitId);
 
       const now = new Date().toISOString();
       const newUnitId = generateEntityId('unit');
@@ -1138,7 +1273,7 @@ class PropertyBackendStore {
       const clonedUnit: PropertyUnit = {
         ...sourceUnit,
         id: newUnitId,
-        nameOrNumber: newNameOrNumber || `${sourceUnit.nameOrNumber} (Copy)`,
+        nameOrNumber: newNameOrNumber ? sanitizeText(newNameOrNumber, 100) : `${sourceUnit.nameOrNumber} (Copy)`,
         availability: 'available',
         status: 'available',
         beds: clonedBeds,
@@ -1178,21 +1313,14 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const unit = property.units.find((u) => u.id === unitId);
-      if (!unit) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
+      const unit = this.assertUnitBelongsToProperty(property, unitId);
 
       const now = new Date().toISOString();
-      if (updates.nameOrNumber !== undefined) unit.nameOrNumber = updates.nameOrNumber.trim();
+      if (updates.nameOrNumber !== undefined) unit.nameOrNumber = sanitizeText(updates.nameOrNumber, 100);
       if (updates.unitType !== undefined) unit.unitType = updates.unitType;
-      if (updates.description !== undefined) unit.description = updates.description?.trim();
+      if (updates.description !== undefined) unit.description = updates.description ? sanitizeText(updates.description, 500) : undefined;
       if (updates.capacity !== undefined) unit.capacity = updates.capacity;
       if (updates.furnishing !== undefined) unit.furnishing = updates.furnishing;
       if (updates.floor !== undefined) unit.floor = updates.floor;
@@ -1232,18 +1360,11 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const initialLength = property.units.length;
+      this.assertUnitBelongsToProperty(property, unitId);
+
       property.units = property.units.filter((u) => u.id !== unitId);
-
-      if (property.units.length === initialLength) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
 
       const now = new Date().toISOString();
       property.updatedAt = now;
@@ -1277,14 +1398,17 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const unit = property.units.find((u) => u.id === unitId);
-      if (!unit) {
+      const unit = this.assertUnitBelongsToProperty(property, unitId);
+
+      const sanitizedLabel = sanitizeText(payload.label, 100);
+      if (!sanitizedLabel) {
         return {
           success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
+          status: 400,
+          code: 'INVALID_BED_LABEL',
+          error: 'Bed label is required.'
         };
       }
 
@@ -1293,7 +1417,7 @@ class PropertyBackendStore {
       const bed: PropertyBed = {
         id: bedId,
         unitId,
-        label: payload.label.trim(),
+        label: sanitizedLabel,
         bedType: payload.bedType || 'single',
         pricing: {
           monthlyRent: payload.pricing.monthlyRent,
@@ -1339,29 +1463,13 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const unit = property.units.find((u) => u.id === unitId);
-      if (!unit) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
-
-      const bed = unit.beds.find((b) => b.id === bedId);
-      if (!bed) {
-        return {
-          success: false,
-          status: 404,
-          code: 'BED_NOT_FOUND',
-          error: `Bed with ID '${bedId}' not found in unit.`
-        };
-      }
+      const unit = this.assertUnitBelongsToProperty(property, unitId);
+      const bed = this.assertBedBelongsToUnit(unit, bedId);
 
       const now = new Date().toISOString();
-      if (updates.label !== undefined) bed.label = updates.label.trim();
+      if (updates.label !== undefined) bed.label = sanitizeText(updates.label, 100);
       if (updates.bedType !== undefined) bed.bedType = updates.bedType;
       if (updates.pricing !== undefined) bed.pricing = { ...bed.pricing, ...updates.pricing };
       if (updates.availability !== undefined) bed.availability = updates.availability;
@@ -1400,28 +1508,12 @@ class PropertyBackendStore {
       this.assertAuthenticated(ctx);
 
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const unit = property.units.find((u) => u.id === unitId);
-      if (!unit) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
+      const unit = this.assertUnitBelongsToProperty(property, unitId);
+      this.assertBedBelongsToUnit(unit, bedId);
 
-      const initialLength = unit.beds.length;
       unit.beds = unit.beds.filter((b) => b.id !== bedId);
-
-      if (unit.beds.length === initialLength) {
-        return {
-          success: false,
-          status: 404,
-          code: 'BED_NOT_FOUND',
-          error: `Bed with ID '${bedId}' not found in unit.`
-        };
-      }
 
       const now = new Date().toISOString();
       unit.updatedAt = now;
@@ -1459,6 +1551,7 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       const validation = validatePricingPayload(pricing, false);
       if (!validation.isValid) {
@@ -1524,16 +1617,9 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const unit = property.units.find((u) => u.id === unitId);
-      if (!unit) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
+      const unit = this.assertUnitBelongsToProperty(property, unitId);
 
       const validation = validatePricingPayload(pricing, false);
       if (!validation.isValid) {
@@ -1609,26 +1695,10 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      const unit = property.units.find((u) => u.id === unitId);
-      if (!unit) {
-        return {
-          success: false,
-          status: 404,
-          code: 'UNIT_NOT_FOUND',
-          error: `Unit with ID '${unitId}' not found in property.`
-        };
-      }
-
-      const bed = unit.beds.find((b) => b.id === bedId);
-      if (!bed) {
-        return {
-          success: false,
-          status: 404,
-          code: 'BED_NOT_FOUND',
-          error: `Bed with ID '${bedId}' not found in unit.`
-        };
-      }
+      const unit = this.assertUnitBelongsToProperty(property, unitId);
+      const bed = this.assertBedBelongsToUnit(unit, bedId);
 
       const validation = validatePricingPayload(pricing, false);
       if (!validation.isValid) {
@@ -1701,6 +1771,36 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
       const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
+
+      // Relational checks for overrides
+      if (payload.unitOverrides) {
+        const unitIds = new Set((property.units || []).map((u) => u.id));
+        for (const uId of Object.keys(payload.unitOverrides)) {
+          if (!unitIds.has(uId)) {
+            return {
+              success: false,
+              status: 404,
+              code: 'RELATIONSHIP_MISMATCH',
+              error: `Unit with ID '${uId}' does not belong to property '${property.id}'.`
+            };
+          }
+        }
+      }
+
+      if (payload.bedOverrides) {
+        const bedIds = new Set((property.units || []).flatMap((u) => (u.beds || []).map((b) => b.id)));
+        for (const bId of Object.keys(payload.bedOverrides)) {
+          if (!bedIds.has(bId)) {
+            return {
+              success: false,
+              status: 404,
+              code: 'RELATIONSHIP_MISMATCH',
+              error: `Bed with ID '${bId}' does not belong to property '${property.id}'.`
+            };
+          }
+        }
+      }
 
       const defaultRent = Math.round(
         Number(payload.defaultPricing.monthlyRent || payload.defaultPricing.amount || 0)
@@ -2176,21 +2276,12 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       const now = new Date().toISOString();
-      property.amenities = Array.from(new Set(amenities));
-      property.customAmenities = Array.from(new Set(customAmenities.map((c) => c.trim()).filter(Boolean)));
+      property.amenities = sanitizeStringArray(amenities, 100, 100);
+      property.customAmenities = sanitizeStringArray(customAmenities, 50, 100);
       property.completenessScore = this.computeCompletenessScore(property);
       property.updatedAt = now;
       this.persist();
@@ -2221,19 +2312,10 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      this.assertOwnership(property, ctx);
-
-      const sanitized = customName.trim();
+      const sanitized = sanitizeText(customName, 100);
       if (!sanitized) {
         return {
           success: false,
@@ -2278,19 +2360,10 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
-      this.assertOwnership(property, ctx);
-
-      const sanitized = customName.trim();
+      const sanitized = sanitizeText(customName, 100);
       const existing = property.customAmenities ? [...property.customAmenities] : [];
       property.customAmenities = existing.filter((c) => c !== sanitized);
       property.completenessScore = this.computeCompletenessScore(property);
@@ -2327,17 +2400,8 @@ class PropertyBackendStore {
     try {
       this.assertAuthenticated(ctx);
 
-      const property = this.properties.get(propertyId);
-      if (!property) {
-        return {
-          success: false,
-          status: 404,
-          code: 'PROPERTY_NOT_FOUND',
-          error: `Property with ID '${propertyId}' not found.`
-        };
-      }
-
-      this.assertOwnership(property, ctx);
+      const property = this.getOrEnsureProperty(propertyId, ctx);
+      this.assertNotArchived(property);
 
       const validation = validatePropertyRules(rules);
       if (!validation.valid) {
@@ -2372,6 +2436,101 @@ class PropertyBackendStore {
         status: err.status || 500,
         code: err.code || 'UPDATE_RULES_ERROR',
         error: err.message || 'Failed to update property rules.'
+      };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Public Catalog Operations (Unauthenticated / Public Tenant View)
+  // --------------------------------------------------------------------------
+
+  /**
+   * Retrieve a single property for public viewing.
+   * Only published listings are visible; drafts, unpublished, or archived listings
+   * strictly return 404 NOT_FOUND.
+   */
+  public getPublicProperty(propertyId: string): PropertyApiResponse<Property> {
+    try {
+      const property = this.properties.get(propertyId);
+      if (!property || property.status !== 'published') {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' was not found or is not currently active.`
+        };
+      }
+
+      // Clone and sanitize public view: redact exact address if owner chose hideExactAddress
+      const publicCopy: Property = {
+        ...property,
+        location: property.location ? {
+          ...property.location,
+          addressLine1: property.location.hideExactAddress ? '' : property.location.addressLine1,
+          addressLine2: property.location.hideExactAddress ? '' : property.location.addressLine2
+        } : undefined
+      };
+
+      return {
+        success: true,
+        status: 200,
+        data: publicCopy
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'GET_PUBLIC_PROPERTY_ERROR',
+        error: err.message || 'Failed to retrieve public property.'
+      };
+    }
+  }
+
+  /**
+   * Search and list published properties for tenant browsing.
+   * Only published listings are returned.
+   */
+  public getPublicProperties(query?: {
+    city?: string;
+    propertyType?: string;
+    limit?: number;
+  }): PropertyApiResponse<PropertySummary[]> {
+    try {
+      const published = Array.from(this.properties.values()).filter((p) => p.status === 'published');
+
+      let filtered = published;
+      if (query?.city) {
+        const queryCity = query.city.toLowerCase().trim();
+        filtered = filtered.filter((p) => p.location?.city?.toLowerCase().includes(queryCity));
+      }
+      if (query?.propertyType) {
+        filtered = filtered.filter((p) => p.propertyType === query.propertyType);
+      }
+
+      // Sort newest published first
+      filtered.sort((a, b) => {
+        const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+        const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      if (query?.limit && query.limit > 0) {
+        filtered = filtered.slice(0, query.limit);
+      }
+
+      const summaries = filtered.map(toPropertySummary);
+
+      return {
+        success: true,
+        status: 200,
+        data: summaries
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'LIST_PUBLIC_PROPERTIES_ERROR',
+        error: err.message || 'Failed to list public properties.'
       };
     }
   }

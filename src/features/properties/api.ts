@@ -36,6 +36,25 @@ const WP_API_BASE = siteConfig.api.wp;
 const APNASTAY_API_BASE = siteConfig.api.apnastay;
 
 /**
+ * Retrieve authorization and security headers including WordPress REST nonce if present.
+ */
+export function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...customHeaders
+  };
+
+  if (typeof window !== 'undefined') {
+    const wpNonce = (window as any).wpApiSettings?.nonce || (window as any).apnastaySettings?.nonce;
+    if (wpNonce) {
+      headers['X-WP-Nonce'] = wpNonce;
+    }
+  }
+
+  return headers;
+}
+
+/**
  * Resolve the current active user context for local simulations.
  */
 async function resolveRequestContext() {
@@ -1250,5 +1269,83 @@ export async function updatePropertyRules(
   } catch (err) {
     const ctx = await resolveRequestContext();
     return propertyBackend.updatePropertyRules(ctx, propertyId, rules);
+  }
+}
+
+/**
+ * Retrieve a published property for public tenant viewing.
+ * Endpoint: GET /wp-json/apnastay/v1/properties/{id}
+ */
+export async function getPublicProperty(
+  propertyId: string
+): Promise<PropertyApiResponse<Property>> {
+  try {
+    const res = await fetch(`${APNASTAY_API_BASE}/properties/${encodeURIComponent(propertyId)}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        return propertyBackend.getPublicProperty(propertyId);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'PROPERTY_NOT_FOUND',
+        error: data?.message || data?.error || 'Failed to retrieve property.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    return propertyBackend.getPublicProperty(propertyId);
+  }
+}
+
+/**
+ * Search and list published properties for tenant browsing.
+ * Endpoint: GET /wp-json/apnastay/v1/properties
+ */
+export async function getPublicProperties(query?: {
+  city?: string;
+  propertyType?: string;
+  limit?: number;
+}): Promise<PropertyApiResponse<PropertySummary[]>> {
+  try {
+    const params = new URLSearchParams();
+    if (query?.city) params.set('city', query.city);
+    if (query?.propertyType) params.set('propertyType', query.propertyType);
+    if (query?.limit) params.set('limit', String(query.limit));
+
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${APNASTAY_API_BASE}/properties${qs}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        return propertyBackend.getPublicProperties(query);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'LIST_PROPERTIES_FAILED',
+        error: data?.message || data?.error || 'Failed to list properties.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || data
+    };
+  } catch (err) {
+    return propertyBackend.getPublicProperties(query);
   }
 }

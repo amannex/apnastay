@@ -392,7 +392,7 @@ export interface PropertyTemplate {
 export interface CreatePropertyDraftPayload {
   propertyType: PropertyType;
   customPropertyType?: string;
-  rentalStructure: RentalStructure;
+  rentalStructure?: RentalStructure;
   title?: string;
   description?: string;
   availability?: PropertyAvailability;
