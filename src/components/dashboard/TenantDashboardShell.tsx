@@ -21,6 +21,7 @@ import {
   X,
   ExternalLink,
   Loader2,
+  ArrowLeft,
 } from 'lucide-react';
 import { getSessionRole } from '../../lib/auth/session';
 import { useAuth } from '../../context/AuthContext';
@@ -100,6 +101,14 @@ function TenantDashboardShellInner({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] transition-all"
+            title="Return to Home without logging out"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Home</span>
+          </Link>
           <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 uppercase">
             Tenant RBAC
           </span>
@@ -116,11 +125,37 @@ function TenantDashboardShellInner({
 
       {/* SIDEBAR NAVIGATION */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#EDEDED] flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed lg:sticky lg:top-0 lg:h-screen inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#EDEDED] flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="p-5 overflow-y-auto">
+          {/* BRAND HEADER & RETURN TO HOME */}
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#EDEDED]">
+            <Link
+              href="/"
+              className="flex items-center gap-2 group transition-transform"
+              title="Return to ApnaStay Home"
+            >
+              <img
+                src="/logo-icon.png"
+                alt="ApnaStay Logo"
+                className="h-7 w-auto group-hover:scale-105 transition-transform object-contain"
+              />
+              <span className="font-bold text-sm tracking-tight text-[#1D1D1F]">
+                ApnaStay<span className="text-[#E1224D]">.</span>
+              </span>
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#86868B] hover:text-[#1D1D1F] px-2 py-1 rounded-lg hover:bg-[#F5F5F7] transition-all"
+              title="Return to Home without logging out"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>Home</span>
+            </Link>
+          </div>
+
           {/* USER IDENTITY CARD */}
           <div className="p-3.5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] mb-6">
             <div className="flex items-center gap-3">
@@ -175,8 +210,15 @@ function TenantDashboardShellInner({
           </nav>
         </div>
 
-        {/* BOTTOM LOGOUT BUTTON */}
-        <div className="p-4 border-t border-[#EDEDED]">
+        {/* BOTTOM ACTIONS */}
+        <div className="p-4 border-t border-[#EDEDED] space-y-2">
+          <Link
+            href="/"
+            className="w-full py-2.5 px-3 rounded-xl hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold inline-flex items-center justify-center gap-2 transition-all border border-[#EDEDED]"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#86868B]" />
+            <span>Back to Home</span>
+          </Link>
           <button
             onClick={handleLogout}
             className="w-full py-2.5 px-3 rounded-xl hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-bold inline-flex items-center justify-center gap-2 transition-all"

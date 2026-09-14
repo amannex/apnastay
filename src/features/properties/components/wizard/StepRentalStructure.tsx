@@ -95,17 +95,14 @@ export default function StepRentalStructure({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* SECTION HEADING */}
-      <div className="text-center max-w-2xl mx-auto">
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#86868B] px-3 py-1 rounded-full bg-[#F5F5F7]">
-          Step 2 of 2
-        </span>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight mt-3">
-          What are you offering for rent?
+      <div className="text-center max-w-xl mx-auto">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
+          How will tenants rent?
         </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 leading-relaxed">
-          Select how tenants will book or rent your{' '}
+        <p className="text-xs sm:text-sm text-[#86868B] mt-1.5">
+          Choose the booking model for your{' '}
           <span className="font-bold text-[#1D1D1F]">{template.label}</span>.
         </p>
       </div>
@@ -123,17 +120,17 @@ export default function StepRentalStructure({
               key={option.id}
               type="button"
               onClick={() => onSelectStructure(option.id)}
-              className={`text-left p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all duration-200 relative group flex flex-col justify-between ${
+              className={`text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 relative group flex flex-col justify-between ${
                 isSelected
-                  ? 'border-[#1D1D1F] bg-[#1D1D1F]/[0.02] shadow-apple-sm ring-1 ring-[#1D1D1F]'
+                  ? 'border-primary bg-primary/[0.03] shadow-sm ring-1 ring-primary'
                   : 'border-[#EDEDED] bg-white hover:border-[#D1D1D6] hover:shadow-sm'
               } ${!isAllowed ? 'opacity-70' : ''}`}
             >
               <div className="flex items-start justify-between w-full mb-3">
                 <div
-                  className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-colors ${
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                     isSelected
-                      ? 'bg-[#1D1D1F] text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-[#F5F5F7] text-[#1D1D1F] group-hover:bg-[#E5E5EA]'
                   }`}
                 >
@@ -142,13 +139,12 @@ export default function StepRentalStructure({
 
                 <div className="flex items-center gap-1.5">
                   {isRecommended && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-wider">
-                      <Sparkles className="w-3 h-3 text-emerald-600" />
-                      <span>Recommended</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-wider">
+                      Recommended
                     </span>
                   )}
                   {isSelected && (
-                    <CheckCircle2 className="w-5 h-5 text-[#1D1D1F] animate-fade-in" />
+                    <CheckCircle2 className="w-5 h-5 text-primary animate-fade-in" />
                   )}
                 </div>
               </div>
@@ -168,18 +164,10 @@ export default function StepRentalStructure({
 
       {/* DYNAMIC FLOW EXPLANATION BOX */}
       {selectedStructure && (
-        <div className="max-w-2xl mx-auto bg-gradient-to-br from-[#F5F5F7] to-white border border-[#EDEDED] rounded-2xl p-4 sm:p-5 shadow-apple-sm animate-fade-in text-center sm:text-left flex items-start gap-3.5">
-          <div className="w-9 h-9 rounded-xl bg-white border border-[#EDEDED] flex items-center justify-center shrink-0 shadow-sm hidden sm:flex text-[#1D1D1F]">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div>
-            <span className="text-[10px] font-extrabold text-[#86868B] uppercase tracking-wider">
-              Tailored Listing Experience
-            </span>
-            <p className="text-xs sm:text-sm text-[#1D1D1F] mt-0.5 font-medium leading-relaxed">
-              {getFlowExplanation(selectedStructure)}
-            </p>
-          </div>
+        <div className="max-w-2xl mx-auto bg-[#FAFAFA] border border-[#EDEDED] rounded-2xl p-4 text-center sm:text-left">
+          <p className="text-xs text-[#1D1D1F] font-medium leading-relaxed">
+            {getFlowExplanation(selectedStructure)}
+          </p>
         </div>
       )}
 
@@ -189,7 +177,7 @@ export default function StepRentalStructure({
           type="button"
           onClick={onBack}
           disabled={isSubmitting}
-          className="px-5 py-3 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all disabled:opacity-50"
+          className="px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all disabled:opacity-50"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -199,7 +187,7 @@ export default function StepRentalStructure({
           type="button"
           onClick={onContinue}
           disabled={selectedStructure === null || isSubmitting}
-          className="px-6 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -208,7 +196,7 @@ export default function StepRentalStructure({
             </>
           ) : (
             <>
-              <span>Create Property Draft</span>
+              <span>Continue</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}

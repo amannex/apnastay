@@ -575,7 +575,7 @@ export default function StepUnits({
       {/* HEADER */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Layers className="w-5 h-5" />
           </div>
           <div>
@@ -623,19 +623,19 @@ export default function StepUnits({
       {/* SUMMARY BAR */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F5F7] border border-[#EDEDED] text-xs font-bold text-[#1D1D1F]">
-          <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+          <Building2 className="w-3.5 h-3.5 text-[#1D1D1F]" />
           <span>
             {totalUnits} {totalUnits === 1 ? terminology.singular : terminology.plural}
           </span>
         </div>
         {terminology.hasBeds && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F5F7] border border-[#EDEDED] text-xs font-bold text-[#1D1D1F]">
-            <BedDouble className="w-3.5 h-3.5 text-violet-600" />
+            <BedDouble className="w-3.5 h-3.5 text-[#1D1D1F]" />
             <span>{totalBeds} Beds</span>
           </div>
         )}
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F5F5F7] border border-[#EDEDED] text-xs font-bold text-[#1D1D1F]">
-          <Users className="w-3.5 h-3.5 text-emerald-600" />
+          <Users className="w-3.5 h-3.5 text-[#1D1D1F]" />
           <span>Capacity: {totalCapacity}</span>
         </div>
         {incompleteCount > 0 && (
@@ -652,7 +652,7 @@ export default function StepUnits({
           type="button"
           onClick={handleOpenAddModal}
           disabled={isLoading}
-          className="px-4 py-2.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
+          className="px-4 py-2.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{terminology.addLabel}</span>
@@ -661,7 +661,7 @@ export default function StepUnits({
           type="button"
           onClick={handleOpenBulkModal}
           disabled={isLoading}
-          className="px-4 py-2.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold inline-flex items-center gap-1.5 transition-all disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
+          className="px-4 py-2.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold inline-flex items-center gap-1.5 transition-all disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         >
           <Layers className="w-3.5 h-3.5" />
           <span>{terminology.bulkLabel}</span>
@@ -710,7 +710,7 @@ export default function StepUnits({
                 {/* UNIT CARD HEADER */}
                 <div className="p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#F5F5F7] text-[#1D1D1F] flex items-center justify-center shrink-0">
                       <Home className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
@@ -721,7 +721,7 @@ export default function StepUnits({
                           onChange={(e) =>
                             setEditForm((f) => ({ ...f, nameOrNumber: e.target.value }))
                           }
-                          className="text-sm font-extrabold text-[#1D1D1F] border-b border-indigo-400 bg-transparent outline-none w-full"
+                          className="text-sm font-extrabold text-[#1D1D1F] border-b border-primary bg-transparent outline-none w-full"
                         />
                       ) : (
                         <p className="text-sm font-extrabold text-[#1D1D1F] truncate">
@@ -834,7 +834,7 @@ export default function StepUnits({
                         onChange={(e) =>
                           setEditForm((f) => ({ ...f, unitType: e.target.value }))
                         }
-                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       >
                         <option value="">None</option>
                         {terminology.defaultUnitTypes.map((t) => (
@@ -856,7 +856,7 @@ export default function StepUnits({
                             capacity: Math.max(1, parseInt(e.target.value, 10) || 1),
                           }))
                         }
-                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       />
                     </div>
                     <div>
@@ -874,7 +874,7 @@ export default function StepUnits({
                             },
                           }))
                         }
-                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       />
                     </div>
                     <div>
@@ -887,7 +887,7 @@ export default function StepUnits({
                             availability: e.target.value as any,
                           }))
                         }
-                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                        className="w-full px-2.5 py-2 rounded-lg border border-[#EDEDED] bg-[#F5F5F7] text-xs font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       >
                         <option value="available">Available</option>
                         <option value="occupied">Occupied</option>
@@ -909,7 +909,7 @@ export default function StepUnits({
                         type="button"
                         onClick={() => handleAddBed(unit)}
                         disabled={isLoading}
-                        className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1 transition-all disabled:opacity-50"
+                        className="text-[11px] font-bold text-primary hover:text-primary-hover inline-flex items-center gap-1 transition-all disabled:opacity-50"
                       >
                         <Plus className="w-3 h-3" />
                         <span>Add Bed</span>
@@ -984,14 +984,14 @@ export default function StepUnits({
           className="px-5 py-3 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Amenities</span>
+          <span>Back</span>
         </button>
 
         <button
           type="button"
           onClick={() => onSave(units)}
           disabled={isSaving || isLoading}
-          className="px-6 py-3 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
+          className="px-6 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
         >
           {isSaving ? (
             <>
@@ -1038,7 +1038,7 @@ export default function StepUnits({
                     setAddForm((f) => ({ ...f, nameOrNumber: e.target.value }))
                   }
                   placeholder={terminology.placeholder}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200 placeholder:text-[#AEAEB2]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-[#AEAEB2]"
                 />
               </div>
 
@@ -1053,7 +1053,7 @@ export default function StepUnits({
                     onChange={(e) =>
                       setAddForm((f) => ({ ...f, unitType: e.target.value }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   >
                     <option value="">Select type</option>
                     {terminology.defaultUnitTypes.map((t) => (
@@ -1081,7 +1081,7 @@ export default function StepUnits({
                         capacity: Math.max(1, parseInt(e.target.value, 10) || 1),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -1097,7 +1097,7 @@ export default function StepUnits({
                       setAddForm((f) => ({ ...f, floor: e.target.value }))
                     }
                     placeholder="e.g. 1"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200 placeholder:text-[#AEAEB2]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-[#AEAEB2]"
                   />
                 </div>
               </div>
@@ -1118,7 +1118,7 @@ export default function StepUnits({
                         monthlyRent: Math.max(0, parseInt(e.target.value, 10) || 0),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -1137,7 +1137,7 @@ export default function StepUnits({
                         securityDeposit: Math.max(0, parseInt(e.target.value, 10) || 0),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
@@ -1159,7 +1159,7 @@ export default function StepUnits({
                         bedsCount: Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0)),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                   <p className="text-[10px] text-[#AEAEB2] mt-1">
                     Beds will be labeled A, B, C... automatically.
@@ -1230,7 +1230,7 @@ export default function StepUnits({
                         count: Math.max(1, Math.min(100, parseInt(e.target.value, 10) || 1)),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -1246,7 +1246,7 @@ export default function StepUnits({
                       setBulkForm((f) => ({ ...f, prefix: e.target.value }))
                     }
                     placeholder={terminology.singular}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200 placeholder:text-[#AEAEB2]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-[#AEAEB2]"
                   />
                 </div>
               </div>
@@ -1267,7 +1267,7 @@ export default function StepUnits({
                         startingNumber: Math.max(1, parseInt(e.target.value, 10) || 1),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -1281,7 +1281,7 @@ export default function StepUnits({
                     onChange={(e) =>
                       setBulkForm((f) => ({ ...f, unitType: e.target.value }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   >
                     <option value="">Select type</option>
                     {terminology.defaultUnitTypes.map((t) => (
@@ -1309,7 +1309,7 @@ export default function StepUnits({
                         capacityPerUnit: Math.max(1, parseInt(e.target.value, 10) || 1),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -1330,7 +1330,7 @@ export default function StepUnits({
                           bedsPerUnit: Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0)),
                         }))
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                   </div>
                 )}
@@ -1352,7 +1352,7 @@ export default function StepUnits({
                         monthlyRent: Math.max(0, parseInt(e.target.value, 10) || 0),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -1371,14 +1371,14 @@ export default function StepUnits({
                         securityDeposit: Math.max(0, parseInt(e.target.value, 10) || 0),
                       }))
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-[#F5F5F7] text-sm font-semibold text-[#1D1D1F] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
 
               {/* Preview */}
-              <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-800 font-semibold">
-                <Sparkles className="w-3.5 h-3.5 inline mr-1" />
+              <div className="p-3 rounded-xl bg-primary/[0.04] border border-primary/20 text-xs text-[#1D1D1F] font-semibold">
+                <Sparkles className="w-3.5 h-3.5 inline mr-1 text-primary" />
                 Preview: Will create{' '}
                 <strong>
                   {bulkForm.count} {bulkForm.count === 1 ? terminology.singular : terminology.plural}

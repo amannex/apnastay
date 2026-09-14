@@ -22,6 +22,7 @@ import {
   ExternalLink,
   Loader2,
   AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { getSessionRole } from '../../lib/auth/session';
 import { useAuth } from '../../context/AuthContext';
@@ -31,17 +32,26 @@ import type { UserProfile } from '../../features/auth/types';
 export interface OwnerDashboardShellProps {
   children: React.ReactNode;
   activeTab?: string;
+  hideSidebar?: boolean;
 }
 
 function OwnerDashboardShellInner({
   children,
   activeTab = 'overview',
+  hideSidebar,
 }: OwnerDashboardShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const rbacBlocked = searchParams.get('rbac_blocked') === 'tenant_portal';
   const wpAdminBlocked = searchParams.get('wp_admin_blocked') === '1';
+
+  const isAddingOrEditingProperty =
+    hideSidebar ??
+    Boolean(
+      pathname?.includes('/owner/dashboard/properties/new') ||
+      (pathname?.includes('/owner/dashboard/properties/') && pathname?.includes('/edit'))
+    );
 
   const { user, loading: loadingAuth, logout, authenticated } = useAuth();
   const [isTenantForbidden, setIsTenantForbidden] = useState(false);
@@ -122,6 +132,108 @@ function OwnerDashboardShellInner({
 
   const verificationStatus = getOwnerVerificationStatus(user);
 
+  const renderWarningBanners = () => (
+    <>
+      {/* RBAC INTERCEPTION WARNING BANNER */}
+      {rbacBlocked && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 sm:p-5 mb-6 flex items-start gap-3.5 shadow-sm animate-fade-in">
+          <div className="p-2 rounded-xl bg-amber-100 text-amber-600 shrink-0">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="font-extrabold text-sm">
+                RBAC Access Control Enforced — Tenant Route Intercepted
+              </h4>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-800 uppercase">
+                Redirected
+              </span>
+            </div>
+            <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+              Your attempt to access the Tenant Dashboard (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/dashboard</code>) was intercepted. As an Owner (<span className="font-bold underline">apnastay_owner</span>), you have been redirected to your authoritative Owner Portal.
+            </p>
+          </div>
+        </div>
+      )}
+      {/* WP ADMIN ATTEMPT WARNING BANNER */}
+      {wpAdminBlocked && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 sm:p-5 mb-6 flex items-start gap-3.5 shadow-sm animate-fade-in">
+          <div className="p-2 rounded-xl bg-amber-100 text-amber-600 shrink-0">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="font-extrabold text-sm">
+                WordPress Admin Access Denied — Headless Operation Enforced
+              </h4>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-800 uppercase">
+                WP-Admin 403
+              </span>
+            </div>
+            <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+              Your attempt to access the WordPress backend (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/wp-admin/</code>) was intercepted. Landlord accounts interact exclusively through the ApnaStay Next.js application.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  // FULL-PAGE LAYOUT WITHOUT SIDEBAR FOR PROPERTY CREATION & EDITING
+  if (isAddingOrEditingProperty) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+        {/* FULL-PAGE PROPERTY LISTING STUDIO HEADER */}
+        <header className="bg-white border-b border-[#EDEDED] px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-2 group transition-transform"
+              title="Return to ApnaStay Home"
+            >
+              <img
+                src="/logo-icon.png"
+                alt="ApnaStay Logo"
+                className="h-8 w-auto group-hover:scale-105 transition-transform object-contain"
+              />
+              <span className="font-bold text-base tracking-tight text-[#1D1D1F]">
+                ApnaStay<span className="text-[#E1224D]">.</span>
+              </span>
+            </Link>
+            <span className="text-xs font-semibold text-[#86868B] hidden sm:inline">/</span>
+            <span className="text-xs font-bold text-[#1D1D1F] hidden sm:inline">
+              Landlord Studio
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/owner/dashboard/properties"
+              className="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] transition-all shadow-apple-xs active:scale-[0.98]"
+              title="Exit to properties dashboard"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-[#86868B]" />
+              <span>Exit to Properties</span>
+            </Link>
+            <Link
+              href="/"
+              className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-[#86868B] hover:text-[#1D1D1F] px-2.5 py-1.5 rounded-lg hover:bg-[#F5F5F7] transition-all"
+              title="Return to home without logging out"
+            >
+              Home
+            </Link>
+          </div>
+        </header>
+
+        {/* FULL-PAGE MAIN CONTENT AREA */}
+        <main className="flex-1 min-w-0 py-6 px-4 sm:px-8 max-w-6xl mx-auto w-full">
+          {renderWarningBanners()}
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col lg:flex-row">
       {/* MOBILE HEADER */}
@@ -139,6 +251,14 @@ function OwnerDashboardShellInner({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] transition-all"
+            title="Return to Home without logging out"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Home</span>
+          </Link>
           <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-[#F5F5F7] text-[#1D1D1F] uppercase">
             Owner RBAC
           </span>
@@ -155,11 +275,37 @@ function OwnerDashboardShellInner({
 
       {/* SIDEBAR NAVIGATION */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#EDEDED] flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed lg:sticky lg:top-0 lg:h-screen inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#EDEDED] flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="p-5 overflow-y-auto">
+          {/* BRAND HEADER & RETURN TO HOME */}
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#EDEDED]">
+            <Link
+              href="/"
+              className="flex items-center gap-2 group transition-transform"
+              title="Return to ApnaStay Home"
+            >
+              <img
+                src="/logo-icon.png"
+                alt="ApnaStay Logo"
+                className="h-7 w-auto group-hover:scale-105 transition-transform object-contain"
+              />
+              <span className="font-bold text-sm tracking-tight text-[#1D1D1F]">
+                ApnaStay<span className="text-[#E1224D]">.</span>
+              </span>
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#86868B] hover:text-[#1D1D1F] px-2 py-1 rounded-lg hover:bg-[#F5F5F7] transition-all"
+              title="Return to Home without logging out"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>Home</span>
+            </Link>
+          </div>
+
           {/* USER IDENTITY & KYC BADGE CARD */}
           <div className="p-3.5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] mb-6">
             <div className="flex items-center gap-3">
@@ -220,8 +366,15 @@ function OwnerDashboardShellInner({
           </nav>
         </div>
 
-        {/* BOTTOM LOGOUT BUTTON */}
-        <div className="p-4 border-t border-[#EDEDED]">
+        {/* BOTTOM ACTIONS */}
+        <div className="p-4 border-t border-[#EDEDED] space-y-2">
+          <Link
+            href="/"
+            className="w-full py-2.5 px-3 rounded-xl hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold inline-flex items-center justify-center gap-2 transition-all border border-[#EDEDED]"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#86868B]" />
+            <span>Back to Home</span>
+          </Link>
           <button
             onClick={handleLogout}
             className="w-full py-2.5 px-3 rounded-xl hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-bold inline-flex items-center justify-center gap-2 transition-all"
@@ -234,49 +387,7 @@ function OwnerDashboardShellInner({
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 min-w-0 py-8 px-4 sm:px-8 max-w-7xl">
-        {/* RBAC INTERCEPTION WARNING BANNER */}
-        {rbacBlocked && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 sm:p-5 mb-6 flex items-start gap-3.5 shadow-sm animate-fade-in">
-            <div className="p-2 rounded-xl bg-amber-100 text-amber-600 shrink-0">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-extrabold text-sm">
-                  RBAC Access Control Enforced — Tenant Route Intercepted
-                </h4>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-800 uppercase">
-                  Redirected
-                </span>
-              </div>
-              <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                Your attempt to access the Tenant Dashboard (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/dashboard</code>) was intercepted. As an Owner (<span className="font-bold underline">apnastay_owner</span>), you have been redirected to your authoritative Owner Portal.
-              </p>
-            </div>
-          </div>
-        )}
-        {/* WP ADMIN ATTEMPT WARNING BANNER */}
-        {wpAdminBlocked && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 sm:p-5 mb-6 flex items-start gap-3.5 shadow-sm animate-fade-in">
-            <div className="p-2 rounded-xl bg-amber-100 text-amber-600 shrink-0">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-extrabold text-sm">
-                  WordPress Admin Access Denied — Headless Operation Enforced
-                </h4>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-800 uppercase">
-                  WP-Admin 403
-                </span>
-              </div>
-              <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                Your attempt to access the WordPress backend (<code className="font-mono bg-amber-100 px-1 py-0.5 rounded text-amber-800">/wp-admin/</code>) was intercepted. Landlord accounts interact exclusively through the ApnaStay Next.js application.
-              </p>
-            </div>
-          </div>
-        )}
-
+        {renderWarningBanners()}
         {children}
       </main>
     </div>

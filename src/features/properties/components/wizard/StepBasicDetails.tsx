@@ -158,37 +158,27 @@ export default function StepBasicDetails({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in" noValidate>
       {/* SECTION HEADER */}
-      <div className="border-b border-[#EDEDED] pb-5">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F5F5F7] text-[#1D1D1F] text-[11px] font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Step 3 of 3 • Basic Details</span>
-          </span>
-          <span className="text-xs text-[#86868B]">
-            {customPropertyType || template.label} • {rentalStructure.replace(/_/g, ' ')}
-          </span>
-        </div>
-
+      <div className="border-b border-[#EDEDED] pb-4">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          Basic Property Details
+          Basic Details
         </h2>
         <p className="text-xs sm:text-sm text-[#86868B] mt-1">
-          Tell us a little about your property. This helps tenants easily identify and find your listing.
+          Provide essential information to identify your listing.
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* 1. PROPERTY NAME / TITLE */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="property-title" className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5">
+            <label htmlFor="property-title" className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1">
               <span>{config.titleLabel}</span>
-              <span className="text-rose-500">*</span>
+              <span className="text-primary">*</span>
             </label>
             <span className="text-xs text-[#86868B]">
-              {title.length} / 120 chars
+              {title.length} / 120
             </span>
           </div>
 
@@ -203,18 +193,12 @@ export default function StepBasicDetails({
             onBlur={() => handleBlur('title')}
             placeholder={config.titlePlaceholder}
             maxLength={120}
-            className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all ${
+            className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:outline-none transition-all ${
               errors.title
-                ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
+                ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-50'
+                : 'border-[#EDEDED] focus:border-primary focus:ring-2 focus:ring-primary/10'
             }`}
           />
-
-          {config.titleHelp && !errors.title && (
-            <p className="text-xs text-[#86868B] flex items-center gap-1">
-              <span>{config.titleHelp}</span>
-            </p>
-          )}
 
           {errors.title && (
             <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
@@ -225,11 +209,11 @@ export default function StepBasicDetails({
         </div>
 
         {/* 2. DESCRIPTION */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="property-description" className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5">
+            <label htmlFor="property-description" className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1">
               <span>{config.descriptionLabel}</span>
-              <span className="text-rose-500">*</span>
+              <span className="text-primary">*</span>
             </label>
             <span className="text-xs text-[#86868B]">
               {description.length} chars
@@ -238,7 +222,7 @@ export default function StepBasicDetails({
 
           <textarea
             id="property-description"
-            rows={5}
+            rows={4}
             value={description}
             onChange={(e) => {
               setDescription(e.target.value);
@@ -246,19 +230,12 @@ export default function StepBasicDetails({
             }}
             onBlur={() => handleBlur('description')}
             placeholder={config.descriptionPlaceholder}
-            className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all resize-y ${
+            className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:outline-none transition-all resize-y ${
               errors.description
-                ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
+                ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-50'
+                : 'border-[#EDEDED] focus:border-primary focus:ring-2 focus:ring-primary/10'
             }`}
           />
-
-          {config.descriptionHelp && !errors.description && (
-            <div className="p-3.5 rounded-xl bg-[#F5F5F7] border border-[#EDEDED] flex items-start gap-2.5 text-xs text-[#86868B]">
-              <HelpCircle className="w-4 h-4 text-[#1D1D1F] shrink-0 mt-0.5" />
-              <p className="leading-relaxed">{config.descriptionHelp}</p>
-            </div>
-          )}
 
           {errors.description && (
             <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
@@ -269,14 +246,11 @@ export default function StepBasicDetails({
         </div>
 
         {/* 3. AVAILABILITY */}
-        <div className="space-y-3 pt-2">
-          <div>
-            <label className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5">
-              <span>{config.availabilityLabel}</span>
-              <span className="text-rose-500">*</span>
-            </label>
-            <p className="text-xs text-[#86868B] mt-0.5">{config.availabilityHelp}</p>
-          </div>
+        <div className="space-y-2 pt-1">
+          <label className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1">
+            <span>{config.availabilityLabel}</span>
+            <span className="text-primary">*</span>
+          </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Option A: Available Now */}
@@ -288,14 +262,14 @@ export default function StepBasicDetails({
               }}
               className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition-all ${
                 availType === 'immediate'
-                  ? 'bg-emerald-50/60 border-emerald-500 shadow-sm'
+                  ? 'border-primary bg-primary/[0.03] ring-1 ring-primary shadow-sm'
                   : 'bg-white border-[#EDEDED] hover:border-[#D1D1D6]'
               }`}
             >
               <div
                 className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                   availType === 'immediate'
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-[#F5F5F7] text-[#86868B]'
                 }`}
               >
@@ -306,7 +280,7 @@ export default function StepBasicDetails({
                   Available Now
                 </div>
                 <div className="text-xs text-[#86868B] mt-0.5">
-                  Tenants can move in immediately
+                  Ready for immediate move-in
                 </div>
               </div>
             </button>
@@ -319,33 +293,25 @@ export default function StepBasicDetails({
               }}
               className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition-all ${
                 availType === 'specific_date'
-                  ? 'bg-[#1D1D1F] text-white border-[#1D1D1F] shadow-sm'
+                  ? 'border-primary bg-primary/[0.03] ring-1 ring-primary shadow-sm'
                   : 'bg-white border-[#EDEDED] hover:border-[#D1D1D6]'
               }`}
             >
               <div
                 className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                   availType === 'specific_date'
-                    ? 'bg-white/20 text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-[#F5F5F7] text-[#86868B]'
                 }`}
               >
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <div
-                  className={`text-sm font-bold ${
-                    availType === 'specific_date' ? 'text-white' : 'text-[#1D1D1F]'
-                  }`}
-                >
-                  Available From Date
+                <div className="text-sm font-bold text-[#1D1D1F]">
+                  Future Date
                 </div>
-                <div
-                  className={`text-xs mt-0.5 ${
-                    availType === 'specific_date' ? 'text-white/80' : 'text-[#86868B]'
-                  }`}
-                >
-                  Specify a future date
+                <div className="text-xs text-[#86868B] mt-0.5">
+                  Available from a specific date
                 </div>
               </div>
             </button>
@@ -353,11 +319,11 @@ export default function StepBasicDetails({
 
           {/* Conditional Date Input */}
           {availType === 'specific_date' && (
-            <div className="p-4 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-2 animate-fade-in">
+            <div className="p-4 rounded-2xl bg-[#FAFAFA] border border-[#EDEDED] space-y-2 animate-fade-in">
               <label htmlFor="avail-date-input" className="text-xs font-bold text-[#1D1D1F] flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Move-In Availability Date</span>
-                <span className="text-rose-500">*</span>
+                <Clock className="w-3.5 h-3.5 text-primary" />
+                <span>Move-In Date</span>
+                <span className="text-primary">*</span>
               </label>
 
               <input
@@ -370,10 +336,10 @@ export default function StepBasicDetails({
                   if (errors.availDate) setErrors((prev) => ({ ...prev, availDate: undefined }));
                 }}
                 onBlur={() => handleBlur('availDate')}
-                className={`w-full sm:w-64 px-4 py-2.5 rounded-xl bg-white border text-sm text-[#1D1D1F] focus:outline-none transition-all ${
+                className={`w-full sm:w-64 px-4 py-2.5 rounded-xl bg-white border text-sm text-[#1D1D1F] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all ${
                   errors.availDate
                     ? 'border-rose-300 focus:border-rose-500'
-                    : 'border-[#EDEDED] focus:border-[#1D1D1F]'
+                    : 'border-[#EDEDED]'
                 }`}
               />
 
@@ -388,10 +354,10 @@ export default function StepBasicDetails({
         </div>
 
         {/* 4. BASIC STARTING RENT */}
-        <div className="space-y-2 pt-2">
-          <label htmlFor="property-rent" className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5">
+        <div className="space-y-1.5 pt-1">
+          <label htmlFor="property-rent" className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1">
             <span>{config.priceLabel}</span>
-            <span className="text-rose-500">*</span>
+            <span className="text-primary">*</span>
           </label>
 
           <div className="relative max-w-sm">
@@ -404,24 +370,19 @@ export default function StepBasicDetails({
               inputMode="numeric"
               value={monthlyRent}
               onChange={(e) => {
-                // allow digits only
                 const val = e.target.value.replace(/[^0-9]/g, '');
                 setMonthlyRent(val);
                 if (errors.monthlyRent) setErrors((prev) => ({ ...prev, monthlyRent: undefined }));
               }}
               onBlur={() => handleBlur('monthlyRent')}
               placeholder={config.pricePlaceholder}
-              className={`w-full pl-9 pr-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-base font-bold text-[#1D1D1F] placeholder:text-[#86868B] placeholder:font-normal focus:bg-white focus:outline-none transition-all ${
+              className={`w-full pl-9 pr-4 py-3 rounded-xl bg-white border text-base font-bold text-[#1D1D1F] placeholder:text-[#86868B] placeholder:font-normal focus:outline-none transition-all ${
                 errors.monthlyRent
-                  ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                  : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
+                  ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-50'
+                  : 'border-[#EDEDED] focus:border-primary focus:ring-2 focus:ring-primary/10'
               }`}
             />
           </div>
-
-          <p className="text-xs text-[#86868B] leading-relaxed">
-            {config.priceHelp}
-          </p>
 
           {errors.monthlyRent && (
             <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
@@ -433,12 +394,12 @@ export default function StepBasicDetails({
       </div>
 
       {/* FORM NAVIGATION BUTTONS */}
-      <div className="pt-6 border-t border-[#EDEDED] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4">
+      <div className="pt-6 border-t border-[#EDEDED] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
         <button
           type="button"
           onClick={handleBackClick}
           disabled={isSaving}
-          className="px-6 py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-[#E5E5EA] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          className="px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -447,9 +408,9 @@ export default function StepBasicDetails({
         <button
           type="submit"
           disabled={isSaving}
-          className="px-8 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+          className="px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
         >
-          <span>{isSaving ? 'Saving Draft...' : 'Save & Continue'}</span>
+          <span>{isSaving ? 'Saving...' : 'Continue'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

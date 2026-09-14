@@ -65,23 +65,23 @@ export default function StepReview({
     switch (key) {
       case 'property_type':
       case 'rental_structure':
-        return <Building2 className="w-4 h-4 text-indigo-600" />;
+        return <Building2 className="w-4 h-4 text-[#1D1D1F]" />;
       case 'basic_details':
-        return <FileText className="w-4 h-4 text-blue-600" />;
+        return <FileText className="w-4 h-4 text-[#1D1D1F]" />;
       case 'location':
-        return <MapPin className="w-4 h-4 text-rose-500" />;
+        return <MapPin className="w-4 h-4 text-[#1D1D1F]" />;
       case 'photos':
-        return <Camera className="w-4 h-4 text-amber-500" />;
+        return <Camera className="w-4 h-4 text-[#1D1D1F]" />;
       case 'amenities':
-        return <Sparkles className="w-4 h-4 text-emerald-600" />;
+        return <Sparkles className="w-4 h-4 text-[#1D1D1F]" />;
       case 'units':
-        return <Layers className="w-4 h-4 text-violet-600" />;
+        return <Layers className="w-4 h-4 text-[#1D1D1F]" />;
       case 'pricing':
-        return <IndianRupee className="w-4 h-4 text-emerald-600" />;
+        return <IndianRupee className="w-4 h-4 text-[#1D1D1F]" />;
       case 'availability':
-        return <Calendar className="w-4 h-4 text-indigo-600" />;
+        return <Calendar className="w-4 h-4 text-[#1D1D1F]" />;
       case 'rules':
-        return <ShieldAlert className="w-4 h-4 text-purple-600" />;
+        return <ShieldAlert className="w-4 h-4 text-[#1D1D1F]" />;
     }
   };
 
@@ -137,7 +137,7 @@ export default function StepReview({
         );
       case 'pricing':
         return (
-          <span className="font-bold text-xs text-emerald-600">
+          <span className="font-bold text-xs text-primary">
             {property.pricing?.pricingMode === 'on_request'
               ? 'Price on Request'
               : property.pricing?.monthlyRent
@@ -174,14 +174,17 @@ export default function StepReview({
       {/* ==================================================================== */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F5F7] border border-[#EDEDED] text-[11px] font-bold text-[#1D1D1F] uppercase tracking-wider mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Step 10: Final Review & Publish Readiness</span>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#1D1D1F] tracking-tight">
+                Review Your Property Listing
+              </h2>
+            </div>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-            Review Your Property Listing
-          </h2>
-          <p className="text-xs sm:text-sm text-[#86868B] mt-1">
+          <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 leading-relaxed max-w-2xl">
             Audit listing completeness, view what tenants see, and publish when ready.
           </p>
         </div>
@@ -197,7 +200,7 @@ export default function StepReview({
                 : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <ListChecks className="w-3.5 h-3.5 text-indigo-600" />
+            <ListChecks className="w-3.5 h-3.5 text-[#1D1D1F]" />
             <span>Owner Audit</span>
           </button>
 
@@ -210,7 +213,7 @@ export default function StepReview({
                 : 'text-[#86868B] hover:text-[#1D1D1F]'
             }`}
           >
-            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+            <Eye className="w-3.5 h-3.5 text-[#1D1D1F]" />
             <span>Tenant Preview</span>
           </button>
         </div>
@@ -221,15 +224,15 @@ export default function StepReview({
       {/* ==================================================================== */}
       {viewMode === 'preview' && (
         <div className="space-y-4 animate-fade-in">
-          <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between text-xs text-indigo-900">
+          <div className="p-3.5 rounded-2xl bg-primary/[0.04] border border-primary/20 flex items-center justify-between text-xs text-[#1D1D1F]">
             <span className="font-semibold flex items-center gap-2">
-              <Eye className="w-4 h-4 text-indigo-600" />
+              <Eye className="w-4 h-4 text-primary" />
               <span>This is how your live listing appears to prospective tenants on ApnaStay.</span>
             </span>
             <button
               type="button"
               onClick={() => setViewMode('audit')}
-              className="font-bold underline hover:text-indigo-700"
+              className="font-bold underline hover:text-primary"
             >
               Back to Checklist
             </button>
@@ -292,10 +295,10 @@ export default function StepReview({
               <div
                 className={`h-full transition-all duration-500 rounded-full ${
                   evaluation.score >= 90
-                    ? 'bg-emerald-500'
+                    ? 'bg-primary'
                     : evaluation.score >= 60
-                    ? 'bg-indigo-600'
-                    : 'bg-amber-500'
+                    ? 'bg-[#1D1D1F]'
+                    : 'bg-[#86868B]'
                 }`}
                 style={{ width: `${evaluation.score}%` }}
               />
@@ -438,7 +441,7 @@ export default function StepReview({
           className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Rules</span>
+          <span>Back</span>
         </button>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
@@ -470,7 +473,7 @@ export default function StepReview({
             disabled={!evaluation.isPublishable || isPublishing || isSaving}
             className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all shadow-apple-sm ${
               evaluation.isPublishable
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
+                ? 'bg-primary hover:bg-primary-hover text-white'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
             }`}
           >

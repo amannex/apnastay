@@ -292,14 +292,17 @@ export default function StepRules({
     <div className="space-y-8 animate-fade-in">
       {/* HEADER SECTION */}
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F5F7] border border-[#EDEDED] text-[11px] font-bold text-[#1D1D1F] uppercase tracking-wider mb-2">
-          <ShieldAlert className="w-3.5 h-3.5 text-indigo-600" />
-          <span>Step 9: Rules & Tenant Preferences</span>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#1D1D1F] tracking-tight">
+              House Rules & Tenant Suitability
+            </h2>
+          </div>
         </div>
-        <h2 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-          House Rules & Tenant Suitability
-        </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1">
+        <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 leading-relaxed max-w-2xl">
           Set clear, transparent guidelines to ensure guests and tenants know what to expect and whether this property matches their lifestyle.
         </p>
       </div>
@@ -324,7 +327,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-5">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <Users className="w-5 h-5 text-indigo-600" />
+          <Users className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               Occupancy & Resident Suitability
@@ -401,13 +404,13 @@ export default function StepRules({
                   onClick={() => handleToggleSuitability(opt.id)}
                   className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
                     isSelected
-                      ? 'bg-indigo-50 border-indigo-200 text-indigo-800'
+                      ? 'bg-primary/[0.04] border-primary text-primary shadow-sm'
                       : 'bg-white border-[#EDEDED] text-[#1D1D1F] hover:bg-[#F5F5F7]'
                   }`}
                 >
                   <span>{opt.iconLabel}</span>
                   <span>{opt.label}</span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 ml-1" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-primary ml-1" />}
                 </button>
               );
             })}
@@ -420,7 +423,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-4">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <UserCheck className="w-5 h-5 text-indigo-600" />
+          <UserCheck className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               Guest & Visitor Policy
@@ -474,7 +477,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-4">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <Utensils className="w-5 h-5 text-indigo-600" />
+          <Utensils className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               Food, Meals & Kitchen
@@ -559,7 +562,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-5">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <PawPrint className="w-5 h-5 text-indigo-600" />
+          <PawPrint className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               Pets, Smoking & Alcohol Policies
@@ -680,7 +683,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-4">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <Clock className="w-5 h-5 text-indigo-600" />
+          <Clock className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               Timing, Curfew & Quiet Hours
@@ -771,7 +774,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-4">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <FileCheck2 className="w-5 h-5 text-indigo-600" />
+          <FileCheck2 className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               Move-In Verification & Required Documents
@@ -808,7 +811,7 @@ export default function StepRules({
               onClick={doc.toggle}
               className={`p-3.5 rounded-xl border cursor-pointer select-none transition-all ${
                 doc.checked
-                  ? 'bg-indigo-50/70 border-indigo-200'
+                  ? 'bg-primary/[0.04] border-primary text-primary shadow-sm'
                   : 'bg-white border-[#EDEDED] hover:bg-gray-50'
               }`}
             >
@@ -817,7 +820,7 @@ export default function StepRules({
                   type="checkbox"
                   checked={doc.checked}
                   onChange={() => {}}
-                  className="w-4 h-4 rounded text-indigo-600 accent-indigo-600 pointer-events-none"
+                  className="w-4 h-4 rounded text-primary accent-primary pointer-events-none"
                 />
                 <span className="text-xs font-bold text-[#1D1D1F]">{doc.title}</span>
               </div>
@@ -832,7 +835,7 @@ export default function StepRules({
       {/* ==================================================================== */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] space-y-4">
         <div className="flex items-center gap-2.5 pb-2 border-b border-[#EDEDED]">
-          <ListPlus className="w-5 h-5 text-indigo-600" />
+          <ListPlus className="w-5 h-5 text-[#1D1D1F]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F]">
               House Rules & Custom Guidelines
@@ -847,7 +850,7 @@ export default function StepRules({
         {config.suggestedRules && config.suggestedRules.length > 0 && (
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-[#86868B] uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-500" />
+              <Sparkles className="w-3 h-3 text-[#1D1D1F]" />
               <span>Suggested rules for {config.archetype.replace('_', ' ')}</span>
             </span>
             <div className="flex flex-wrap gap-2">
@@ -861,14 +864,14 @@ export default function StepRules({
                     disabled={isAdded}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                       isAdded
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800 opacity-70 cursor-default'
+                        ? 'bg-[#F5F5F7] border-[#EDEDED] text-[#86868B] opacity-70 cursor-default'
                         : 'bg-white border-[#EDEDED] text-[#1D1D1F] hover:bg-gray-100 hover:border-gray-300'
                     }`}
                   >
                     {isAdded ? (
-                      <Check className="w-3 h-3 text-emerald-600" />
+                      <Check className="w-3 h-3 text-[#1D1D1F]" />
                     ) : (
-                      <Plus className="w-3 h-3 text-indigo-600" />
+                      <Plus className="w-3 h-3 text-primary" />
                     )}
                     <span>{ruleText}</span>
                   </button>
@@ -964,14 +967,14 @@ export default function StepRules({
           className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Pricing</span>
+          <span>Back</span>
         </button>
 
         <button
           type="button"
           onClick={handleSaveAndContinue}
           disabled={isSaving}
-          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all shadow-apple-sm disabled:opacity-50"
+          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all shadow-apple-sm disabled:opacity-50"
         >
           {isSaving ? (
             <>
@@ -980,8 +983,8 @@ export default function StepRules({
             </>
           ) : (
             <>
-              <span>Save & Review Listing</span>
-              <ArrowRight className="w-4 h-4 text-emerald-400" />
+              <span>Save & Continue</span>
+              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>

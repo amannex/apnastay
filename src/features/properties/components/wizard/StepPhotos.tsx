@@ -919,48 +919,34 @@ export default function StepPhotos({
       )}
 
       {/* STEP ACTION NAVIGATION BAR */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="pt-4 border-t border-[#EDEDED] flex flex-col sm:flex-row items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => onBack(photos)}
-          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all active:scale-95"
+          className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all active:scale-95"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Location</span>
+          <span>Back</span>
         </button>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          {/* OPTIONAL SAVE DRAFT BUTTON */}
-          <button
-            type="button"
-            disabled={isSaving || isUploadingActive}
-            onClick={handleContinue}
-            className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-[#EDEDED] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-1.5 transition-all"
-          >
-            <Clock className="w-4 h-4 text-[#86868B]" />
-            <span>Save Draft</span>
-          </button>
-
-          {/* MAIN CONTINUE / FINISH BUTTON */}
-          <button
-            type="button"
-            disabled={isSaving || isUploadingActive}
-            onClick={handleContinue}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black disabled:opacity-50 text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Saving Photos...</span>
-              </>
-            ) : (
-              <>
-                <span>Save & Complete Phase 5</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={isSaving || isUploadingActive}
+          onClick={handleContinue}
+          className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover disabled:opacity-50 text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <span>Continue</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

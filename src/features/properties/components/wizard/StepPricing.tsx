@@ -480,19 +480,22 @@ export default function StepPricing({
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* HEADER EXPLAINER */}
+      {/* HEADER */}
       <div className="border-b border-[#EDEDED] pb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
-          <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Phase 8 — Pricing & Availability</span>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <IndianRupee className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#1D1D1F] tracking-tight">
+              {isEntireProperty
+                ? `Pricing & Availability`
+                : isIndividualBed
+                ? `Bed Pricing & Availability`
+                : `${term.plural} Pricing & Availability`}
+            </h2>
+          </div>
         </div>
-        <h2 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-          {isEntireProperty
-            ? `Set Pricing & Availability for ${property.title || template.label}`
-            : isIndividualBed
-            ? `Configure Bed Pricing & Availability`
-            : `Configure ${term.plural} Pricing & Availability`}
-        </h2>
         <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 leading-relaxed max-w-2xl">
           {isEntireProperty
             ? 'Enter your monthly rent, security deposit terms, maintenance, and move-in availability for the entire property.'
@@ -517,7 +520,7 @@ export default function StepPricing({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm sm:text-base font-extrabold text-[#1D1D1F] flex items-center gap-2">
-              <Tag className="w-4 h-4 text-emerald-600" />
+              <Tag className="w-4 h-4 text-[#1D1D1F]" />
               <span>
                 {isEntireProperty
                   ? 'Property Rent & Terms'
@@ -534,7 +537,7 @@ export default function StepPricing({
           {/* QUICK SUMMARY BADGE */}
           <div className="text-right">
             <span className="text-xs font-semibold text-[#86868B] block">Effective Rent</span>
-            <span className="text-base sm:text-lg font-extrabold text-emerald-600">
+            <span className="text-base sm:text-lg font-extrabold text-primary">
               {pricingMode === 'on_request'
                 ? 'On Request'
                 : `${formatCurrency(parsedRent)} / mo`}
@@ -559,13 +562,13 @@ export default function StepPricing({
                 onClick={() => setPricingMode(mode.id as PricingMode)}
                 className={`p-3 rounded-2xl border text-left transition-all ${
                   pricingMode === mode.id
-                    ? 'border-[#1D1D1F] bg-white shadow-sm ring-1 ring-[#1D1D1F]'
+                    ? 'border-primary bg-primary/[0.03] ring-1 ring-primary shadow-sm'
                     : 'border-[#EDEDED] bg-white hover:border-[#D1D1D6]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-[#1D1D1F]">{mode.label}</span>
-                  {pricingMode === mode.id && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                  {pricingMode === mode.id && <Check className="w-3.5 h-3.5 text-primary" />}
                 </div>
                 <span className="text-[11px] text-[#86868B] block leading-tight">
                   {mode.desc}
@@ -628,10 +631,10 @@ export default function StepPricing({
           <div className="pt-4 border-t border-[#EDEDED] space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-[#1D1D1F] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                <ShieldCheck className="w-4 h-4 text-[#1D1D1F]" />
                 <span>Security Deposit</span>
               </label>
-              <span className="text-xs font-extrabold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-extrabold text-[#1D1D1F] bg-[#F5F5F7] px-2.5 py-0.5 rounded-full">
                 Deposit: {formatCurrency(effectiveDepositAmount)}
               </span>
             </div>
@@ -649,7 +652,7 @@ export default function StepPricing({
                   onClick={() => setDepositType(dep.id as SecurityDepositType)}
                   className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-center ${
                     depositType === dep.id
-                      ? 'border-[#1D1D1F] bg-[#1D1D1F] text-white shadow-sm'
+                      ? 'border-primary bg-primary/[0.04] text-primary shadow-sm ring-1 ring-primary'
                       : 'border-[#EDEDED] bg-white text-[#1D1D1F] hover:bg-[#F5F5F7]'
                   }`}
                 >
@@ -669,7 +672,7 @@ export default function StepPricing({
                       onClick={() => setDepositMonths(m)}
                       className={`w-8 h-8 rounded-lg text-xs font-extrabold border transition-all ${
                         depositMonths === m
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                          ? 'border-primary bg-primary text-white'
                           : 'border-[#EDEDED] bg-white text-[#86868B] hover:border-[#1D1D1F]'
                       }`}
                     >
@@ -842,7 +845,7 @@ export default function StepPricing({
             <button
               type="button"
               onClick={isIndividualBed ? handleApplyDefaultsToAllBeds : handleApplyDefaultsToAllUnits}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all inline-flex items-center justify-center gap-1.5 shadow-sm"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center justify-center gap-1.5 shadow-sm"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>
@@ -863,14 +866,14 @@ export default function StepPricing({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-extrabold text-[#1D1D1F] flex items-center gap-2">
-                <Layers className="w-4 h-4 text-indigo-600" />
+                <Layers className="w-4 h-4 text-[#1D1D1F]" />
                 <span>Individual {term.plural} Pricing & Availability</span>
               </h3>
               <p className="text-xs text-[#86868B] mt-0.5">
                 Customize rent or availability status for specific {term.plural.toLowerCase()}.
               </p>
             </div>
-            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold text-[#1D1D1F] bg-[#F5F5F7] px-3 py-1 rounded-full">
               {unitsState.length} {unitsState.length === 1 ? term.singular : term.plural}
             </span>
           </div>
@@ -881,7 +884,7 @@ export default function StepPricing({
               return (
                 <div key={unit.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#FBFBFD] transition-colors">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-[#F5F5F7] text-[#1D1D1F] flex items-center justify-center font-black text-sm shrink-0">
                       <Building2 className="w-5 h-5" />
                     </div>
                     <div>
@@ -899,7 +902,7 @@ export default function StepPricing({
                             Custom Price
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold text-[#1D1D1F] bg-[#F5F5F7] px-2 py-0.5 rounded-full">
                             Default Applied
                           </span>
                         )}
@@ -922,7 +925,7 @@ export default function StepPricing({
                           const val = Number(e.target.value.replace(/[^0-9]/g, '')) || 0;
                           handleUpdateUnitRent(unit.id, val);
                         }}
-                        className="w-full pl-7 pr-3 py-2 rounded-xl border border-[#EDEDED] bg-white text-xs font-extrabold text-[#1D1D1F] outline-none focus:border-[#1D1D1F]"
+                        className="w-full pl-7 pr-3 py-2 rounded-xl border border-[#EDEDED] bg-white text-xs font-extrabold text-[#1D1D1F] outline-none focus:border-primary"
                       />
                     </div>
 
@@ -936,7 +939,7 @@ export default function StepPricing({
                           ? 'bg-amber-50 text-amber-700 border-amber-200'
                           : unit.availability === 'unavailable'
                           ? 'bg-gray-100 text-gray-700 border-gray-200'
-                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-primary/[0.04] text-primary border-primary/20'
                       }`}
                     >
                       <option value="available">Available</option>
@@ -960,7 +963,7 @@ export default function StepPricing({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-extrabold text-[#1D1D1F] flex items-center gap-2">
-                <BedDouble className="w-4 h-4 text-violet-600" />
+                <BedDouble className="w-4 h-4 text-[#1D1D1F]" />
                 <span>Bed-by-Bed Pricing & Availability</span>
               </h3>
               <p className="text-xs text-[#86868B] mt-0.5">
@@ -1042,7 +1045,7 @@ export default function StepPricing({
       {/* ==================================================================== */}
       <div className="bg-white border border-[#EDEDED] rounded-3xl p-6 sm:p-7 space-y-4 shadow-apple-sm">
         <h3 className="text-sm sm:text-base font-extrabold text-[#1D1D1F] flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-emerald-600" />
+          <Calendar className="w-4 h-4 text-[#1D1D1F]" />
           <span>Move-in Availability</span>
         </h3>
 
@@ -1059,7 +1062,7 @@ export default function StepPricing({
               onClick={() => setAvailType(item.id as PropertyAvailabilityType)}
               className={`p-3 rounded-2xl border text-xs font-bold text-center transition-all ${
                 availType === item.id
-                  ? 'border-[#1D1D1F] bg-[#1D1D1F] text-white shadow-sm'
+                  ? 'border-primary bg-primary/[0.04] text-primary ring-1 ring-primary shadow-sm'
                   : 'border-[#EDEDED] bg-[#FBFBFD] text-[#1D1D1F] hover:bg-white'
               }`}
             >
@@ -1078,7 +1081,7 @@ export default function StepPricing({
               min={todayStr}
               value={availDate}
               onChange={(e) => setAvailDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-bold text-[#1D1D1F] outline-none focus:border-[#1D1D1F]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-bold text-[#1D1D1F] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             {errors.availDate && (
               <p className="text-[11px] font-semibold text-rose-600 mt-1">{errors.availDate}</p>
@@ -1098,14 +1101,14 @@ export default function StepPricing({
           className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Units</span>
+          <span>Back</span>
         </button>
 
         <button
           type="button"
           onClick={handleSaveAndContinue}
           disabled={isSaving}
-          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all shadow-apple-sm disabled:opacity-50"
+          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all shadow-apple-sm disabled:opacity-50"
         >
           {isSaving ? (
             <>
@@ -1114,8 +1117,8 @@ export default function StepPricing({
             </>
           ) : (
             <>
-              <span>Save & Continue to Rules</span>
-              <ArrowRight className="w-4 h-4 text-emerald-400" />
+              <span>Save & Continue</span>
+              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>
