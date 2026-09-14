@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function NewPropertyPage() {
   return (
-    <OwnerDashboardShell activeTab="properties">
+    <OwnerDashboardShell activeTab="properties" hideSidebar={true}>
       <div className="py-2 sm:py-4">
         <PropertyErrorBoundary fallbackTitle="Unable to load property creation wizard">
           <AddPropertyWizard />

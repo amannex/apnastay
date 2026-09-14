@@ -21,7 +21,7 @@ export default async function EditPropertyPage({ params, searchParams }: EditPro
   const mode = resolvedSearchParams?.mode === 'review' ? 'review' : 'edit';
 
   return (
-    <OwnerDashboardShell activeTab="properties">
+    <OwnerDashboardShell activeTab="properties" hideSidebar={true}>
       <div className="py-2 sm:py-4">
         <PropertyErrorBoundary fallbackTitle="Unable to load property editor">
           <AddPropertyWizard

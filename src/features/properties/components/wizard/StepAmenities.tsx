@@ -238,28 +238,22 @@ export default function StepAmenities({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* HEADER */}
-      <div className="border-b border-[#EDEDED] pb-6">
+      <div className="border-b border-[#EDEDED] pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 6 — Amenities & Features</span>
-            </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-              What does your property offer?
+              Amenities & Facilities
             </h2>
-            <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 max-w-2xl leading-relaxed">
-              Select all features and facilities available for your tenants. Clear amenities
-              help your listing stand out and get booked faster.
+            <p className="text-xs sm:text-sm text-[#86868B] mt-1">
+              Select all features available for your tenants.
             </p>
           </div>
 
           {/* TOTAL SELECTED COUNTER BADGE */}
-          <div className="self-start sm:self-auto shrink-0 flex items-center gap-2 bg-[#F5F5F7] px-4 py-2 rounded-2xl border border-[#EDEDED]">
-            <Layers className="w-4 h-4 text-emerald-600" />
+          <div className="self-start sm:self-auto shrink-0 flex items-center gap-2 bg-[#F5F5F7] px-3.5 py-1.5 rounded-xl border border-[#EDEDED]">
+            <Layers className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-bold text-[#1D1D1F]">
-              <span className="text-emerald-600 font-extrabold text-sm">{totalSelectedCount}</span>{' '}
-              {totalSelectedCount === 1 ? 'feature' : 'features'} selected
+              <span className="text-primary font-extrabold">{totalSelectedCount}</span> selected
             </span>
           </div>
         </div>
@@ -267,20 +261,14 @@ export default function StepAmenities({
 
       {/* SUGGESTED FOR YOUR PROPERTY (SMART SUGGESTIONS PILL ROW) */}
       {suggestedAmenities.length > 0 && (
-        <div className="bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white p-5 rounded-3xl border border-emerald-100/80 shadow-apple-sm space-y-3">
+        <div className="bg-[#FAFAFA] p-4 sm:p-5 rounded-2xl border border-[#EDEDED] space-y-2.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkle className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-xs sm:text-sm font-extrabold text-[#1D1D1F] uppercase tracking-wide">
-                Suggested for {customPropertyType || propertyType?.toUpperCase() || 'Your Property'}
-              </h3>
-            </div>
-            <span className="text-[11px] text-[#86868B] hidden sm:inline">
-              Recommended based on popular demand for this property type
-            </span>
+            <h3 className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider">
+              Popular for {customPropertyType || propertyType?.toUpperCase() || 'Your Property'}
+            </h3>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex flex-wrap gap-2 pt-0.5">
             {suggestedAmenities.map((amenity) => {
               const isSelected = selectedAmenities.includes(amenity.id);
               return (
@@ -288,13 +276,13 @@ export default function StepAmenities({
                   key={`suggested-${amenity.id}`}
                   type="button"
                   onClick={() => handleToggleAmenity(amenity.id)}
-                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isSelected
-                      ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700'
-                      : 'bg-white text-[#1D1D1F] border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50/50'
+                      ? 'bg-primary text-white shadow-sm hover:bg-primary-hover'
+                      : 'bg-white text-[#1D1D1F] border border-[#EDEDED] hover:border-[#D1D1D6]'
                   }`}
                 >
-                  <span className={isSelected ? 'text-white' : 'text-emerald-600'}>
+                  <span className={isSelected ? 'text-white' : 'text-primary'}>
                     {renderAmenityIcon(amenity.iconName, 'w-3.5 h-3.5')}
                   </span>
                   <span>{amenity.name}</span>
@@ -318,7 +306,7 @@ export default function StepAmenities({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search amenities (e.g., WiFi, AC, Lift, Parking, Food...)"
-          className="w-full pl-11 pr-4 py-3 bg-white border border-[#EDEDED] rounded-2xl text-xs sm:text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-apple-sm"
+          className="w-full pl-11 pr-4 py-3 bg-white border border-[#EDEDED] rounded-xl text-xs sm:text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-sm"
         />
         {searchQuery && (
           <button
@@ -377,7 +365,7 @@ export default function StepAmenities({
                       onClick={() => handleToggleAmenity(amenity.id)}
                       className={`relative flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer select-none ${
                         isSelected
-                          ? 'bg-emerald-50/60 border-emerald-500 shadow-apple-sm ring-1 ring-emerald-500'
+                          ? 'bg-primary/[0.03] border-primary shadow-sm ring-1 ring-primary'
                           : 'bg-white border-[#EDEDED] hover:border-[#D1D1D6] hover:bg-[#FAFAFA]'
                       }`}
                     >
@@ -385,7 +373,7 @@ export default function StepAmenities({
                       <div
                         className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
-                            ? 'bg-emerald-600 text-white shadow-sm'
+                            ? 'bg-primary text-white shadow-sm'
                             : 'bg-[#F5F5F7] text-[#1D1D1F]'
                         }`}
                       >
@@ -394,11 +382,7 @@ export default function StepAmenities({
 
                       {/* TEXT CONTENT */}
                       <div className="flex-1 min-w-0 pr-6">
-                        <p
-                          className={`text-xs sm:text-sm font-bold truncate leading-tight ${
-                            isSelected ? 'text-[#1D1D1F]' : 'text-[#1D1D1F]'
-                          }`}
-                        >
+                        <p className="text-xs sm:text-sm font-bold truncate leading-tight text-[#1D1D1F]">
                           {amenity.name}
                         </p>
                         {amenity.description && (
@@ -412,7 +396,7 @@ export default function StepAmenities({
                       <div
                         className={`absolute top-4 right-4 w-5 h-5 rounded-lg flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-emerald-600 text-white'
+                            ? 'bg-primary text-white'
                             : 'border border-[#D1D1D6] bg-white'
                         }`}
                       >
@@ -594,37 +578,35 @@ export default function StepAmenities({
       </div>
 
       {/* FOOTER ACTIONS BAR */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#EDEDED]">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-[#EDEDED]">
         <button
           type="button"
           onClick={() => onBack(selectedAmenities, customAmenities)}
           disabled={isSaving}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-[#EDEDED] bg-white text-xs sm:text-sm font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all disabled:opacity-50"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl border border-[#EDEDED] bg-white text-xs sm:text-sm font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all disabled:opacity-50"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Photos</span>
+          <span>Back</span>
         </button>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-2xl bg-emerald-600 text-white text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-all shadow-apple-sm disabled:opacity-50"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Saving Amenities...</span>
-              </>
-            ) : (
-              <>
-                <span>Save & Continue ({totalSelectedCount} selected)</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <span>Continue</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Building2,
   CheckCircle2,
+  Check,
   ArrowRight,
   ArrowLeft,
   AlertCircle,
@@ -830,164 +831,188 @@ export default function AddPropertyWizard({
     }
   };
 
+  const currentStepDef = WIZARD_STEPS.find((s) => s.stepNumber === currentStep) || WIZARD_STEPS[0];
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* TOP HEADER & BREADCRUMBS */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#EDEDED]">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#86868B] mb-1">
-              <Link
-                href="/owner/dashboard/properties"
-                className="hover:text-[#1D1D1F] transition-colors"
-              >
-                My Properties
-              </Link>
-              <span>/</span>
-              <span className="text-[#1D1D1F] font-bold">
-                {isEditMode ? `Edit: ${createdProperty?.title || 'Property'}` : 'List New Property'}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-                {isEditMode ? 'Edit Property' : 'Add Property'}
-              </h1>
-              {createdProperty && (
-                <span
-                  className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
-                    createdProperty.status === 'published'
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                      : createdProperty.status === 'draft'
-                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                      : createdProperty.status === 'archived'
-                      ? 'bg-slate-100 text-slate-700 border border-slate-200'
-                      : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
-                  }`}
-                >
-                  {createdProperty.status === 'published' && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                  )}
-                  <span>{createdProperty.status}</span>
-                </span>
-              )}
-              {saveStatus === 'saved' && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full animate-fade-in">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Draft saved</span>
-                </span>
-              )}
-            </div>
+    <div className="w-full max-w-5xl mx-auto space-y-5">
+      {/* ==================================================================== */}
+      {/* 1. TOP HEADER: BREADCRUMBS, TITLE, STATUS & ACTION */}
+      {/* ==================================================================== */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EDEDED]">
+        <div>
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#86868B] mb-1">
+            <Link
+              href="/owner/dashboard/properties"
+              className="hover:text-[#1D1D1F] transition-colors flex items-center gap-1"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Properties</span>
+            </Link>
+            <span className="text-[#D1D1D6]">/</span>
+            <span className="text-[#1D1D1F] font-bold truncate max-w-[220px] sm:max-w-md">
+              {createdProperty?.title || (isEditMode ? 'Edit Property' : 'List New Property')}
+            </span>
           </div>
 
-          {/* Mobile Save & Exit */}
-          <button
-            type="button"
-            onClick={handleSaveAndExit}
-            disabled={isSubmitting}
-            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
-          >
-            <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
-            <span>{isEditMode ? 'Exit' : 'Save & Exit'}</span>
-          </button>
+          {/* Title & Badges */}
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
+              {isEditMode ? 'Edit Property' : 'Add Property'}
+            </h1>
+            {createdProperty && (
+              <span
+                className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                  createdProperty.status === 'published'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : createdProperty.status === 'draft'
+                    ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                    : 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED]'
+                }`}
+              >
+                {createdProperty.status === 'published' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                )}
+                <span>{createdProperty.status}</span>
+              </span>
+            )}
+            {saveStatus === 'saved' && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full animate-fade-in">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Saved</span>
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* PROGRESS STEPPER (10 STEPS) & DESKTOP SAVE DRAFT */}
-        <div className="flex items-center gap-4 flex-wrap justify-between lg:justify-end">
-          <div
-            role="tablist"
-            aria-label="Property listing wizard progress"
-            className="flex items-center gap-1 sm:gap-1.5 flex-wrap"
-          >
-            {WIZARD_STEPS.map((stepDef, idx) => {
-              const isCurrent = currentStep === stepDef.stepNumber;
-              const isApplicable = stepDef.isApplicable(selectedType, selectedStructure);
-              const isCompleted = createdProperty ? stepDef.isCompleted(createdProperty) : false;
-              const canNavigate = isApplicable && (Boolean(createdProperty) || stepDef.stepNumber <= 2 || isEditMode);
+        {/* Save & Exit Button (clean, top-right aligned) */}
+        <button
+          type="button"
+          onClick={handleSaveAndExit}
+          disabled={isSubmitting}
+          className="self-start sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EDEDED] bg-white text-xs font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0 focus-visible:ring-2 focus-visible:ring-[#1D1D1F] focus-visible:outline-none"
+        >
+          <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
+          <span>{isEditMode ? 'Done & Exit' : 'Save Draft & Exit'}</span>
+        </button>
+      </div>
 
-              return (
-                <React.Fragment key={stepDef.key}>
-                  {idx > 0 && (
-                    <div
-                      className={`w-1.5 sm:w-2.5 md:w-3 h-[2px] transition-colors ${
-                        isCompleted ? 'bg-emerald-500' : currentStep > stepDef.stepNumber ? 'bg-[#1D1D1F]' : 'bg-[#EDEDED]'
-                      }`}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={isCurrent}
-                    aria-label={`${stepDef.title}: step ${stepDef.stepNumber} of 10 ${isCompleted ? '(completed)' : isCurrent ? '(current step)' : ''}`}
-                    onClick={() => canNavigate && handleJumpToStep(stepDef.stepNumber)}
-                    disabled={!canNavigate}
-                    title={`${stepDef.title} (${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Incomplete'})`}
-                    className={`flex items-center gap-1 group transition-all text-left rounded-full focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
-                      !canNavigate ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'
+      {/* ==================================================================== */}
+      {/* 2. DEDICATED FULL-WIDTH PROGRESS STEPPER */}
+      {/* ==================================================================== */}
+      <div className="bg-white rounded-2xl border border-[#EDEDED] p-3 sm:p-4 shadow-apple-xs">
+        {/* Mobile / Tablet View (< lg): Step Name + Animated Progress Track */}
+        <div className="lg:hidden space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-primary text-white font-bold flex items-center justify-center text-[11px] shadow-sm">
+                {currentStep}
+              </span>
+              <span className="font-bold text-[#1D1D1F]">
+                {currentStepDef.title}
+              </span>
+            </div>
+            <span className="text-[#86868B] text-[11px] font-semibold">
+              Step {currentStep} of 10
+            </span>
+          </div>
+          <div className="w-full h-1.5 bg-[#F5F5F7] rounded-full overflow-hidden border border-[#EDEDED]">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${(currentStep / 10) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Desktop View (>= lg): Sleek 10-Step Track (NEVER WRAPS) */}
+        <div
+          role="tablist"
+          aria-label="Property listing wizard progress"
+          className="hidden lg:flex items-center justify-between w-full"
+        >
+          {WIZARD_STEPS.map((stepDef, idx) => {
+            const isCurrent = currentStep === stepDef.stepNumber;
+            const isApplicable = stepDef.isApplicable(selectedType, selectedStructure);
+            const isCompleted = createdProperty ? stepDef.isCompleted(createdProperty) : false;
+            const canNavigate = isApplicable && (Boolean(createdProperty) || stepDef.stepNumber <= 2 || isEditMode);
+
+            return (
+              <React.Fragment key={stepDef.key}>
+                {idx > 0 && (
+                  <div
+                    className={`flex-1 h-[2px] mx-2 -mt-4 transition-colors ${
+                      isCompleted
+                        ? 'bg-[#1D1D1F]'
+                        : currentStep > stepDef.stepNumber
+                        ? 'bg-primary'
+                        : 'bg-[#EDEDED]'
+                    }`}
+                  />
+                )}
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isCurrent}
+                  aria-label={`${stepDef.title}: step ${stepDef.stepNumber} of 10 ${isCompleted ? '(completed)' : isCurrent ? '(current step)' : ''}`}
+                  onClick={() => canNavigate && handleJumpToStep(stepDef.stepNumber)}
+                  disabled={!canNavigate}
+                  title={`${stepDef.title} (${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Incomplete'})`}
+                  className={`flex flex-col items-center gap-1 group transition-all text-center shrink-0 focus-visible:outline-none ${
+                    !canNavigate ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
+                  }`}
+                >
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                      isCurrent
+                        ? 'bg-primary text-white shadow-sm ring-4 ring-[#FFE4EA]'
+                        : isCompleted
+                        ? 'bg-[#1D1D1F] text-white group-hover:bg-black'
+                        : canNavigate
+                        ? 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED] group-hover:bg-[#EDEDED]'
+                        : 'bg-[#EDEDED] text-[#86868B]'
                     }`}
                   >
-                    <div
-                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${
-                        isCurrent
-                          ? 'bg-[#1D1D1F] text-white shadow-sm ring-2 ring-black/10 scale-105'
-                          : isCompleted
-                          ? 'bg-emerald-600 text-white group-hover:bg-emerald-700'
-                          : canNavigate
-                          ? 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED] group-hover:bg-[#EDEDED]'
-                          : 'bg-[#EDEDED] text-[#86868B]'
-                      }`}
-                    >
-                      {isCompleted && !isCurrent ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      ) : (
-                        stepDef.stepNumber
-                      )}
-                    </div>
-                    <span
-                      className={`text-[11px] font-bold hidden xl:inline transition-colors ${
-                        isCurrent
-                          ? 'text-[#1D1D1F] underline decoration-2 underline-offset-4'
-                          : isCompleted
-                          ? 'text-emerald-700'
-                          : canNavigate
-                          ? 'text-[#86868B] group-hover:text-[#1D1D1F]'
-                          : 'text-[#86868B]'
-                      }`}
-                    >
-                      {stepDef.shortLabel}
-                    </span>
-                  </button>
-                </React.Fragment>
-              );
-            })}
-          </div>
-
-          {/* Desktop Save/Exit */}
-          <button
-            type="button"
-            onClick={handleSaveAndExit}
-            disabled={isSubmitting}
-            className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#EDEDED] bg-white text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
-          >
-            <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
-            <span>{isEditMode ? 'Done & Exit' : 'Save Draft & Exit'}</span>
-          </button>
+                    {isCompleted && !isCurrent ? (
+                      <Check className="w-3.5 h-3.5" />
+                    ) : (
+                      stepDef.stepNumber
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] tracking-tight transition-colors whitespace-nowrap ${
+                      isCurrent
+                        ? 'text-primary font-bold'
+                        : isCompleted
+                        ? 'text-[#1D1D1F] font-semibold'
+                        : canNavigate
+                        ? 'text-[#86868B] font-medium group-hover:text-[#1D1D1F]'
+                        : 'text-[#86868B] font-medium'
+                    }`}
+                  >
+                    {stepDef.shortLabel}
+                  </span>
+                </button>
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 
-
-      {/* RESUMED DRAFT NOTIFICATION BANNER */}
+      {/* ==================================================================== */}
+      {/* 3. RESUMED DRAFT NOTIFICATION TOAST */}
+      {/* ==================================================================== */}
       {hasResumedDraft && createdProperty && (
-        <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3 text-xs text-sky-900 animate-fade-in shadow-apple-xs">
+        <div className="px-4 py-2.5 rounded-xl bg-white border border-[#EDEDED] flex items-center justify-between gap-3 text-xs text-[#1D1D1F] shadow-apple-xs animate-fade-in">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-sky-600 shrink-0" />
-            <span>
-              Resumed draft for <strong>{createdProperty.title || 'Untitled Property'}</strong> at Step {currentStep}.
+            <span className="w-2 h-2 rounded-full bg-primary" />
+            <span className="text-[#86868B]">
+              Resumed draft for <strong className="text-[#1D1D1F]">{createdProperty.title || 'Untitled Property'}</strong> at Step {currentStep}.
             </span>
           </div>
           <button
             type="button"
             onClick={() => setHasResumedDraft(false)}
-            className="text-sky-700 hover:text-sky-950 font-semibold underline text-[11px]"
+            className="text-[#86868B] hover:text-[#1D1D1F] text-xs font-semibold px-2 py-0.5 rounded hover:bg-[#F5F5F7] transition-all"
           >
             Dismiss
           </button>

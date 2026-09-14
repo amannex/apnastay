@@ -279,39 +279,29 @@ export default function StepLocation({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in" noValidate>
       {/* SECTION HEADER */}
-      <div className="border-b border-[#EDEDED] pb-5">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F5F5F7] text-[#1D1D1F] text-[11px] font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-            <span>Step 4 of 4 • Location</span>
-          </span>
-          <span className="text-xs text-[#86868B]">
-            {customPropertyType || template.label} • {rentalStructure.replace(/_/g, ' ')}
-          </span>
-        </div>
-
+      <div className="border-b border-[#EDEDED] pb-4">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          Where is your property located?
+          Property Location
         </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1 leading-relaxed">
-          Provide accurate location details so tenants searching in your neighbourhood can easily discover your property.
+        <p className="text-xs sm:text-sm text-[#86868B] mt-1">
+          Add the address and pinpoint your property on the map.
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* 0. INTERACTIVE HYBRID MAP PICKER (OPENSTREETMAP + GOOGLE MAPS) */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#1D1D1F] flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span>Interactive Map & GPS Pin Drop</span>
+            <span className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              <span>Map & Pin Location</span>
             </span>
             <button
               type="button"
               onClick={() => setShowMap(!showMap)}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-xs font-semibold text-primary hover:underline transition-colors"
             >
               {showMap ? 'Hide Map' : 'Show Map'}
             </button>
@@ -666,13 +656,13 @@ export default function StepLocation({
         </div>
 
         {/* 6. TENANT SEARCH PREVIEW */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-blue-100 shadow-apple-sm space-y-2">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EDEDED] shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs font-bold text-[#86868B]">
-            <span className="flex items-center gap-1.5 text-blue-700">
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              <span>Tenant View Location Preview</span>
+            <span className="flex items-center gap-1.5 text-[#1D1D1F]">
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              <span>Location Preview</span>
             </span>
-            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+            <span className="text-[11px] font-semibold text-[#1D1D1F] bg-[#F5F5F7] px-2 py-0.5 rounded-full">
               Search Discoverable
             </span>
           </div>
@@ -691,8 +681,8 @@ export default function StepLocation({
             <p className="text-xs text-[#86868B] pt-1 border-t border-[#EDEDED]">
               <span className="font-semibold">Full Address:</span> {addressLine1.trim()}
               {hideExactAddress && (
-                <span className="text-amber-700 ml-1 font-semibold">
-                  (Private — shown only after tenant confirmation)
+                <span className="text-[#86868B] ml-1 font-semibold">
+                  (Private — shown only after booking confirmation)
                 </span>
               )}
             </p>
@@ -709,22 +699,22 @@ export default function StepLocation({
           className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Basic Details</span>
+          <span>Back</span>
         </button>
 
         <button
           type="submit"
           disabled={isSaving}
-          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Saving Location...</span>
+              <span>Saving...</span>
             </>
           ) : (
             <>
-              <span>Save & Continue</span>
+              <span>Continue</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
