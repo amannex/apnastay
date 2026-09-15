@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, HelpCircle, Bookmark } from 'lucide-react';
 import AnimatedIsometricHouse from './AnimatedIsometricHouse';
 
 export interface PropertyIntroStepProps {
@@ -16,10 +15,24 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-y-auto min-h-screen text-[#1D1D1F]">
       {/* ==================================================================== */}
-      {/* 1. CLEAN TOP HEADER (No bottom border)                               */}
+      {/* 1. CLEAN TOP HEADER (Responsive: Save & exit on left on mobile)      */}
       {/* ==================================================================== */}
-      <header className="px-6 sm:px-12 py-5 sm:py-6 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-30 transition-all">
-        <Link href="/" className="flex items-center gap-2.5 group transition-transform" title="ApnaStay Home">
+      <header className="px-5 sm:px-12 py-4 sm:py-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 transition-all">
+        {/* Mobile: Save & exit button on left */}
+        <div className="flex sm:hidden">
+          {onExit && (
+            <button
+              type="button"
+              onClick={onExit}
+              className="px-4 py-2 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
+            >
+              <span>Save & exit</span>
+            </button>
+          )}
+        </div>
+
+        {/* Desktop: Logo on left */}
+        <Link href="/" className="hidden sm:flex items-center gap-2.5 group transition-transform" title="ApnaStay Home">
           <img
             src="/logo-icon.png"
             alt="ApnaStay Logo"
@@ -30,13 +43,13 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
           </span>
         </Link>
 
+        {/* Right: Questions? button (and Save & exit on desktop) */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={() => setShowQuestionsModal(true)}
-            className="px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all shadow-apple-xs active:scale-[0.98] flex items-center gap-1.5"
+            className="px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-[#86868B]" />
             <span>Questions?</span>
           </button>
 
@@ -44,9 +57,8 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
             <button
               type="button"
               onClick={onExit}
-              className="px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all shadow-apple-xs active:scale-[0.98] flex items-center gap-1.5"
+              className="hidden sm:inline-flex px-4.5 py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
             >
-              <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
               <span>Save & exit</span>
             </button>
           )}
@@ -54,28 +66,28 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       </header>
 
       {/* ==================================================================== */}
-      {/* 2. MAIN SPLIT CONTENT (Left: Overview, Right: Animated Isometric House) */}
+      {/* 2. MAIN SPLIT CONTENT (Mobile: House on top, Text on bottom)         */}
       {/* ==================================================================== */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 py-8 lg:py-16 flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
-          {/* LEFT COLUMN: INTRODUCTION TEXT */}
-          <div className="lg:col-span-6 space-y-4 sm:space-y-5 max-w-xl">
-            <div className="text-base sm:text-lg font-semibold text-[#222222]">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-12 py-3 sm:py-8 lg:py-16 flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-16 items-center w-full">
+          {/* 3D ISOMETRIC HOUSE (order-1 on mobile: appears on top) */}
+          <div className="order-1 lg:order-2 lg:col-span-6 flex items-center justify-center py-2 sm:py-0">
+            <AnimatedIsometricHouse />
+          </div>
+
+          {/* INTRODUCTION TEXT (order-2 on mobile: appears below house) */}
+          <div className="order-2 lg:order-1 lg:col-span-6 space-y-3 sm:space-y-4 max-w-xl">
+            <div className="text-sm sm:text-base lg:text-lg font-semibold text-[#222222]">
               Step 1
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[48px] font-semibold tracking-tight text-[#222222] leading-[1.15] sm:whitespace-nowrap">
+            <h1 className="text-2xl sm:text-4xl lg:text-[48px] font-semibold tracking-tight text-[#222222] leading-[1.18] sm:leading-[1.15]">
               Tell us about your place
             </h1>
 
-            <p className="text-base sm:text-lg text-[#484848] font-normal leading-relaxed max-w-lg">
+            <p className="text-xs sm:text-base text-[#484848] font-normal leading-relaxed max-w-lg">
               In this step, we’ll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
             </p>
-          </div>
-
-          {/* RIGHT COLUMN: ANIMATED ISOMETRIC HOUSE */}
-          <div className="lg:col-span-6 flex items-center justify-center">
-            <AnimatedIsometricHouse />
           </div>
         </div>
       </main>
@@ -85,7 +97,7 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       {/* ==================================================================== */}
       <footer className="sticky bottom-0 bg-white z-30 shadow-lg">
         {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
-        <div className="w-full grid grid-cols-3 gap-1 h-[5px] bg-white">
+        <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
           {/* Portion 1: Tell us about your place (Active - Solid Black) */}
           <div className="h-full bg-[#222222] rounded-full transition-all duration-500" />
           {/* Portion 2: Stand out */}
@@ -94,14 +106,13 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
           <div className="h-full bg-[#E5E5EA] rounded-full transition-all duration-500" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 sm:px-12 py-4 sm:py-5 flex items-center justify-end">
+        <div className="max-w-7xl mx-auto px-5 sm:px-12 py-3.5 sm:py-5 flex items-center justify-end">
           <button
             type="button"
             onClick={onStart}
-            className="w-full sm:w-auto min-w-[130px] px-8 py-3.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-sm font-bold inline-flex items-center justify-center gap-2 shadow-apple-sm hover:shadow-apple-md transition-all active:scale-[0.98] group"
+            className="w-full sm:w-auto min-w-[130px] py-3.5 sm:px-8 rounded-xl bg-[#222222] hover:bg-black text-white text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm"
           >
             <span>Next</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </footer>

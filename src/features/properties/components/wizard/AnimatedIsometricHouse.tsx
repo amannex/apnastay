@@ -38,7 +38,7 @@ export default function AnimatedIsometricHouse({
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full aspect-[4/3] max-w-[760px] lg:scale-110 xl:scale-115 mx-auto select-none flex items-center justify-center [perspective:1400px] ${className}`}
+      className={`relative w-full aspect-[4/3] max-w-[360px] xs:max-w-[420px] sm:max-w-[540px] lg:max-w-[760px] lg:scale-110 xl:scale-115 mx-auto select-none flex items-center justify-center [perspective:1400px] ${className}`}
     >
       {/* 3D PARALLAX WRAPPER */}
       <motion.div
