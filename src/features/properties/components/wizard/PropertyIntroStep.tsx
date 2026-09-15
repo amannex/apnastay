@@ -110,7 +110,7 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
           <button
             type="button"
             onClick={onStart}
-            className="w-full sm:w-auto min-w-[130px] py-3.5 sm:px-8 rounded-xl bg-[#222222] hover:bg-black text-white text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm"
+            className="w-full sm:w-auto min-w-[130px] py-3.5 sm:px-8 rounded-xl bg-[#222222] hover:bg-black text-white text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px]"
           >
             <span>Next</span>
           </button>
