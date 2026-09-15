@@ -114,6 +114,13 @@ export default function AddPropertyWizard({
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const hasExplicitDraft = params.get('draftId') || params.get('propertyId');
+      if (!hasExplicitDraft && mode === 'create') {
+        return 0;
+      }
+    }
     if (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10) {
       return propInitialStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     }
@@ -197,6 +204,19 @@ export default function AddPropertyWizard({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  // When at Step 0, ensure URL does not have stale ?step= params
+  useEffect(() => {
+    if (currentStep === 0 && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('step')) {
+        params.delete('step');
+        const query = params.toString();
+        const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+      }
+    }
+  }, [currentStep]);
+
   // --------------------------------------------------------------------------
   // Draft Restoration & Existing Property Hydration
   // --------------------------------------------------------------------------
@@ -205,7 +225,8 @@ export default function AddPropertyWizard({
 
     const params = new URLSearchParams(window.location.search);
     const draftIdFromUrl = params.get('draftId') || params.get('propertyId');
-    const targetPropertyId = propPropertyId || draftIdFromUrl || (mode === 'create' ? window.sessionStorage?.getItem('apnastay_active_draft_id') : null);
+    // Only target a property if explicitly passed as a prop or explicitly present in URL query
+    const targetPropertyId = propPropertyId || draftIdFromUrl;
 
     if (!targetPropertyId) return;
 
@@ -265,6 +286,11 @@ export default function AddPropertyWizard({
           // Restore rules state (Phase 9)
           if (prop.rules) {
             setRules(prop.rules);
+          }
+
+          // If in fresh creation mode without an explicit step param, keep intro Step 0 active
+          if (mode === 'create' && !draftIdFromUrl && !propInitialStep) {
+            return;
           }
 
           // Determine step from props, URL, or intelligent progress evaluation
