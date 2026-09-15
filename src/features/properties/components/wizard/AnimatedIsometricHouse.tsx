@@ -38,27 +38,9 @@ export default function AnimatedIsometricHouse({
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full aspect-[4/3] max-w-[640px] mx-auto select-none flex items-center justify-center [perspective:1400px] ${className}`}
+      className={`relative w-full aspect-[4/3] max-w-[760px] lg:scale-110 xl:scale-115 mx-auto select-none flex items-center justify-center [perspective:1400px] ${className}`}
     >
-      {/* 1. SOFT AMBIENT LIGHTING GLOW */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.03] via-transparent to-amber-400/[0.04] rounded-full blur-3xl -z-10 pointer-events-none" />
-
-      {/* 2. GROUNDED 3D CONTACT SHADOW (Blooms as the house lands) */}
-      <motion.div
-        initial={{ scale: 0.6, opacity: 0 }}
-        animate={{
-          scale: 1,
-          opacity: 1,
-          transition: {
-            duration: 1.2,
-            ease: [0.16, 1, 0.3, 1],
-            delay: 0.2,
-          },
-        }}
-        className="absolute bottom-6 sm:bottom-8 w-[68%] h-12 bg-gradient-to-r from-black/5 via-black/15 to-black/5 blur-xl rounded-full pointer-events-none"
-      />
-
-      {/* 3. PARALLAX 3D WRAPPER */}
+      {/* 3D PARALLAX WRAPPER */}
       <motion.div
         style={{
           rotateX: tiltX,
@@ -67,14 +49,14 @@ export default function AnimatedIsometricHouse({
         }}
         className="relative w-full h-full flex items-center justify-center"
       >
-        {/* 4. ISOMETRIC 3D ENTRANCE & GENTLE IDLE FLOAT */}
+        {/* ISOMETRIC 3D ENTRANCE & GENTLE IDLE FLOAT */}
         <motion.div
           initial={{
             opacity: 0,
-            y: 50,
-            scale: 0.88,
-            rotateX: 12,
-            rotateY: -10,
+            y: 45,
+            scale: 0.9,
+            rotateX: 10,
+            rotateY: -8,
           }}
           animate={{
             opacity: 1,
@@ -102,12 +84,12 @@ export default function AnimatedIsometricHouse({
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="relative w-[92%] h-[92%] max-w-[620px] rounded-3xl flex items-center justify-center"
+            className="relative w-full h-full max-w-[740px] flex items-center justify-center"
           >
             <img
-              src="/images/isometric-house.jpg"
+              src="/images/isometric-house.png"
               alt="Isometric 3D Duplex Model"
-              className="w-full h-full object-contain mix-blend-multiply drop-shadow-[0_20px_35px_rgba(0,0,0,0.12)] transition-transform duration-300"
+              className="w-full h-full object-contain drop-shadow-[0_24px_45px_rgba(0,0,0,0.12)] transition-transform duration-300"
               draggable={false}
             />
           </motion.div>
