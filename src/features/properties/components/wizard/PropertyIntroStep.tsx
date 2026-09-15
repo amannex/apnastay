@@ -59,18 +59,17 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 py-8 lg:py-16 flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
           {/* LEFT COLUMN: INTRODUCTION TEXT */}
-          <div className="lg:col-span-6 space-y-5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5F5F7] border border-[#E5E5EA] text-xs font-semibold text-[#1D1D1F] shadow-apple-xs">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span>Step 1</span>
+          <div className="lg:col-span-6 space-y-4 sm:space-y-5 max-w-xl">
+            <div className="text-base sm:text-lg font-semibold text-[#222222]">
+              Step 1
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-extrabold tracking-[-0.03em] text-[#1D1D1F] leading-[1.12] sm:whitespace-nowrap">
+            <h1 className="text-4xl sm:text-5xl lg:text-[48px] font-semibold tracking-tight text-[#222222] leading-[1.15] sm:whitespace-nowrap">
               Tell us about your place
             </h1>
 
-            <p className="text-base sm:text-lg text-[#6E6E73] font-normal leading-relaxed max-w-lg">
-              In this step, we’ll ask you which type of property you have and if tenants will rent the entire place or just a room. Then let us know the location and how many guests can stay.
+            <p className="text-base sm:text-lg text-[#484848] font-normal leading-relaxed max-w-lg">
+              In this step, we’ll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
             </p>
           </div>
 
@@ -87,8 +86,8 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       <footer className="sticky bottom-0 bg-white z-30 shadow-lg">
         {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
         <div className="w-full grid grid-cols-3 gap-1 h-[5px] bg-white">
-          {/* Portion 1: Tell us about your place (Active - ApnaStay Primary Rose) */}
-          <div className="h-full bg-primary rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(225,34,77,0.25)]" />
+          {/* Portion 1: Tell us about your place (Active - Solid Black) */}
+          <div className="h-full bg-[#222222] rounded-full transition-all duration-500" />
           {/* Portion 2: Stand out */}
           <div className="h-full bg-[#E5E5EA] rounded-full transition-all duration-500" />
           {/* Portion 3: Finish up & publish */}

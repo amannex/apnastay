@@ -59,7 +59,7 @@ export default function AnimatedIsometricHouse({
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative w-full aspect-[4/3] max-w-[720px] lg:scale-105 xl:scale-110 transition-transform duration-300 mx-auto select-none flex items-center justify-center perspective-[1200px] ${className}`}
+      className={`relative w-full aspect-[4/3] max-w-[650px] mx-auto select-none flex items-center justify-center perspective-[1200px] ${className}`}
     >
       {/* SOFT AMBIENT LIGHTING BACKGROUND */}
       <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.04] via-transparent to-amber-500/[0.03] rounded-3xl -z-10 pointer-events-none" />
