@@ -26,6 +26,11 @@ export interface BasicDetailsFormData {
   description: string;
   availability: PropertyAvailability;
   monthlyRent: number;
+  guests?: number;
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  hasLock?: boolean;
 }
 
 interface StepBasicDetailsProps {
@@ -52,6 +57,13 @@ export default function StepBasicDetails({
 
   // Today's date string YYYY-MM-DD for min date in picker
   const todayStr = new Date().toISOString().split('T')[0];
+
+  // Capacity state (Matching Screenshot 2)
+  const [guests, setGuests] = useState<number>(initialValues?.guests ?? 2);
+  const [bedrooms, setBedrooms] = useState<number>(initialValues?.bedrooms ?? 1);
+  const [beds, setBeds] = useState<number>(initialValues?.beds ?? 1);
+  const [bathrooms, setBathrooms] = useState<number>(initialValues?.bathrooms ?? 1);
+  const [hasLock, setHasLock] = useState<boolean>(initialValues?.hasLock ?? true);
 
   // Form State
   const [title, setTitle] = useState<string>(initialValues?.title || '');
@@ -89,6 +101,12 @@ export default function StepBasicDetails({
       if (initialValues.monthlyRent && initialValues.monthlyRent > 0) {
         setMonthlyRent(String(initialValues.monthlyRent));
       }
+      if (initialValues.guests) setGuests(initialValues.guests);
+      if (initialValues.bedrooms) setBedrooms(initialValues.bedrooms);
+      if (initialValues.beds) setBeds(initialValues.beds);
+      if (initialValues.bathrooms) setBathrooms(initialValues.bathrooms);
+      if (typeof initialValues.hasLock === 'boolean') setHasLock(initialValues.hasLock);
+
       if (initialValues.title || initialValues.description || initialValues.monthlyRent) {
         initializedRef.current = true;
       }
@@ -104,7 +122,12 @@ export default function StepBasicDetails({
         type: availType,
         availableFrom: availType === 'specific_date' ? availDate : undefined
       },
-      monthlyRent: parsedRent
+      monthlyRent: parsedRent,
+      guests,
+      bedrooms,
+      beds,
+      bathrooms,
+      hasLock
     };
   };
 
@@ -158,15 +181,144 @@ export default function StepBasicDetails({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in" noValidate>
-      {/* SECTION HEADER */}
-      <div className="border-b border-[#EDEDED] pb-4">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          Basic Details
+    <form id="basic-details-form" onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto animate-fade-in py-2 space-y-8" noValidate>
+      {/* SECTION HEADING (Matching Screenshot 2) */}
+      <div>
+        <h1 className="text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight">
+          Let&apos;s start with the basics
+        </h1>
+      </div>
+
+      {/* ==================================================================== */}
+      {/* 1. CAPACITY & ROOMS COUNTERS (Screenshot 2)                          */}
+      {/* ==================================================================== */}
+      <div>
+        <h2 className="text-base sm:text-lg font-medium text-[#222222] mb-2">
+          How many people can stay here?
         </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1">
-          Provide essential information to identify your listing.
-        </p>
+
+        <div className="space-y-0">
+          {/* Guests */}
+          <div className="flex items-center justify-between py-4 border-b border-[#EBEBEB]">
+            <span className="text-base text-[#222222] font-normal">Guests</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setGuests((g) => Math.max(1, g - 1))}
+                disabled={guests <= 1}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:hover:border-[#B0B0B0] transition-colors select-none"
+              >
+                –
+              </button>
+              <span className="text-base font-normal text-[#222222] w-6 text-center">{guests}</span>
+              <button
+                type="button"
+                onClick={() => setGuests((g) => g + 1)}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] transition-colors select-none"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Bedrooms */}
+          <div className="flex items-center justify-between py-4 border-b border-[#EBEBEB]">
+            <span className="text-base text-[#222222] font-normal">Bedrooms</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setBedrooms((b) => Math.max(1, b - 1))}
+                disabled={bedrooms <= 1}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:hover:border-[#B0B0B0] transition-colors select-none"
+              >
+                –
+              </button>
+              <span className="text-base font-normal text-[#222222] w-6 text-center">{bedrooms}</span>
+              <button
+                type="button"
+                onClick={() => setBedrooms((b) => b + 1)}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] transition-colors select-none"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Beds */}
+          <div className="flex items-center justify-between py-4 border-b border-[#EBEBEB]">
+            <span className="text-base text-[#222222] font-normal">Beds</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setBeds((b) => Math.max(1, b - 1))}
+                disabled={beds <= 1}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:hover:border-[#B0B0B0] transition-colors select-none"
+              >
+                –
+              </button>
+              <span className="text-base font-normal text-[#222222] w-6 text-center">{beds}</span>
+              <button
+                type="button"
+                onClick={() => setBeds((b) => b + 1)}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] transition-colors select-none"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Bathrooms */}
+          <div className="flex items-center justify-between py-4 border-b border-[#EBEBEB]">
+            <span className="text-base text-[#222222] font-normal">Bathrooms</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setBathrooms((b) => Math.max(1, b - 1))}
+                disabled={bathrooms <= 1}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:hover:border-[#B0B0B0] transition-colors select-none"
+              >
+                –
+              </button>
+              <span className="text-base font-normal text-[#222222] w-6 text-center">{bathrooms}</span>
+              <button
+                type="button"
+                onClick={() => setBathrooms((b) => b + 1)}
+                className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] transition-colors select-none"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Does every bedroom have a lock? (From Screenshot 2) */}
+        <div className="mt-8 space-y-3">
+          <h3 className="text-base sm:text-lg font-semibold text-[#222222]">
+            Does every bedroom have a lock?
+          </h3>
+          <div className="space-y-2.5">
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="hasLock"
+                checked={hasLock === true}
+                onChange={() => setHasLock(true)}
+                className="w-5 h-5 accent-[#222222] cursor-pointer"
+              />
+              <span className="text-base text-[#222222]">Yes</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="hasLock"
+                checked={hasLock === false}
+                onChange={() => setHasLock(false)}
+                className="w-5 h-5 accent-[#222222] cursor-pointer"
+              />
+              <span className="text-base text-[#222222]">No</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-5">
@@ -393,27 +545,6 @@ export default function StepBasicDetails({
         </div>
       </div>
 
-      {/* FORM NAVIGATION BUTTONS */}
-      <div className="pt-6 border-t border-[#EDEDED] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={handleBackClick}
-          disabled={isSaving}
-          className="px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
-        >
-          <span>{isSaving ? 'Saving...' : 'Continue'}</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
     </form>
   );
 }

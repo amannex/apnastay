@@ -279,7 +279,7 @@ export default function StepLocation({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in" noValidate>
+    <form id="location-form" onSubmit={handleSubmit} className="space-y-6 animate-fade-in" noValidate>
       {/* SECTION HEADER */}
       <div className="border-b border-[#EDEDED] pb-4">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">

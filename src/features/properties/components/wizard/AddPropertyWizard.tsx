@@ -160,6 +160,7 @@ export default function AddPropertyWizard({
   const [errorState, setErrorState] = useState<NormalizedPropertyError | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const errorBannerRef = useRef<HTMLDivElement>(null);
+  const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
 
   // Phase 13: Structural change guard and unsaved changes tracking
@@ -864,6 +865,147 @@ export default function AddPropertyWizard({
     }
   };
 
+  const handleGlobalBack = () => {
+    if (currentStep === 1) {
+      setCurrentStep(0);
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        params.delete('step');
+        const query = params.toString();
+        const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+      }
+    } else if (currentStep === 2) {
+      handleJumpToStep(1);
+    } else if (currentStep === 3) {
+      handleJumpToStep(2);
+    } else if (currentStep === 4) {
+      handleJumpToStep(3);
+    } else if (currentStep === 5) {
+      handleJumpToStep(4);
+    } else if (currentStep === 6) {
+      handleJumpToStep(5);
+    } else if (currentStep === 7) {
+      handleJumpToStep(6);
+    } else if (currentStep === 8) {
+      handleJumpToStep(isStepApplicable(7, selectedType, selectedStructure) ? 7 : 6);
+    } else if (currentStep === 9) {
+      handleJumpToStep(8);
+    } else if (currentStep === 10) {
+      handleJumpToStep(9);
+    }
+  };
+
+  const renderFooterNextButton = () => {
+    if (currentStep === 1) {
+      const canProceed =
+        selectedType !== null &&
+        (selectedType !== 'other' || customPropertyType.trim().length > 0);
+      return (
+        <button
+          type="button"
+          onClick={handleProceedToRentalStructure}
+          disabled={!canProceed}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            canProceed
+              ? 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+              : 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed opacity-60'
+          }`}
+        >
+          <span>Next</span>
+        </button>
+      );
+    }
+
+    if (currentStep === 2) {
+      const canProceed = selectedStructure !== null && !isSubmitting;
+      return (
+        <button
+          type="button"
+          onClick={handleCreateOrUpdateDraft}
+          disabled={!canProceed}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            canProceed
+              ? 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+              : 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed opacity-60'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    if (currentStep === 3) {
+      return (
+        <button
+          type="submit"
+          form="basic-details-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    if (currentStep === 4) {
+      return (
+        <button
+          type="submit"
+          form="location-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          if (currentStep < 10) {
+            handleJumpToStep((currentStep + 1) as any);
+          }
+        }}
+        disabled={isSubmitting}
+        className="min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] bg-[#222222] hover:bg-black text-white cursor-pointer"
+      >
+        <span>{currentStep === 10 ? 'Publish' : 'Next'}</span>
+      </button>
+    );
+  };
+
   if (currentStep === 0) {
     return (
       <PropertyIntroStep
@@ -881,258 +1023,70 @@ export default function AddPropertyWizard({
     );
   }
 
-  const currentStepDef = WIZARD_STEPS.find((s) => s.stepNumber === currentStep) || WIZARD_STEPS[0];
-
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-5">
+    <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-y-auto min-h-screen text-[#1D1D1F]">
       {/* ==================================================================== */}
-      {/* 1. TOP HEADER: BREADCRUMBS, TITLE, STATUS & ACTION */}
+      {/* 1. CLEAN TOP HEADER (Airbnb Style)                                  */}
       {/* ==================================================================== */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EDEDED]">
-        <div>
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#86868B] mb-1">
-            <Link
-              href="/owner/dashboard/properties"
-              className="hover:text-[#1D1D1F] transition-colors flex items-center gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Properties</span>
-            </Link>
-            <span className="text-[#D1D1D6]">/</span>
-            <span className="text-[#1D1D1F] font-bold truncate max-w-[220px] sm:max-w-md">
-              {createdProperty?.title || (isEditMode ? 'Edit Property' : 'List New Property')}
-            </span>
-          </div>
-
-          {/* Title & Badges */}
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-              {isEditMode ? 'Edit Property' : 'Add Property'}
-            </h1>
-            {createdProperty && (
-              <span
-                className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
-                  createdProperty.status === 'published'
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                    : createdProperty.status === 'draft'
-                    ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                    : 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED]'
-                }`}
-              >
-                {createdProperty.status === 'published' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                )}
-                <span>{createdProperty.status}</span>
-              </span>
-            )}
-            {saveStatus === 'saved' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full animate-fade-in">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Saved</span>
-              </span>
-            )}
-          </div>
+      <header className="px-5 sm:px-12 py-4 sm:py-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 transition-all border-b border-[#F0F0F0]/80">
+        {/* Mobile: Back icon + Logo */}
+        <div className="flex sm:hidden items-center gap-2">
+          <button
+            type="button"
+            onClick={handleGlobalBack}
+            className="p-1.5 -ml-1.5 rounded-full hover:bg-[#F5F5F7] text-[#1D1D1F] transition-colors"
+            title="Go back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay"
+            className="h-7 w-auto object-contain"
+          />
         </div>
 
-        {/* Save & Exit Button (clean, top-right aligned) */}
-        <button
-          type="button"
-          onClick={handleSaveAndExit}
-          disabled={isSubmitting}
-          className="self-start sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EDEDED] bg-white text-xs font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0 focus-visible:ring-2 focus-visible:ring-[#1D1D1F] focus-visible:outline-none"
+        {/* Desktop: Logo on left */}
+        <Link
+          href="/owner/dashboard/properties"
+          className="hidden sm:flex items-center gap-2.5 group transition-transform"
+          title="ApnaStay Dashboard"
         >
-          <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
-          <span>{isEditMode ? 'Done & Exit' : 'Save Draft & Exit'}</span>
-        </button>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* 2. DEDICATED 3-PHASE PROGRESS STEPPER WITH ROUNDED SEGMENTS          */}
-      {/* ==================================================================== */}
-      <div className="bg-white rounded-2xl border border-[#EDEDED] p-3.5 sm:p-5 shadow-apple-xs space-y-3.5">
-        {/* The 3 Phase Chapter Headers */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
-          {/* Phase 1 */}
-          <div className={`transition-colors ${currentStep <= 4 ? 'text-[#1D1D1F]' : 'text-[#86868B]'}`}>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span
-                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs flex items-center justify-center font-extrabold shrink-0 transition-all ${
-                  currentStep > 4
-                    ? 'bg-[#1D1D1F] text-white'
-                    : currentStep <= 4
-                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
-                    : 'bg-[#EDEDED] text-[#86868B]'
-                }`}
-              >
-                {currentStep > 4 ? '✓' : '1'}
-              </span>
-              <span className="text-xs sm:text-sm font-bold truncate">Tell us about place</span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-[#86868B] mt-0.5 hidden xs:block">Steps 1–4</p>
-          </div>
-
-          {/* Phase 2 */}
-          <div className={`transition-colors ${currentStep >= 5 && currentStep <= 7 ? 'text-[#1D1D1F]' : 'text-[#86868B]'}`}>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span
-                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs flex items-center justify-center font-extrabold shrink-0 transition-all ${
-                  currentStep > 7
-                    ? 'bg-[#1D1D1F] text-white'
-                    : currentStep >= 5 && currentStep <= 7
-                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
-                    : 'bg-[#EDEDED] text-[#86868B]'
-                }`}
-              >
-                {currentStep > 7 ? '✓' : '2'}
-              </span>
-              <span className="text-xs sm:text-sm font-bold truncate">Make it stand out</span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-[#86868B] mt-0.5 hidden xs:block">Steps 5–7</p>
-          </div>
-
-          {/* Phase 3 */}
-          <div className={`transition-colors ${currentStep >= 8 ? 'text-[#1D1D1F]' : 'text-[#86868B]'}`}>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span
-                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs flex items-center justify-center font-extrabold shrink-0 transition-all ${
-                  currentStep >= 10 && createdProperty?.status === 'published'
-                    ? 'bg-[#1D1D1F] text-white'
-                    : currentStep >= 8
-                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
-                    : 'bg-[#EDEDED] text-[#86868B]'
-                }`}
-              >
-                {currentStep >= 10 && createdProperty?.status === 'published' ? '✓' : '3'}
-              </span>
-              <span className="text-xs sm:text-sm font-bold truncate">Finish & publish</span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-[#86868B] mt-0.5 hidden xs:block">Steps 8–10</p>
-          </div>
-        </div>
-
-        {/* 3-SEGMENT PROGRESS BAR WITH ROUNDED CAPS (Matching Intro Screen) */}
-        <div className="w-full grid grid-cols-3 gap-1 sm:gap-1.5 h-[5px]">
-          {/* Segment 1: Steps 1-4 */}
-          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#222222] rounded-full transition-all duration-500"
-              style={{
-                width: `${
-                  currentStep >= 4 ? 100 : currentStep === 3 ? 75 : currentStep === 2 ? 50 : currentStep === 1 ? 25 : 0
-                }%`,
-              }}
-            />
-          </div>
-
-          {/* Segment 2: Steps 5-7 */}
-          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#222222] rounded-full transition-all duration-500"
-              style={{
-                width: `${
-                  currentStep >= 7 ? 100 : currentStep === 6 ? 66 : currentStep === 5 ? 33 : 0
-                }%`,
-              }}
-            />
-          </div>
-
-          {/* Segment 3: Steps 8-10 */}
-          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#222222] rounded-full transition-all duration-500"
-              style={{
-                width: `${
-                  currentStep >= 10 ? 100 : currentStep === 9 ? 66 : currentStep === 8 ? 33 : 0
-                }%`,
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Mobile / Tablet View (< lg): Current Step Details */}
-        <div className="lg:hidden flex items-center justify-between text-xs pt-1 border-t border-[#F5F5F7]">
-          <div className="flex items-center gap-1.5 truncate">
-            <span className="font-extrabold text-[#1D1D1F]">{currentStepDef.title}</span>
-          </div>
-          <span className="text-[#86868B] text-[11px] font-semibold shrink-0 ml-2">
-            Step {currentStep} of 10
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay Logo"
+            className="h-8 sm:h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+          />
+          <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#1D1D1F]">
+            ApnaStay<span className="text-primary">.</span>
           </span>
-        </div>
+        </Link>
 
-        {/* Desktop View (>= lg): Sleek 10-Step Track (NEVER WRAPS) */}
-        <div
-          role="tablist"
-          aria-label="Property listing wizard progress"
-          className="hidden lg:flex items-center justify-between w-full"
-        >
-          {WIZARD_STEPS.map((stepDef, idx) => {
-            const isCurrent = currentStep === stepDef.stepNumber;
-            const isApplicable = stepDef.isApplicable(selectedType, selectedStructure);
-            const isCompleted = createdProperty ? stepDef.isCompleted(createdProperty) : false;
-            const canNavigate = isApplicable && (Boolean(createdProperty) || stepDef.stepNumber <= 2 || isEditMode);
+        {/* Right: Questions? and Save & exit buttons */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setShowQuestionsModal(true)}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
+          >
+            <span>Questions?</span>
+          </button>
 
-            return (
-              <React.Fragment key={stepDef.key}>
-                {idx > 0 && (
-                  <div
-                    className={`flex-1 h-[2px] mx-2 -mt-4 transition-colors ${
-                      isCompleted
-                        ? 'bg-[#1D1D1F]'
-                        : currentStep > stepDef.stepNumber
-                        ? 'bg-primary'
-                        : 'bg-[#EDEDED]'
-                    }`}
-                  />
-                )}
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={isCurrent}
-                  aria-label={`${stepDef.title}: step ${stepDef.stepNumber} of 10 ${isCompleted ? '(completed)' : isCurrent ? '(current step)' : ''}`}
-                  onClick={() => canNavigate && handleJumpToStep(stepDef.stepNumber)}
-                  disabled={!canNavigate}
-                  title={`${stepDef.title} (${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Incomplete'})`}
-                  className={`flex flex-col items-center gap-1 group transition-all text-center shrink-0 focus-visible:outline-none ${
-                    !canNavigate ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      isCurrent
-                        ? 'bg-primary text-white shadow-sm ring-4 ring-[#FFE4EA]'
-                        : isCompleted
-                        ? 'bg-[#1D1D1F] text-white group-hover:bg-black'
-                        : canNavigate
-                        ? 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED] group-hover:bg-[#EDEDED]'
-                        : 'bg-[#EDEDED] text-[#86868B]'
-                    }`}
-                  >
-                    {isCompleted && !isCurrent ? (
-                      <Check className="w-3.5 h-3.5" />
-                    ) : (
-                      stepDef.stepNumber
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] tracking-tight transition-colors whitespace-nowrap ${
-                      isCurrent
-                        ? 'text-primary font-bold'
-                        : isCompleted
-                        ? 'text-[#1D1D1F] font-semibold'
-                        : canNavigate
-                        ? 'text-[#86868B] font-medium group-hover:text-[#1D1D1F]'
-                        : 'text-[#86868B] font-medium'
-                    }`}
-                  >
-                    {stepDef.shortLabel}
-                  </span>
-                </button>
-              </React.Fragment>
-            );
-          })}
+          <button
+            type="button"
+            onClick={handleSaveAndExit}
+            disabled={isSubmitting}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs disabled:opacity-50"
+          >
+            <span>Save & exit</span>
+          </button>
         </div>
-      </div>
+      </header>
+
+      {/* ==================================================================== */}
+      {/* 2. MAIN CONTENT WRAPPER                                              */}
+      {/* ==================================================================== */}
+      <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-6 sm:py-10 flex flex-col justify-center">
 
       {/* ==================================================================== */}
       {/* 3. RESUMED DRAFT NOTIFICATION TOAST */}
@@ -1231,7 +1185,7 @@ export default function AddPropertyWizard({
 
       {/* STEP 1: PROPERTY TYPE */}
       {currentStep === 1 && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+        <div className="w-full">
           <StepPropertyType
             selectedType={selectedType}
             customPropertyType={customPropertyType}
@@ -1244,7 +1198,7 @@ export default function AddPropertyWizard({
 
       {/* STEP 2: RENTAL STRUCTURE */}
       {currentStep === 2 && selectedType && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+        <div className="w-full">
           <StepRentalStructure
             selectedType={selectedType}
             selectedStructure={selectedStructure}
@@ -1258,7 +1212,7 @@ export default function AddPropertyWizard({
 
       {/* STEP 3: BASIC DETAILS */}
       {currentStep === 3 && selectedType && selectedStructure && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+        <div className="w-full">
           <StepBasicDetails
             propertyType={selectedType}
             customPropertyType={customPropertyType}
@@ -1267,7 +1221,12 @@ export default function AddPropertyWizard({
               title: basicDetails.title ?? createdProperty?.title,
               description: basicDetails.description ?? createdProperty?.description,
               availability: basicDetails.availability ?? createdProperty?.availability,
-              monthlyRent: basicDetails.monthlyRent ?? createdProperty?.pricing?.monthlyRent
+              monthlyRent: basicDetails.monthlyRent ?? createdProperty?.pricing?.monthlyRent,
+              guests: basicDetails.guests,
+              bedrooms: basicDetails.bedrooms,
+              beds: basicDetails.beds,
+              bathrooms: basicDetails.bathrooms,
+              hasLock: basicDetails.hasLock
             }}
             onBack={handleBackFromBasicDetails}
             onSave={handleSaveBasicDetails}
@@ -1475,6 +1434,94 @@ export default function AddPropertyWizard({
             </div>
           )}
         </>
+      )}
+      </main>
+
+      {/* ==================================================================== */}
+      {/* 3. STICKY BOTTOM NAVIGATION BAR WITH 3-PHASE PROGRESS                */}
+      {/* ==================================================================== */}
+      <footer className="sticky bottom-0 bg-white z-30 shadow-lg border-t border-[#EDEDED]">
+        {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
+        <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
+          {/* Phase 1: Steps 1-4 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#222222] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 4 ? 100 : currentStep === 3 ? 75 : currentStep === 2 ? 50 : currentStep === 1 ? 25 : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {/* Phase 2: Steps 5-7 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#222222] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 7 ? 100 : currentStep === 6 ? 66 : currentStep === 5 ? 33 : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {/* Phase 3: Steps 8-10 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#222222] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 10 ? 100 : currentStep === 9 ? 66 : currentStep === 8 ? 33 : 0
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* BOTTOM NAV BAR */}
+        <div className="max-w-7xl mx-auto px-5 sm:px-12 py-3.5 sm:py-4 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleGlobalBack}
+            className="text-sm sm:text-base font-semibold text-[#222222] underline underline-offset-4 hover:text-black transition-colors"
+          >
+            Back
+          </button>
+
+          {renderFooterNextButton()}
+        </div>
+      </footer>
+
+      {/* QUESTIONS HELPER MODAL */}
+      {showQuestionsModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EDEDED] space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-base text-[#1D1D1F]">Need Help Getting Started?</h3>
+              <button
+                type="button"
+                onClick={() => setShowQuestionsModal(false)}
+                className="text-[#86868B] hover:text-[#1D1D1F] text-xs font-bold px-2 py-1 rounded-lg hover:bg-[#F5F5F7]"
+              >
+                Close
+              </button>
+            </div>
+            <p className="text-xs sm:text-sm text-[#86868B] leading-relaxed">
+              If you have questions about listing your property, pricing structures, or guest capacities, our host success team is here 24/7 to help.
+            </p>
+            <div className="pt-2 border-t border-[#EDEDED] flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowQuestionsModal(false)}
+                className="px-4 py-2 rounded-xl bg-[#1D1D1F] text-white text-xs font-semibold hover:bg-black transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

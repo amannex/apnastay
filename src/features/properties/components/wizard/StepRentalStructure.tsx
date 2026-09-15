@@ -95,20 +95,14 @@ export default function StepRentalStructure({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* SECTION HEADING */}
-      <div className="text-center max-w-xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          How will tenants rent?
-        </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1.5">
-          Choose the booking model for your{' '}
-          <span className="font-bold text-[#1D1D1F]">{template.label}</span>.
-        </p>
-      </div>
+    <div className="w-full max-w-2xl sm:max-w-3xl mx-auto animate-fade-in py-2">
+      {/* SECTION HEADING (Centered, clean Airbnb typography) */}
+      <h1 className="text-2xl sm:text-[32px] font-semibold text-[#222222] text-center tracking-tight mb-6 sm:mb-8">
+        What type of place will guests have?
+      </h1>
 
       {/* RENTAL STRUCTURE CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 max-w-2xl mx-auto">
         {RENTAL_STRUCTURES.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedStructure === option.id;
@@ -120,40 +114,28 @@ export default function StepRentalStructure({
               key={option.id}
               type="button"
               onClick={() => onSelectStructure(option.id)}
-              className={`text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 relative group flex flex-col justify-between ${
+              className={`text-left p-5 rounded-xl border transition-all duration-150 flex items-start gap-4 active:scale-[0.98] ${
                 isSelected
-                  ? 'border-primary bg-primary/[0.03] shadow-sm ring-1 ring-primary'
-                  : 'border-[#EDEDED] bg-white hover:border-[#D1D1D6] hover:shadow-sm'
+                  ? 'border-2 border-[#222222] bg-[#F7F7F7]'
+                  : 'border border-[#DDDDDD] hover:border-[#222222] bg-white'
               } ${!isAllowed ? 'opacity-70' : ''}`}
             >
-              <div className="flex items-start justify-between w-full mb-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                    isSelected
-                      ? 'bg-primary text-white'
-                      : 'bg-[#F5F5F7] text-[#1D1D1F] group-hover:bg-[#E5E5EA]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  {isRecommended && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-wider">
-                      Recommended
-                    </span>
-                  )}
-                  {isSelected && (
-                    <CheckCircle2 className="w-5 h-5 text-primary animate-fade-in" />
-                  )}
-                </div>
+              <div className="w-8 h-8 flex items-center justify-center shrink-0 text-[#222222] mt-0.5">
+                <Icon className="w-6 h-6 stroke-[1.75]" />
               </div>
 
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F] tracking-tight">
-                  {option.title}
-                </h3>
-                <p className="text-xs text-[#86868B] mt-1 leading-snug">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#222222] tracking-tight">
+                    {option.title}
+                  </h3>
+                  {isRecommended && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#222222] text-white text-[10px] font-medium tracking-wide shrink-0">
+                      Popular
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#717171] mt-1 leading-snug">
                   {option.subtitle}
                 </p>
               </div>
@@ -164,44 +146,12 @@ export default function StepRentalStructure({
 
       {/* DYNAMIC FLOW EXPLANATION BOX */}
       {selectedStructure && (
-        <div className="max-w-2xl mx-auto bg-[#FAFAFA] border border-[#EDEDED] rounded-2xl p-4 text-center sm:text-left">
-          <p className="text-xs text-[#1D1D1F] font-medium leading-relaxed">
+        <div className="max-w-2xl mx-auto mt-6 bg-[#F7F7F7] border border-[#DDDDDD] rounded-xl p-4 text-center sm:text-left">
+          <p className="text-xs text-[#222222] font-medium leading-relaxed">
             {getFlowExplanation(selectedStructure)}
           </p>
         </div>
       )}
-
-      {/* NAVIGATION CONTROLS */}
-      <div className="flex items-center justify-between pt-4 border-t border-[#EDEDED]">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isSubmitting}
-          className="px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all disabled:opacity-50"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={onContinue}
-          disabled={selectedStructure === null || isSubmitting}
-          className="px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Creating Draft...</span>
-            </>
-          ) : (
-            <>
-              <span>Continue</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
