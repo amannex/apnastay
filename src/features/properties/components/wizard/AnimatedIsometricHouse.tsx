@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { RotateCw, Sparkles, Building2, Bed, Sofa, UtensilsCrossed, ShieldCheck, Layers, Maximize2 } from 'lucide-react';
+import { RotateCw, Sparkles, Bed, Sofa, UtensilsCrossed, ShieldCheck, Layers, Maximize2 } from 'lucide-react';
 
 export interface AnimatedIsometricHouseProps {
   className?: string;
@@ -336,22 +336,6 @@ export default function AnimatedIsometricHouse({
             )}
           </AnimatePresence>
 
-          {/* FLOATING APNASTAY BADGE */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: 20 }}
-            animate={{
-              opacity: constructionStage === 'complete' ? 1 : 0,
-              scale: constructionStage === 'complete' ? 1 : 0.8,
-              x: 0,
-              transition: { type: 'spring', damping: 15, delay: 1.0 },
-            }}
-            className="absolute top-4 right-4 z-20 hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#EDEDED] shadow-apple-sm backdrop-blur-md"
-          >
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[11px] font-bold text-[#1D1D1F]">
-              Photorealistic 3D Model
-            </span>
-          </motion.div>
         </motion.div>
       </motion.div>
 
@@ -370,20 +354,6 @@ export default function AnimatedIsometricHouse({
           />
           <span>{constructionStage !== 'complete' ? 'Constructing...' : 'Replay Build'}</span>
         </button>
-      </div>
-
-      {/* ARCHITECTURAL STATUS BADGE */}
-      <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-20">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/85 border border-[#EDEDED] shadow-apple-xs backdrop-blur-md text-[10px] font-bold text-[#86868B]">
-          <Building2 className="w-3 h-3 text-primary" />
-          <span className="text-[#1D1D1F]">
-            {constructionStage === 'blueprint'
-              ? 'Phase 1: Blueprint Grid'
-              : constructionStage === 'building'
-              ? 'Phase 2: Structural Assembly'
-              : 'Phase 3: Ready to Host'}
-          </span>
-        </div>
       </div>
     </div>
   );

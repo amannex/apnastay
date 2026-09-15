@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, HelpCircle, Bookmark, CheckCircle2, ShieldCheck, Sparkles, Building, MapPin, Camera } from 'lucide-react';
+import { ArrowRight, HelpCircle, Bookmark } from 'lucide-react';
 import AnimatedIsometricHouse from './AnimatedIsometricHouse';
 
 export interface PropertyIntroStepProps {
@@ -16,9 +16,9 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-y-auto min-h-screen text-[#1D1D1F]">
       {/* ==================================================================== */}
-      {/* 1. CLEAN TOP HEADER                                                  */}
+      {/* 1. CLEAN TOP HEADER (No bottom border)                               */}
       {/* ==================================================================== */}
-      <header className="px-6 sm:px-12 py-5 flex items-center justify-between border-b border-[#F0F0F2] sticky top-0 bg-white/95 backdrop-blur-md z-30">
+      <header className="px-6 sm:px-12 py-5 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30">
         <Link href="/" className="flex items-center gap-2 group transition-transform" title="ApnaStay Home">
           <img
             src="/logo-icon.png"
@@ -58,54 +58,20 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       {/* ==================================================================== */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 py-8 lg:py-16 flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center w-full">
-          {/* LEFT COLUMN: INTRODUCTION TEXT & MILESTONES */}
-          <div className="lg:col-span-6 space-y-6 max-w-xl">
+          {/* LEFT COLUMN: INTRODUCTION TEXT */}
+          <div className="lg:col-span-6 space-y-6 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F5F7] border border-[#EDEDED] text-xs font-bold text-[#1D1D1F]">
               <span className="w-2 h-2 rounded-full bg-primary" />
               <span>Step 1</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-[52px] font-black tracking-tight text-[#1D1D1F] leading-[1.12]">
-              Tell us about <br className="hidden sm:inline" />
-              your place
+            <h1 className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[46px] font-extrabold tracking-tight text-[#1D1D1F] leading-tight sm:whitespace-nowrap">
+              Tell us about your place
             </h1>
 
             <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] font-normal leading-relaxed">
               In this step, we’ll ask you which type of property you have and if tenants will rent the entire place or just a room. Then let us know the location and how many guests can stay.
             </p>
-
-            {/* QUICK MILESTONES LIST */}
-            <div className="pt-4 space-y-3.5 border-t border-[#F0F0F2]">
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-xl bg-primary/[0.06] text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                  1
-                </div>
-                <div>
-                  <h2 className="text-xs sm:text-sm font-bold text-[#1D1D1F]">Property type & rental model</h2>
-                  <p className="text-xs text-[#86868B]">Single room, 1RK/1BHK studio, shared flat, or co-living PG.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-xl bg-primary/[0.06] text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                  2
-                </div>
-                <div>
-                  <h2 className="text-xs sm:text-sm font-bold text-[#1D1D1F]">Pinpoint address & map location</h2>
-                  <p className="text-xs text-[#86868B]">Precise coordinates for verified tenant route discovery.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-xl bg-primary/[0.06] text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                  3
-                </div>
-                <div>
-                  <h2 className="text-xs sm:text-sm font-bold text-[#1D1D1F]">Photos, amenities & pricing</h2>
-                  <p className="text-xs text-[#86868B]">Showcase your space, configure deposits, and set live rent.</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT COLUMN: ANIMATED ISOMETRIC HOUSE */}
@@ -129,16 +95,11 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
           <div className="flex-1 h-full bg-[#EDEDED]" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 sm:px-12 py-4 flex items-center justify-between">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-[#86868B]">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>ApnaStay Verified Landlord Protection included</span>
-          </div>
-
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 py-4 flex items-center justify-end">
           <button
             type="button"
             onClick={onStart}
-            className="w-full sm:w-auto ml-auto px-8 py-3.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-sm font-bold inline-flex items-center justify-center gap-2 shadow-apple-sm transition-all active:scale-[0.98] group"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-sm font-bold inline-flex items-center justify-center gap-2 shadow-apple-sm transition-all active:scale-[0.98] group"
           >
             <span>Next</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
