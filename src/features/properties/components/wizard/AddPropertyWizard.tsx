@@ -948,30 +948,116 @@ export default function AddPropertyWizard({
       </div>
 
       {/* ==================================================================== */}
-      {/* 2. DEDICATED FULL-WIDTH PROGRESS STEPPER */}
+      {/* 2. DEDICATED 3-PHASE PROGRESS STEPPER WITH ROUNDED SEGMENTS          */}
       {/* ==================================================================== */}
-      <div className="bg-white rounded-2xl border border-[#EDEDED] p-3 sm:p-4 shadow-apple-xs">
-        {/* Mobile / Tablet View (< lg): Step Name + Animated Progress Track */}
-        <div className="lg:hidden space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white font-bold flex items-center justify-center text-[11px] shadow-sm">
-                {currentStep}
+      <div className="bg-white rounded-2xl border border-[#EDEDED] p-3.5 sm:p-5 shadow-apple-xs space-y-3.5">
+        {/* The 3 Phase Chapter Headers */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          {/* Phase 1 */}
+          <div className={`transition-colors ${currentStep <= 4 ? 'text-[#1D1D1F]' : 'text-[#86868B]'}`}>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span
+                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs flex items-center justify-center font-extrabold shrink-0 transition-all ${
+                  currentStep > 4
+                    ? 'bg-[#1D1D1F] text-white'
+                    : currentStep <= 4
+                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
+                    : 'bg-[#EDEDED] text-[#86868B]'
+                }`}
+              >
+                {currentStep > 4 ? '✓' : '1'}
               </span>
-              <span className="font-bold text-[#1D1D1F]">
-                {currentStepDef.title}
-              </span>
+              <span className="text-xs sm:text-sm font-bold truncate">Tell us about place</span>
             </div>
-            <span className="text-[#86868B] text-[11px] font-semibold">
-              Step {currentStep} of 10
-            </span>
+            <p className="text-[10px] sm:text-[11px] text-[#86868B] mt-0.5 hidden xs:block">Steps 1–4</p>
           </div>
-          <div className="w-full h-1.5 bg-[#F5F5F7] rounded-full overflow-hidden border border-[#EDEDED]">
+
+          {/* Phase 2 */}
+          <div className={`transition-colors ${currentStep >= 5 && currentStep <= 7 ? 'text-[#1D1D1F]' : 'text-[#86868B]'}`}>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span
+                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs flex items-center justify-center font-extrabold shrink-0 transition-all ${
+                  currentStep > 7
+                    ? 'bg-[#1D1D1F] text-white'
+                    : currentStep >= 5 && currentStep <= 7
+                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
+                    : 'bg-[#EDEDED] text-[#86868B]'
+                }`}
+              >
+                {currentStep > 7 ? '✓' : '2'}
+              </span>
+              <span className="text-xs sm:text-sm font-bold truncate">Make it stand out</span>
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-[#86868B] mt-0.5 hidden xs:block">Steps 5–7</p>
+          </div>
+
+          {/* Phase 3 */}
+          <div className={`transition-colors ${currentStep >= 8 ? 'text-[#1D1D1F]' : 'text-[#86868B]'}`}>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span
+                className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[10px] sm:text-xs flex items-center justify-center font-extrabold shrink-0 transition-all ${
+                  currentStep >= 10 && createdProperty?.status === 'published'
+                    ? 'bg-[#1D1D1F] text-white'
+                    : currentStep >= 8
+                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
+                    : 'bg-[#EDEDED] text-[#86868B]'
+                }`}
+              >
+                {currentStep >= 10 && createdProperty?.status === 'published' ? '✓' : '3'}
+              </span>
+              <span className="text-xs sm:text-sm font-bold truncate">Finish & publish</span>
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-[#86868B] mt-0.5 hidden xs:block">Steps 8–10</p>
+          </div>
+        </div>
+
+        {/* 3-SEGMENT PROGRESS BAR WITH ROUNDED CAPS (Matching Intro Screen) */}
+        <div className="w-full grid grid-cols-3 gap-1.5 sm:gap-2 h-[5px]">
+          {/* Segment 1: Steps 1-4 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / 10) * 100}%` }}
+              className="h-full bg-[#1D1D1F] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 4 ? 100 : currentStep === 3 ? 75 : currentStep === 2 ? 50 : currentStep === 1 ? 25 : 0
+                }%`,
+              }}
             />
           </div>
+
+          {/* Segment 2: Steps 5-7 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#1D1D1F] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 7 ? 100 : currentStep === 6 ? 66 : currentStep === 5 ? 33 : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {/* Segment 3: Steps 8-10 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#1D1D1F] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 10 ? 100 : currentStep === 9 ? 66 : currentStep === 8 ? 33 : 0
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Mobile / Tablet View (< lg): Current Step Details */}
+        <div className="lg:hidden flex items-center justify-between text-xs pt-1 border-t border-[#F5F5F7]">
+          <div className="flex items-center gap-1.5 truncate">
+            <span className="font-extrabold text-[#1D1D1F]">{currentStepDef.title}</span>
+          </div>
+          <span className="text-[#86868B] text-[11px] font-semibold shrink-0 ml-2">
+            Step {currentStep} of 10
+          </span>
         </div>
 
         {/* Desktop View (>= lg): Sleek 10-Step Track (NEVER WRAPS) */}
