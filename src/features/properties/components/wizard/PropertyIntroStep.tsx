@@ -24,7 +24,7 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
             <button
               type="button"
               onClick={onExit}
-              className="px-4 py-2 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
             >
               <span>Save & exit</span>
             </button>
@@ -48,7 +48,7 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
           <button
             type="button"
             onClick={() => setShowQuestionsModal(true)}
-            className="px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
+            className="px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
           >
             <span>Questions?</span>
           </button>
@@ -57,7 +57,7 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
             <button
               type="button"
               onClick={onExit}
-              className="hidden sm:inline-flex px-4.5 py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
+              className="hidden sm:inline-flex px-5 py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap items-center justify-center shrink-0 shadow-apple-xs"
             >
               <span>Save & exit</span>
             </button>
