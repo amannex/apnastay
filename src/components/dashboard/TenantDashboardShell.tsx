@@ -101,14 +101,6 @@ function TenantDashboardShellInner({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] transition-all"
-            title="Return to Home without logging out"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Home</span>
-          </Link>
           <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 uppercase">
             Tenant RBAC
           </span>
@@ -130,8 +122,8 @@ function TenantDashboardShellInner({
         }`}
       >
         <div className="p-5 overflow-y-auto">
-          {/* BRAND HEADER & RETURN TO HOME */}
-          <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#EDEDED]">
+          {/* BRAND HEADER */}
+          <div className="flex items-center pb-4 mb-5 border-b border-[#EDEDED]">
             <Link
               href="/"
               className="flex items-center gap-2 group transition-transform"
@@ -145,14 +137,6 @@ function TenantDashboardShellInner({
               <span className="font-bold text-sm tracking-tight text-[#1D1D1F]">
                 ApnaStay<span className="text-[#E1224D]">.</span>
               </span>
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#86868B] hover:text-[#1D1D1F] px-2 py-1 rounded-lg hover:bg-[#F5F5F7] transition-all"
-              title="Return to Home without logging out"
-            >
-              <ArrowLeft className="w-3 h-3" />
-              <span>Home</span>
             </Link>
           </div>
 
