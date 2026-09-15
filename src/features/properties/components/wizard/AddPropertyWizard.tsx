@@ -1012,11 +1012,11 @@ export default function AddPropertyWizard({
         </div>
 
         {/* 3-SEGMENT PROGRESS BAR WITH ROUNDED CAPS (Matching Intro Screen) */}
-        <div className="w-full grid grid-cols-3 gap-1.5 sm:gap-2 h-[5px]">
+        <div className="w-full grid grid-cols-3 gap-1 sm:gap-1.5 h-[5px]">
           {/* Segment 1: Steps 1-4 */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-[#FF385C] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(225,34,77,0.3)]"
+              className="h-full bg-primary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(225,34,77,0.25)]"
               style={{
                 width: `${
                   currentStep >= 4 ? 100 : currentStep === 3 ? 75 : currentStep === 2 ? 50 : currentStep === 1 ? 25 : 0
@@ -1028,7 +1028,7 @@ export default function AddPropertyWizard({
           {/* Segment 2: Steps 5-7 */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-[#FF385C] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(225,34,77,0.3)]"
+              className="h-full bg-primary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(225,34,77,0.25)]"
               style={{
                 width: `${
                   currentStep >= 7 ? 100 : currentStep === 6 ? 66 : currentStep === 5 ? 33 : 0
@@ -1040,7 +1040,7 @@ export default function AddPropertyWizard({
           {/* Segment 3: Steps 8-10 */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-[#FF385C] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(225,34,77,0.3)]"
+              className="h-full bg-primary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(225,34,77,0.25)]"
               style={{
                 width: `${
                   currentStep >= 10 ? 100 : currentStep === 9 ? 66 : currentStep === 8 ? 33 : 0
