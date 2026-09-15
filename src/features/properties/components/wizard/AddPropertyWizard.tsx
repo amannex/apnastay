@@ -88,6 +88,7 @@ import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRules from './StepRules';
 import StepReview from './StepReview';
+import PropertyIntroStep from './PropertyIntroStep';
 import { determineNextIncompleteStep } from '../../completeness';
 import {
   PropertyFormMode,
@@ -112,9 +113,15 @@ export default function AddPropertyWizard({
 }: AddPropertyWizardProps = {}) {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(
-    (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10 ? propInitialStep : 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
-  );
+  const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(() => {
+    if (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10) {
+      return propInitialStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    }
+    if (mode === 'create') {
+      return 0;
+    }
+    return 1;
+  });
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -830,6 +837,23 @@ export default function AddPropertyWizard({
         return '';
     }
   };
+
+  if (currentStep === 0) {
+    return (
+      <PropertyIntroStep
+        onStart={() => {
+          setCurrentStep(1);
+          if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            params.set('step', '1');
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState(null, '', newUrl);
+          }
+        }}
+        onExit={handleSaveAndExit}
+      />
+    );
+  }
 
   const currentStepDef = WIZARD_STEPS.find((s) => s.stepNumber === currentStep) || WIZARD_STEPS[0];
 
