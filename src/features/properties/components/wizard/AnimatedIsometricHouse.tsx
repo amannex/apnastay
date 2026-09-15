@@ -2,59 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { RotateCw, Sparkles, Bed, Sofa, UtensilsCrossed, ShieldCheck, Layers, Maximize2 } from 'lucide-react';
 
 export interface AnimatedIsometricHouseProps {
   className?: string;
   autoPlay?: boolean;
 }
 
-interface RoomHotspot {
-  id: string;
-  name: string;
-  detail: string;
-  icon: React.ComponentType<{ className?: string }>;
-  x: number; // Percentage X
-  y: number; // Percentage Y
-  delay: number;
-}
-
-const ROOM_HOTSPOTS: RoomHotspot[] = [
-  {
-    id: 'loft',
-    name: 'Mezzanine Loft Bedroom',
-    detail: 'Plush Queen Suite with Panoramic Windows',
-    icon: Bed,
-    x: 35,
-    y: 32,
-    delay: 2.5,
-  },
-  {
-    id: 'living',
-    name: 'Designer Living Lounge',
-    detail: 'Modern Sofa, Coffee Table & Oak Flooring',
-    icon: Sofa,
-    x: 44,
-    y: 72,
-    delay: 2.8,
-  },
-  {
-    id: 'dining',
-    name: 'Dining & Kitchenette',
-    detail: 'Round Dining Set & Full-Service Space',
-    icon: UtensilsCrossed,
-    x: 50,
-    y: 59,
-    delay: 3.1,
-  },
-];
-
 export default function AnimatedIsometricHouse({
   className = '',
 }: AnimatedIsometricHouseProps) {
-  const [animationKey, setAnimationKey] = useState<number>(0);
+  const [animationKey] = useState<number>(0);
   const [constructionStage, setConstructionStage] = useState<'blueprint' | 'building' | 'complete'>('blueprint');
-  const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
 
   // 3D Parallax Tilt Effect on Mouse Move
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,11 +35,6 @@ export default function AnimatedIsometricHouse({
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
-  };
-
-  const handleReplay = () => {
-    setConstructionStage('blueprint');
-    setAnimationKey((prev) => prev + 1);
   };
 
   useEffect(() => {
@@ -255,106 +208,8 @@ export default function AnimatedIsometricHouse({
             />
           </div>
 
-          {/* ================================================================ */}
-          {/* 3. INTERACTIVE ROOM HOTSPOT PINS (STAGE 3)                       */}
-          {/* ================================================================ */}
-          <AnimatePresence>
-            {constructionStage === 'complete' && (
-              <>
-                {ROOM_HOTSPOTS.map((spot) => {
-                  const Icon = spot.icon;
-                  const isActive = activeHotspot === spot.id;
-
-                  return (
-                    <motion.div
-                      key={spot.id}
-                      style={{
-                        left: `${spot.x}%`,
-                        top: `${spot.y}%`,
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                      initial={{ scale: 0, opacity: 0, y: 15 }}
-                      animate={{
-                        scale: 1,
-                        opacity: 1,
-                        y: 0,
-                        transition: {
-                          type: 'spring',
-                          damping: 12,
-                          stiffness: 220,
-                          delay: spot.delay - 1.8,
-                        },
-                      }}
-                      className="absolute z-30"
-                    >
-                      {/* Pulse Ring */}
-                      <span className="absolute -inset-1.5 rounded-full bg-primary/20 animate-ping pointer-events-none" />
-
-                      {/* Hotspot Button */}
-                      <button
-                        type="button"
-                        onClick={() => setActiveHotspot(isActive ? null : spot.id)}
-                        onMouseEnter={() => setActiveHotspot(spot.id)}
-                        onMouseLeave={() => setActiveHotspot(null)}
-                        className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-apple-md ${
-                          isActive
-                            ? 'bg-primary text-white scale-110 ring-4 ring-[#FFE4EA]'
-                            : 'bg-white text-[#1D1D1F] hover:bg-primary hover:text-white border border-[#EDEDED]'
-                        }`}
-                        title={spot.name}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Tooltip Card */}
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                            animate={{ opacity: 1, y: -4, scale: 1 }}
-                            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                            transition={{ duration: 0.18 }}
-                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 rounded-2xl bg-[#1D1D1F] text-white shadow-2xl z-40 text-center pointer-events-none"
-                          >
-                            <p className="text-xs font-extrabold text-white leading-tight">
-                              {spot.name}
-                            </p>
-                            <p className="text-[10px] text-[#A1A1A6] mt-0.5 leading-snug">
-                              {spot.detail}
-                            </p>
-                            <div className="mt-1.5 pt-1 border-t border-white/10 flex items-center justify-center gap-1 text-[9px] font-bold text-emerald-400">
-                              <ShieldCheck className="w-3 h-3" />
-                              <span>Verified ApnaStay Layout</span>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  );
-                })}
-              </>
-            )}
-          </AnimatePresence>
-
         </motion.div>
       </motion.div>
-
-      {/* FLOATING ACTION: REPLAY BUILD BUTTON */}
-      <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20">
-        <button
-          type="button"
-          onClick={handleReplay}
-          title="Replay 3D house construction animation"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white border border-[#EDEDED] shadow-apple-xs backdrop-blur-md text-[11px] font-bold text-[#1D1D1F] hover:text-primary transition-all active:scale-95 group"
-        >
-          <RotateCw
-            className={`w-3.5 h-3.5 text-[#86868B] group-hover:text-primary transition-transform ${
-              constructionStage !== 'complete' ? 'animate-spin text-primary' : 'group-hover:rotate-180 duration-500'
-            }`}
-          />
-          <span>{constructionStage !== 'complete' ? 'Constructing...' : 'Replay Build'}</span>
-        </button>
-      </div>
     </div>
   );
 }

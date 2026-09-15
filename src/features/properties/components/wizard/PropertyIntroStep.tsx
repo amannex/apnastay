@@ -85,14 +85,14 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       {/* 3. STICKY BOTTOM NAVIGATION BAR WITH 3-PHASE PROGRESS                */}
       {/* ==================================================================== */}
       <footer className="sticky bottom-0 bg-white border-t border-[#EDEDED] z-30 shadow-lg">
-        {/* SEGMENTED PROGRESS TRACK (Airbnb-style 3 phases) */}
-        <div className="w-full flex items-center h-1 bg-[#EDEDED]">
-          {/* Phase 1: Tell us about your place (Active) */}
-          <div className="flex-1 h-full bg-[#1D1D1F] transition-all duration-500" />
-          {/* Phase 2: Stand out */}
-          <div className="flex-1 h-full bg-[#EDEDED]" />
-          {/* Phase 3: Finish up & publish */}
-          <div className="flex-1 h-full bg-[#EDEDED]" />
+        {/* SEGMENTED PROGRESS TRACK (3 distinct portions) */}
+        <div className="w-full grid grid-cols-3 gap-2 h-1 sm:h-1.5 bg-[#F5F5F7]">
+          {/* Portion 1: Tell us about your place (Active) */}
+          <div className="h-full bg-[#1D1D1F] rounded-full transition-all duration-500" />
+          {/* Portion 2: Stand out */}
+          <div className="h-full bg-[#E5E5EA] rounded-full transition-all duration-500" />
+          {/* Portion 3: Finish up & publish */}
+          <div className="h-full bg-[#E5E5EA] rounded-full transition-all duration-500" />
         </div>
 
         <div className="max-w-7xl mx-auto px-6 sm:px-12 py-4 flex items-center justify-end">
