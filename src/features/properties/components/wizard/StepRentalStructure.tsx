@@ -6,12 +6,7 @@ import {
   Building2,
   DoorOpen,
   BedDouble,
-  Layers,
-  CheckCircle2,
-  ArrowLeft,
-  ArrowRight,
-  Sparkles,
-  Loader2
+  Layers
 } from 'lucide-react';
 import type { PropertyType, RentalStructure } from '../../types';
 import { getPropertyTemplate } from '../../templates';
@@ -76,39 +71,15 @@ export default function StepRentalStructure({
   const template = getPropertyTemplate(selectedType);
   const recommendedStructure = template.defaultRentalStructure;
 
-  const getFlowExplanation = (structure: RentalStructure | null) => {
-    if (!structure) return null;
-    switch (structure) {
-      case 'entire_property':
-        return 'Single-lease flow: You’ll set a single rent for the whole property without needing to create individual rooms or beds.';
-      case 'individual_bed':
-        return 'Room & bed flow: You’ll be able to create rooms and define individual bed spaces with their own rental prices.';
-      case 'individual_room':
-        return 'Room-level flow: You’ll be able to configure distinct rooms with specific room types and individual pricing.';
-      case 'individual_unit':
-        return 'Unit-level flow: You’ll configure this specific flat or unit with its own layout and rent.';
-      case 'multiple_units':
-        return 'Multi-unit flow: You’ll be able to add and manage multiple flats or commercial units with bulk creation tools.';
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* SECTION HEADING */}
-      <div className="text-center max-w-xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          How will tenants rent?
-        </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1.5">
-          Choose the booking model for your{' '}
-          <span className="font-bold text-[#1D1D1F]">{template.label}</span>.
-        </p>
-      </div>
+    <div className="w-full max-w-2xl sm:max-w-3xl mx-auto animate-fade-in py-2">
+      {/* SECTION HEADING (Centered, clean Airbnb typography) */}
+      <h1 className="text-2xl sm:text-[32px] font-semibold text-[#222222] text-center tracking-tight mb-6 sm:mb-8">
+        What type of place will guests have?
+      </h1>
 
-      {/* RENTAL STRUCTURE CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 max-w-4xl mx-auto">
+      {/* RENTAL STRUCTURE CARDS (Single column of rows matching Airbnb) */}
+      <div className="flex flex-col gap-3.5 sm:gap-4 max-w-xl mx-auto">
         {RENTAL_STRUCTURES.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedStructure === option.id;
@@ -120,87 +91,34 @@ export default function StepRentalStructure({
               key={option.id}
               type="button"
               onClick={() => onSelectStructure(option.id)}
-              className={`text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 relative group flex flex-col justify-between ${
+              className={`w-full text-left p-5 sm:p-6 rounded-xl border transition-all duration-150 flex items-center justify-between gap-4 active:scale-[0.99] ${
                 isSelected
-                  ? 'border-primary bg-primary/[0.03] shadow-sm ring-1 ring-primary'
-                  : 'border-[#EDEDED] bg-white hover:border-[#D1D1D6] hover:shadow-sm'
+                  ? 'border-2 border-[#222222] bg-[#F7F7F7]'
+                  : 'border border-[#DDDDDD] hover:border-[#222222] bg-white'
               } ${!isAllowed ? 'opacity-70' : ''}`}
             >
-              <div className="flex items-start justify-between w-full mb-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                    isSelected
-                      ? 'bg-primary text-white'
-                      : 'bg-[#F5F5F7] text-[#1D1D1F] group-hover:bg-[#E5E5EA]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-
-                <div className="flex items-center gap-1.5">
+              <div className="flex-1 min-w-0 pr-2">
+                <div className="flex items-center gap-2.5">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#222222] tracking-tight">
+                    {option.title}
+                  </h3>
                   {isRecommended && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-wider">
-                      Recommended
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#222222] text-white text-[10px] font-medium tracking-wide shrink-0">
+                      Popular
                     </span>
                   )}
-                  {isSelected && (
-                    <CheckCircle2 className="w-5 h-5 text-primary animate-fade-in" />
-                  )}
                 </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-[#1D1D1F] tracking-tight">
-                  {option.title}
-                </h3>
-                <p className="text-xs text-[#86868B] mt-1 leading-snug">
+                <p className="text-xs sm:text-sm text-[#717171] mt-1 leading-snug">
                   {option.subtitle}
                 </p>
+              </div>
+
+              <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0 text-[#222222]">
+                <Icon className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.5]" />
               </div>
             </button>
           );
         })}
-      </div>
-
-      {/* DYNAMIC FLOW EXPLANATION BOX */}
-      {selectedStructure && (
-        <div className="max-w-2xl mx-auto bg-[#FAFAFA] border border-[#EDEDED] rounded-2xl p-4 text-center sm:text-left">
-          <p className="text-xs text-[#1D1D1F] font-medium leading-relaxed">
-            {getFlowExplanation(selectedStructure)}
-          </p>
-        </div>
-      )}
-
-      {/* NAVIGATION CONTROLS */}
-      <div className="flex items-center justify-between pt-4 border-t border-[#EDEDED]">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isSubmitting}
-          className="px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all disabled:opacity-50"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={onContinue}
-          disabled={selectedStructure === null || isSubmitting}
-          className="px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Creating Draft...</span>
-            </>
-          ) : (
-            <>
-              <span>Continue</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
       </div>
     </div>
   );

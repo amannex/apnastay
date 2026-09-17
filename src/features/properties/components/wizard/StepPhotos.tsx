@@ -442,22 +442,22 @@ export default function StepPhotos({
   const isUploadingActive = uploadQueue.some((item) => item.status === 'uploading');
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* HEADER SECTION (EXACT SPECIFICATION) */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">
-            5
-          </div>
-          <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-            Phase 5 — Media Management
-          </span>
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          Add photos
+    <form
+      id="photos-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleContinue();
+      }}
+      className="space-y-8 animate-fade-in max-w-2xl sm:max-w-3xl mx-auto py-2 sm:py-6"
+      noValidate
+    >
+      {/* SECTION HEADER */}
+      <div className="space-y-2">
+        <h2 className="text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight leading-tight">
+          Add some photos of your place
         </h2>
-        <p className="text-sm sm:text-base text-[#86868B] leading-relaxed">
-          Good photos help tenants understand your property better.
+        <p className="text-sm sm:text-base text-[#717171]">
+          You&apos;ll need at least 5 photos to get started. You can add more or make changes later.
         </p>
       </div>
 
@@ -918,36 +918,6 @@ export default function StepPhotos({
         </div>
       )}
 
-      {/* STEP ACTION NAVIGATION BAR */}
-      <div className="pt-4 border-t border-[#EDEDED] flex flex-col sm:flex-row items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => onBack(photos)}
-          className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all active:scale-95"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="button"
-          disabled={isSaving || isUploadingActive}
-          onClick={handleContinue}
-          className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover disabled:opacity-50 text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]"
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Saving...</span>
-            </>
-          ) : (
-            <>
-              <span>Continue</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-      </div>
-    </div>
+    </form>
   );
 }

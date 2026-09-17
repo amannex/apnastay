@@ -279,14 +279,14 @@ export default function StepLocation({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in" noValidate>
+    <form id="location-form" onSubmit={handleSubmit} className="space-y-8 animate-fade-in max-w-2xl mx-auto py-2 sm:py-6" noValidate>
       {/* SECTION HEADER */}
-      <div className="border-b border-[#EDEDED] pb-4">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-          Property Location
+      <div className="space-y-2">
+        <h2 className="text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight leading-tight">
+          Where&apos;s your place located?
         </h2>
-        <p className="text-xs sm:text-sm text-[#86868B] mt-1">
-          Add the address and pinpoint your property on the map.
+        <p className="text-sm sm:text-base text-[#717171]">
+          Your address is only shared with guests after they&apos;ve made a reservation.
         </p>
       </div>
 
@@ -688,37 +688,6 @@ export default function StepLocation({
             </p>
           )}
         </div>
-      </div>
-
-      {/* BOTTOM ACTION BUTTONS */}
-      <div className="pt-4 border-t border-[#EDEDED] flex flex-col sm:flex-row items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={handleBackClick}
-          disabled={isSaving}
-          className="w-full sm:w-auto px-5 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Saving...</span>
-            </>
-          ) : (
-            <>
-              <span>Continue</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
       </div>
     </form>
   );

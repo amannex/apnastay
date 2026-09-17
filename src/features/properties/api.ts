@@ -772,6 +772,45 @@ export async function archiveProperty(propertyId: string): Promise<PropertyApiRe
 }
 
 /**
+ * Permanently delete a property listing and all its associated data.
+ * Endpoint: DELETE /wp-json/apnastay/v1/owner/properties/{id}
+ */
+export async function deleteProperty(propertyId: string): Promise<PropertyApiResponse<{ id: string; deleted: boolean }>> {
+  try {
+    const res = await fetch(
+      `${APNASTAY_API_BASE}/owner/properties/${encodeURIComponent(propertyId)}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (shouldFallbackToSimulation(res, data)) {
+        const ctx = await resolveRequestContext();
+        return propertyBackend.deleteProperty(ctx, propertyId);
+      }
+      return {
+        success: false,
+        status: res.status,
+        code: data?.code || 'DELETE_FAILED',
+        error: data?.message || data?.error || 'Failed to delete property.'
+      };
+    }
+    return {
+      success: true,
+      status: res.status,
+      data: data?.data || { id: propertyId, deleted: true }
+    };
+  } catch (err) {
+    const ctx = await resolveRequestContext();
+    return propertyBackend.deleteProperty(ctx, propertyId);
+  }
+}
+
+/**
  * Restore an archived property listing back to active management (unpublished).
  * Endpoint: POST /wp-json/apnastay/v1/owner/properties/{id}/restore
  */

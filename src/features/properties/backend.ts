@@ -2130,6 +2130,46 @@ class PropertyBackendStore {
   }
 
   /**
+   * Permanently delete a property listing and its associated data.
+   */
+  public deleteProperty(ctx: BackendRequestContext, propertyId: string): PropertyApiResponse<{ id: string; deleted: boolean }> {
+    try {
+      this.assertAuthenticated(ctx);
+
+      const property = this.properties.get(propertyId);
+      if (!property) {
+        return {
+          success: false,
+          status: 404,
+          code: 'PROPERTY_NOT_FOUND',
+          error: `Property with ID '${propertyId}' not found.`
+        };
+      }
+
+      this.assertOwnership(property, ctx);
+
+      this.properties.delete(propertyId);
+      this.persist();
+
+      return {
+        success: true,
+        status: 200,
+        data: {
+          id: propertyId,
+          deleted: true
+        }
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        status: err.status || 500,
+        code: err.code || 'DELETE_PROPERTY_ERROR',
+        error: err.message || 'Failed to delete property.'
+      };
+    }
+  }
+
+  /**
    * Restore an archived property back to active management (unpublished status).
    */
   public restoreProperty(ctx: BackendRequestContext, propertyId: string): PropertyApiResponse<Property> {

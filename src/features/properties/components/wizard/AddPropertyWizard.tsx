@@ -88,6 +88,7 @@ import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRules from './StepRules';
 import StepReview from './StepReview';
+import PropertyIntroStep from './PropertyIntroStep';
 import { determineNextIncompleteStep } from '../../completeness';
 import {
   PropertyFormMode,
@@ -112,9 +113,22 @@ export default function AddPropertyWizard({
 }: AddPropertyWizardProps = {}) {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(
-    (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10 ? propInitialStep : 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
-  );
+  const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const hasExplicitDraft = params.get('draftId') || params.get('propertyId');
+      if (!hasExplicitDraft && mode === 'create') {
+        return 0;
+      }
+    }
+    if (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10) {
+      return propInitialStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    }
+    if (mode === 'create') {
+      return 0;
+    }
+    return 1;
+  });
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -142,11 +156,12 @@ export default function AddPropertyWizard({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isPublishedSuccess, setIsPublishedSuccess] = useState<boolean>(false);
-  const [hasResumedDraft, setHasResumedDraft] = useState<boolean>(false);
   const [errorState, setErrorState] = useState<NormalizedPropertyError | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const errorBannerRef = useRef<HTMLDivElement>(null);
+  const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
+  const [basicDetailsSubStep, setBasicDetailsSubStep] = useState<'basics' | 'title_description'>('basics');
 
   // Phase 13: Structural change guard and unsaved changes tracking
   const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
@@ -190,6 +205,19 @@ export default function AddPropertyWizard({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  // When at Step 0, ensure URL does not have stale ?step= params
+  useEffect(() => {
+    if (currentStep === 0 && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('step')) {
+        params.delete('step');
+        const query = params.toString();
+        const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+      }
+    }
+  }, [currentStep]);
+
   // --------------------------------------------------------------------------
   // Draft Restoration & Existing Property Hydration
   // --------------------------------------------------------------------------
@@ -198,7 +226,8 @@ export default function AddPropertyWizard({
 
     const params = new URLSearchParams(window.location.search);
     const draftIdFromUrl = params.get('draftId') || params.get('propertyId');
-    const targetPropertyId = propPropertyId || draftIdFromUrl || (mode === 'create' ? window.sessionStorage?.getItem('apnastay_active_draft_id') : null);
+    // Only target a property if explicitly passed as a prop or explicitly present in URL query
+    const targetPropertyId = propPropertyId || draftIdFromUrl;
 
     if (!targetPropertyId) return;
 
@@ -260,6 +289,11 @@ export default function AddPropertyWizard({
             setRules(prop.rules);
           }
 
+          // If in fresh creation mode without an explicit step param, keep intro Step 0 active
+          if (mode === 'create' && !draftIdFromUrl && !propInitialStep) {
+            return;
+          }
+
           // Determine step from props, URL, or intelligent progress evaluation
           const stepParam = propInitialStep || Number(params.get('step'));
           if (stepParam >= 1 && stepParam <= 10) {
@@ -271,10 +305,6 @@ export default function AddPropertyWizard({
           } else {
             const nextStep = determineNextIncompleteStep(prop);
             setCurrentStep(nextStep);
-          }
-
-          if (prop.status === 'draft') {
-            setHasResumedDraft(true);
           }
         }
       })
@@ -466,6 +496,7 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setBasicDetails(data);
+        setBasicDetailsSubStep('basics');
         syncDraftState(res.data, 4);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -484,6 +515,7 @@ export default function AddPropertyWizard({
   const handleBackFromLocation = (currentValues: LocationFormData) => {
     setLocationData(currentValues);
     setCurrentStep(3);
+    setBasicDetailsSubStep('title_description');
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
       window.history.replaceState(null, '', newUrl);
@@ -831,193 +863,233 @@ export default function AddPropertyWizard({
     }
   };
 
-  const currentStepDef = WIZARD_STEPS.find((s) => s.stepNumber === currentStep) || WIZARD_STEPS[0];
+  const handleGlobalBack = () => {
+    if (currentStep === 1) {
+      setCurrentStep(0);
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        params.delete('step');
+        const query = params.toString();
+        const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+      }
+    } else if (currentStep === 2) {
+      handleJumpToStep(1);
+    } else if (currentStep === 3) {
+      if (basicDetailsSubStep === 'title_description') {
+        setBasicDetailsSubStep('basics');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        handleJumpToStep(2);
+      }
+    } else if (currentStep === 4) {
+      handleJumpToStep(3);
+    } else if (currentStep === 5) {
+      handleJumpToStep(4);
+    } else if (currentStep === 6) {
+      handleJumpToStep(5);
+    } else if (currentStep === 7) {
+      handleJumpToStep(6);
+    } else if (currentStep === 8) {
+      handleJumpToStep(isStepApplicable(7, selectedType, selectedStructure) ? 7 : 6);
+    } else if (currentStep === 9) {
+      handleJumpToStep(8);
+    } else if (currentStep === 10) {
+      handleJumpToStep(9);
+    }
+  };
 
-  return (
-    <div className="w-full max-w-5xl mx-auto space-y-5">
-      {/* ==================================================================== */}
-      {/* 1. TOP HEADER: BREADCRUMBS, TITLE, STATUS & ACTION */}
-      {/* ==================================================================== */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EDEDED]">
-        <div>
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#86868B] mb-1">
-            <Link
-              href="/owner/dashboard/properties"
-              className="hover:text-[#1D1D1F] transition-colors flex items-center gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Properties</span>
-            </Link>
-            <span className="text-[#D1D1D6]">/</span>
-            <span className="text-[#1D1D1F] font-bold truncate max-w-[220px] sm:max-w-md">
-              {createdProperty?.title || (isEditMode ? 'Edit Property' : 'List New Property')}
-            </span>
-          </div>
-
-          {/* Title & Badges */}
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-[#1D1D1F] tracking-tight">
-              {isEditMode ? 'Edit Property' : 'Add Property'}
-            </h1>
-            {createdProperty && (
-              <span
-                className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
-                  createdProperty.status === 'published'
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                    : createdProperty.status === 'draft'
-                    ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                    : 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED]'
-                }`}
-              >
-                {createdProperty.status === 'published' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                )}
-                <span>{createdProperty.status}</span>
-              </span>
-            )}
-            {saveStatus === 'saved' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full animate-fade-in">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Saved</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Save & Exit Button (clean, top-right aligned) */}
+  const renderFooterNextButton = () => {
+    if (currentStep === 1) {
+      const canProceed =
+        selectedType !== null &&
+        (selectedType !== 'other' || customPropertyType.trim().length > 0);
+      return (
         <button
           type="button"
-          onClick={handleSaveAndExit}
-          disabled={isSubmitting}
-          className="self-start sm:self-center inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#EDEDED] bg-white text-xs font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] transition-all shadow-apple-xs active:scale-[0.98] disabled:opacity-50 shrink-0 focus-visible:ring-2 focus-visible:ring-[#1D1D1F] focus-visible:outline-none"
+          onClick={handleProceedToRentalStructure}
+          disabled={!canProceed}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            canProceed
+              ? 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+              : 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed opacity-60'
+          }`}
         >
-          <Bookmark className="w-3.5 h-3.5 text-[#86868B]" />
-          <span>{isEditMode ? 'Done & Exit' : 'Save Draft & Exit'}</span>
+          <span>Next</span>
         </button>
-      </div>
+      );
+    }
 
-      {/* ==================================================================== */}
-      {/* 2. DEDICATED FULL-WIDTH PROGRESS STEPPER */}
-      {/* ==================================================================== */}
-      <div className="bg-white rounded-2xl border border-[#EDEDED] p-3 sm:p-4 shadow-apple-xs">
-        {/* Mobile / Tablet View (< lg): Step Name + Animated Progress Track */}
-        <div className="lg:hidden space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white font-bold flex items-center justify-center text-[11px] shadow-sm">
-                {currentStep}
-              </span>
-              <span className="font-bold text-[#1D1D1F]">
-                {currentStepDef.title}
-              </span>
-            </div>
-            <span className="text-[#86868B] text-[11px] font-semibold">
-              Step {currentStep} of 10
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-[#F5F5F7] rounded-full overflow-hidden border border-[#EDEDED]">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / 10) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Desktop View (>= lg): Sleek 10-Step Track (NEVER WRAPS) */}
-        <div
-          role="tablist"
-          aria-label="Property listing wizard progress"
-          className="hidden lg:flex items-center justify-between w-full"
+    if (currentStep === 2) {
+      const canProceed = selectedStructure !== null && !isSubmitting;
+      return (
+        <button
+          type="button"
+          onClick={handleCreateOrUpdateDraft}
+          disabled={!canProceed}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            canProceed
+              ? 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+              : 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed opacity-60'
+          }`}
         >
-          {WIZARD_STEPS.map((stepDef, idx) => {
-            const isCurrent = currentStep === stepDef.stepNumber;
-            const isApplicable = stepDef.isApplicable(selectedType, selectedStructure);
-            const isCompleted = createdProperty ? stepDef.isCompleted(createdProperty) : false;
-            const canNavigate = isApplicable && (Boolean(createdProperty) || stepDef.stepNumber <= 2 || isEditMode);
-
-            return (
-              <React.Fragment key={stepDef.key}>
-                {idx > 0 && (
-                  <div
-                    className={`flex-1 h-[2px] mx-2 -mt-4 transition-colors ${
-                      isCompleted
-                        ? 'bg-[#1D1D1F]'
-                        : currentStep > stepDef.stepNumber
-                        ? 'bg-primary'
-                        : 'bg-[#EDEDED]'
-                    }`}
-                  />
-                )}
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={isCurrent}
-                  aria-label={`${stepDef.title}: step ${stepDef.stepNumber} of 10 ${isCompleted ? '(completed)' : isCurrent ? '(current step)' : ''}`}
-                  onClick={() => canNavigate && handleJumpToStep(stepDef.stepNumber)}
-                  disabled={!canNavigate}
-                  title={`${stepDef.title} (${isCompleted ? 'Completed' : isCurrent ? 'Current' : 'Incomplete'})`}
-                  className={`flex flex-col items-center gap-1 group transition-all text-center shrink-0 focus-visible:outline-none ${
-                    !canNavigate ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      isCurrent
-                        ? 'bg-primary text-white shadow-sm ring-4 ring-[#FFE4EA]'
-                        : isCompleted
-                        ? 'bg-[#1D1D1F] text-white group-hover:bg-black'
-                        : canNavigate
-                        ? 'bg-[#F5F5F7] text-[#1D1D1F] border border-[#EDEDED] group-hover:bg-[#EDEDED]'
-                        : 'bg-[#EDEDED] text-[#86868B]'
-                    }`}
-                  >
-                    {isCompleted && !isCurrent ? (
-                      <Check className="w-3.5 h-3.5" />
-                    ) : (
-                      stepDef.stepNumber
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] tracking-tight transition-colors whitespace-nowrap ${
-                      isCurrent
-                        ? 'text-primary font-bold'
-                        : isCompleted
-                        ? 'text-[#1D1D1F] font-semibold'
-                        : canNavigate
-                        ? 'text-[#86868B] font-medium group-hover:text-[#1D1D1F]'
-                        : 'text-[#86868B] font-medium'
-                    }`}
-                  >
-                    {stepDef.shortLabel}
-                  </span>
-                </button>
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* 3. RESUMED DRAFT NOTIFICATION TOAST */}
-      {/* ==================================================================== */}
-      {hasResumedDraft && createdProperty && (
-        <div className="px-4 py-2.5 rounded-xl bg-white border border-[#EDEDED] flex items-center justify-between gap-3 text-xs text-[#1D1D1F] shadow-apple-xs animate-fade-in">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary" />
-            <span className="text-[#86868B]">
-              Resumed draft for <strong className="text-[#1D1D1F]">{createdProperty.title || 'Untitled Property'}</strong> at Step {currentStep}.
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
             </span>
-          </div>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    if (currentStep === 3) {
+      return (
+        <button
+          type="submit"
+          form="basic-details-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    if (currentStep === 4) {
+      return (
+        <button
+          type="submit"
+          form="location-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          if (currentStep < 10) {
+            handleJumpToStep((currentStep + 1) as any);
+          }
+        }}
+        disabled={isSubmitting}
+        className="min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] bg-[#222222] hover:bg-black text-white cursor-pointer"
+      >
+        <span>{currentStep === 10 ? 'Publish' : 'Next'}</span>
+      </button>
+    );
+  };
+
+  if (currentStep === 0) {
+    return (
+      <PropertyIntroStep
+        onStart={() => {
+          setCurrentStep(1);
+          if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            params.set('step', '1');
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState(null, '', newUrl);
+          }
+        }}
+        onExit={handleSaveAndExit}
+      />
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-y-auto min-h-screen text-[#1D1D1F]">
+      {/* ==================================================================== */}
+      {/* 1. CLEAN TOP HEADER (Airbnb Style)                                  */}
+      {/* ==================================================================== */}
+      <header className="px-5 sm:px-12 py-4 sm:py-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 transition-all">
+        {/* Mobile: Back icon + Logo */}
+        <div className="flex sm:hidden items-center gap-2">
           <button
             type="button"
-            onClick={() => setHasResumedDraft(false)}
-            className="text-[#86868B] hover:text-[#1D1D1F] text-xs font-semibold px-2 py-0.5 rounded hover:bg-[#F5F5F7] transition-all"
+            onClick={handleGlobalBack}
+            className="p-1.5 -ml-1.5 rounded-full hover:bg-[#F5F5F7] text-[#1D1D1F] transition-colors"
+            title="Go back"
           >
-            Dismiss
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay"
+            className="h-7 w-auto object-contain"
+          />
+        </div>
+
+        {/* Desktop: Logo on left */}
+        <Link
+          href="/owner/dashboard/properties"
+          className="hidden sm:flex items-center gap-2.5 group transition-transform"
+          title="ApnaStay Dashboard"
+        >
+          <img
+            src="/logo-icon.png"
+            alt="ApnaStay Logo"
+            className="h-8 sm:h-9 w-auto group-hover:scale-105 transition-transform object-contain"
+          />
+          <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#1D1D1F]">
+            ApnaStay<span className="text-primary">.</span>
+          </span>
+        </Link>
+
+        {/* Right: Questions? and Save & exit buttons */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setShowQuestionsModal(true)}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
+          >
+            <span>Questions?</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSaveAndExit}
+            disabled={isSubmitting}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs disabled:opacity-50"
+          >
+            <span>Save & exit</span>
           </button>
         </div>
-      )}
+      </header>
+
+      {/* ==================================================================== */}
+      {/* 2. MAIN CONTENT WRAPPER                                              */}
+      {/* ==================================================================== */}
+      <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-6 sm:py-10 flex flex-col justify-center">
 
       {/* DRAFT LOADING INDICATOR */}
       {isLoadingDraft && (
@@ -1095,7 +1167,7 @@ export default function AddPropertyWizard({
 
       {/* STEP 1: PROPERTY TYPE */}
       {currentStep === 1 && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+        <div className="w-full">
           <StepPropertyType
             selectedType={selectedType}
             customPropertyType={customPropertyType}
@@ -1108,7 +1180,7 @@ export default function AddPropertyWizard({
 
       {/* STEP 2: RENTAL STRUCTURE */}
       {currentStep === 2 && selectedType && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+        <div className="w-full">
           <StepRentalStructure
             selectedType={selectedType}
             selectedStructure={selectedStructure}
@@ -1122,16 +1194,23 @@ export default function AddPropertyWizard({
 
       {/* STEP 3: BASIC DETAILS */}
       {currentStep === 3 && selectedType && selectedStructure && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+        <div className="w-full">
           <StepBasicDetails
             propertyType={selectedType}
             customPropertyType={customPropertyType}
             rentalStructure={selectedStructure}
+            subStep={basicDetailsSubStep}
+            onSubStepChange={setBasicDetailsSubStep}
             initialValues={{
               title: basicDetails.title ?? createdProperty?.title,
               description: basicDetails.description ?? createdProperty?.description,
               availability: basicDetails.availability ?? createdProperty?.availability,
-              monthlyRent: basicDetails.monthlyRent ?? createdProperty?.pricing?.monthlyRent
+              monthlyRent: basicDetails.monthlyRent ?? createdProperty?.pricing?.monthlyRent,
+              guests: basicDetails.guests,
+              bedrooms: basicDetails.bedrooms,
+              beds: basicDetails.beds,
+              bathrooms: basicDetails.bathrooms,
+              hasLock: basicDetails.hasLock
             }}
             onBack={handleBackFromBasicDetails}
             onSave={handleSaveBasicDetails}
@@ -1339,6 +1418,104 @@ export default function AddPropertyWizard({
             </div>
           )}
         </>
+      )}
+      </main>
+
+      {/* ==================================================================== */}
+      {/* 3. STICKY BOTTOM NAVIGATION BAR WITH 3-PHASE PROGRESS                */}
+      {/* ==================================================================== */}
+      <footer className="sticky bottom-0 bg-white z-30 shadow-lg border-t border-[#EDEDED]">
+        {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
+        <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
+          {/* Phase 1: Steps 1-4 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#222222] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 4
+                    ? 100
+                    : currentStep === 3
+                    ? basicDetailsSubStep === 'title_description'
+                      ? 85
+                      : 65
+                    : currentStep === 2
+                    ? 45
+                    : currentStep === 1
+                    ? 20
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {/* Phase 2: Steps 5-7 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#222222] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 7 ? 100 : currentStep === 6 ? 66 : currentStep === 5 ? 33 : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          {/* Phase 3: Steps 8-10 */}
+          <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#222222] rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  currentStep >= 10 ? 100 : currentStep === 9 ? 66 : currentStep === 8 ? 33 : 0
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* BOTTOM NAV BAR */}
+        <div className="max-w-7xl mx-auto px-5 sm:px-12 py-3.5 sm:py-4 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleGlobalBack}
+            className="text-sm sm:text-base font-semibold text-[#222222] underline underline-offset-4 hover:text-black transition-colors"
+          >
+            Back
+          </button>
+
+          {renderFooterNextButton()}
+        </div>
+      </footer>
+
+      {/* QUESTIONS HELPER MODAL */}
+      {showQuestionsModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EDEDED] space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-base text-[#1D1D1F]">Need Help Getting Started?</h3>
+              <button
+                type="button"
+                onClick={() => setShowQuestionsModal(false)}
+                className="text-[#86868B] hover:text-[#1D1D1F] text-xs font-bold px-2 py-1 rounded-lg hover:bg-[#F5F5F7]"
+              >
+                Close
+              </button>
+            </div>
+            <p className="text-xs sm:text-sm text-[#86868B] leading-relaxed">
+              If you have questions about listing your property, pricing structures, or guest capacities, our host success team is here 24/7 to help.
+            </p>
+            <div className="pt-2 border-t border-[#EDEDED] flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowQuestionsModal(false)}
+                className="px-4 py-2 rounded-xl bg-[#1D1D1F] text-white text-xs font-semibold hover:bg-black transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

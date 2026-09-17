@@ -7,11 +7,12 @@ import {
   EyeOff,
   RotateCcw,
   Sparkles,
+  Trash2,
   X,
   Loader2
 } from 'lucide-react';
 
-export type LifecycleActionType = 'unpublish' | 'archive' | 'restore' | 'publish';
+export type LifecycleActionType = 'unpublish' | 'archive' | 'restore' | 'publish' | 'delete';
 
 interface LifecycleConfirmationModalProps {
   isOpen: boolean;
