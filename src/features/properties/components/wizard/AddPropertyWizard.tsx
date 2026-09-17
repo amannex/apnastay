@@ -156,12 +156,12 @@ export default function AddPropertyWizard({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
   const [isPublishedSuccess, setIsPublishedSuccess] = useState<boolean>(false);
-  const [hasResumedDraft, setHasResumedDraft] = useState<boolean>(false);
   const [errorState, setErrorState] = useState<NormalizedPropertyError | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const errorBannerRef = useRef<HTMLDivElement>(null);
   const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
+  const [basicDetailsSubStep, setBasicDetailsSubStep] = useState<'basics' | 'title_description'>('basics');
 
   // Phase 13: Structural change guard and unsaved changes tracking
   const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
@@ -305,10 +305,6 @@ export default function AddPropertyWizard({
           } else {
             const nextStep = determineNextIncompleteStep(prop);
             setCurrentStep(nextStep);
-          }
-
-          if (prop.status === 'draft') {
-            setHasResumedDraft(true);
           }
         }
       })
@@ -500,6 +496,7 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setBasicDetails(data);
+        setBasicDetailsSubStep('basics');
         syncDraftState(res.data, 4);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -518,6 +515,7 @@ export default function AddPropertyWizard({
   const handleBackFromLocation = (currentValues: LocationFormData) => {
     setLocationData(currentValues);
     setCurrentStep(3);
+    setBasicDetailsSubStep('title_description');
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
       window.history.replaceState(null, '', newUrl);
@@ -878,7 +876,12 @@ export default function AddPropertyWizard({
     } else if (currentStep === 2) {
       handleJumpToStep(1);
     } else if (currentStep === 3) {
-      handleJumpToStep(2);
+      if (basicDetailsSubStep === 'title_description') {
+        setBasicDetailsSubStep('basics');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        handleJumpToStep(2);
+      }
     } else if (currentStep === 4) {
       handleJumpToStep(3);
     } else if (currentStep === 5) {
@@ -1028,7 +1031,7 @@ export default function AddPropertyWizard({
       {/* ==================================================================== */}
       {/* 1. CLEAN TOP HEADER (Airbnb Style)                                  */}
       {/* ==================================================================== */}
-      <header className="px-5 sm:px-12 py-4 sm:py-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 transition-all border-b border-[#F0F0F0]/80">
+      <header className="px-5 sm:px-12 py-4 sm:py-6 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-30 transition-all">
         {/* Mobile: Back icon + Logo */}
         <div className="flex sm:hidden items-center gap-2">
           <button
@@ -1087,27 +1090,6 @@ export default function AddPropertyWizard({
       {/* 2. MAIN CONTENT WRAPPER                                              */}
       {/* ==================================================================== */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-6 sm:py-10 flex flex-col justify-center">
-
-      {/* ==================================================================== */}
-      {/* 3. RESUMED DRAFT NOTIFICATION TOAST */}
-      {/* ==================================================================== */}
-      {hasResumedDraft && createdProperty && (
-        <div className="px-4 py-2.5 rounded-xl bg-white border border-[#EDEDED] flex items-center justify-between gap-3 text-xs text-[#1D1D1F] shadow-apple-xs animate-fade-in">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary" />
-            <span className="text-[#86868B]">
-              Resumed draft for <strong className="text-[#1D1D1F]">{createdProperty.title || 'Untitled Property'}</strong> at Step {currentStep}.
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setHasResumedDraft(false)}
-            className="text-[#86868B] hover:text-[#1D1D1F] text-xs font-semibold px-2 py-0.5 rounded hover:bg-[#F5F5F7] transition-all"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* DRAFT LOADING INDICATOR */}
       {isLoadingDraft && (
@@ -1217,6 +1199,8 @@ export default function AddPropertyWizard({
             propertyType={selectedType}
             customPropertyType={customPropertyType}
             rentalStructure={selectedStructure}
+            subStep={basicDetailsSubStep}
+            onSubStepChange={setBasicDetailsSubStep}
             initialValues={{
               title: basicDetails.title ?? createdProperty?.title,
               description: basicDetails.description ?? createdProperty?.description,
@@ -1449,7 +1433,17 @@ export default function AddPropertyWizard({
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 4 ? 100 : currentStep === 3 ? 75 : currentStep === 2 ? 50 : currentStep === 1 ? 25 : 0
+                  currentStep >= 4
+                    ? 100
+                    : currentStep === 3
+                    ? basicDetailsSubStep === 'title_description'
+                      ? 85
+                      : 65
+                    : currentStep === 2
+                    ? 45
+                    : currentStep === 1
+                    ? 20
+                    : 0
                 }%`,
               }}
             />

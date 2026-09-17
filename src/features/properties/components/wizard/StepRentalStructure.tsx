@@ -6,12 +6,7 @@ import {
   Building2,
   DoorOpen,
   BedDouble,
-  Layers,
-  CheckCircle2,
-  ArrowLeft,
-  ArrowRight,
-  Sparkles,
-  Loader2
+  Layers
 } from 'lucide-react';
 import type { PropertyType, RentalStructure } from '../../types';
 import { getPropertyTemplate } from '../../templates';
@@ -76,24 +71,6 @@ export default function StepRentalStructure({
   const template = getPropertyTemplate(selectedType);
   const recommendedStructure = template.defaultRentalStructure;
 
-  const getFlowExplanation = (structure: RentalStructure | null) => {
-    if (!structure) return null;
-    switch (structure) {
-      case 'entire_property':
-        return 'Single-lease flow: You’ll set a single rent for the whole property without needing to create individual rooms or beds.';
-      case 'individual_bed':
-        return 'Room & bed flow: You’ll be able to create rooms and define individual bed spaces with their own rental prices.';
-      case 'individual_room':
-        return 'Room-level flow: You’ll be able to configure distinct rooms with specific room types and individual pricing.';
-      case 'individual_unit':
-        return 'Unit-level flow: You’ll configure this specific flat or unit with its own layout and rent.';
-      case 'multiple_units':
-        return 'Multi-unit flow: You’ll be able to add and manage multiple flats or commercial units with bulk creation tools.';
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="w-full max-w-2xl sm:max-w-3xl mx-auto animate-fade-in py-2">
       {/* SECTION HEADING (Centered, clean Airbnb typography) */}
@@ -101,8 +78,8 @@ export default function StepRentalStructure({
         What type of place will guests have?
       </h1>
 
-      {/* RENTAL STRUCTURE CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 max-w-2xl mx-auto">
+      {/* RENTAL STRUCTURE CARDS (Single column of rows matching Airbnb) */}
+      <div className="flex flex-col gap-3.5 sm:gap-4 max-w-xl mx-auto">
         {RENTAL_STRUCTURES.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedStructure === option.id;
@@ -114,19 +91,15 @@ export default function StepRentalStructure({
               key={option.id}
               type="button"
               onClick={() => onSelectStructure(option.id)}
-              className={`text-left p-5 rounded-xl border transition-all duration-150 flex items-start gap-4 active:scale-[0.98] ${
+              className={`w-full text-left p-5 sm:p-6 rounded-xl border transition-all duration-150 flex items-center justify-between gap-4 active:scale-[0.99] ${
                 isSelected
                   ? 'border-2 border-[#222222] bg-[#F7F7F7]'
                   : 'border border-[#DDDDDD] hover:border-[#222222] bg-white'
               } ${!isAllowed ? 'opacity-70' : ''}`}
             >
-              <div className="w-8 h-8 flex items-center justify-center shrink-0 text-[#222222] mt-0.5">
-                <Icon className="w-6 h-6 stroke-[1.75]" />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm sm:text-base font-semibold text-[#222222] tracking-tight">
+              <div className="flex-1 min-w-0 pr-2">
+                <div className="flex items-center gap-2.5">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#222222] tracking-tight">
                     {option.title}
                   </h3>
                   {isRecommended && (
@@ -135,23 +108,18 @@ export default function StepRentalStructure({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#717171] mt-1 leading-snug">
+                <p className="text-xs sm:text-sm text-[#717171] mt-1 leading-snug">
                   {option.subtitle}
                 </p>
+              </div>
+
+              <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0 text-[#222222]">
+                <Icon className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.5]" />
               </div>
             </button>
           );
         })}
       </div>
-
-      {/* DYNAMIC FLOW EXPLANATION BOX */}
-      {selectedStructure && (
-        <div className="max-w-2xl mx-auto mt-6 bg-[#F7F7F7] border border-[#DDDDDD] rounded-xl p-4 text-center sm:text-left">
-          <p className="text-xs text-[#222222] font-medium leading-relaxed">
-            {getFlowExplanation(selectedStructure)}
-          </p>
-        </div>
-      )}
     </div>
   );
 }
