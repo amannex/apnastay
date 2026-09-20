@@ -278,6 +278,14 @@ async function runPhase11Tests() {
     const unpubList = await propertyBackend.getOwnerProperties(ownerAlice, 'unpublished');
     assert(unpubList.data?.length === 1 && unpubList.data[0].id === propUnpub.id, 'Filter "unpublished" returns only unpublished properties');
 
+    // 4b. Filter 'unlisted' (merges draft + unpublished)
+    const unlistedList = await propertyBackend.getOwnerProperties(ownerAlice, 'unlisted');
+    assert(unlistedList.data?.length === 2, 'Filter "unlisted" returns both draft and unpublished properties (2)');
+    assert(
+      unlistedList.data?.some((p) => p.id === propDraft.id) && unlistedList.data?.some((p) => p.id === propUnpub.id),
+      'Filter "unlisted" contains both draft and unpublished items'
+    );
+
     // 5. Filter 'archived'
     const archList = await propertyBackend.getOwnerProperties(ownerAlice, 'archived');
     assert(archList.data?.length === 1 && archList.data[0].id === propArch.id, 'Filter "archived" returns only archived properties');

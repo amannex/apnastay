@@ -82,11 +82,11 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-[48px] font-semibold tracking-tight text-[#222222] leading-[1.18] sm:leading-[1.15]">
-              Tell us about your place
+              Tell us about your property
             </h1>
 
             <p className="text-xs sm:text-base text-[#484848] font-normal leading-relaxed max-w-lg">
-              In this step, we’ll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
+              In this step, we’ll ask you what type of property you have, what you are offering, where it is located, and how your accommodation is structured.
             </p>
           </div>
         </div>

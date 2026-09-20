@@ -17,6 +17,8 @@ export * from './api';
 // Wizard & Dashboard Components
 export { default as StepPropertyType } from './components/wizard/StepPropertyType';
 export { default as StepRentalStructure } from './components/wizard/StepRentalStructure';
+export { default as StepPropertyStructure } from './components/wizard/StepPropertyStructure';
+export type { StepPropertyStructureProps } from './components/wizard/StepPropertyStructure';
 export { default as StepBasicDetails } from './components/wizard/StepBasicDetails';
 export { default as StepLocation } from './components/wizard/StepLocation';
 export type { LocationFormData } from './components/wizard/StepLocation';

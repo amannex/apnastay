@@ -11,7 +11,8 @@ import {
   Loader2,
   AlertCircle,
   ExternalLink,
-  Search
+  Search,
+  X
 } from 'lucide-react';
 
 export interface DetectedAddressComponents {
@@ -20,6 +21,7 @@ export interface DetectedAddressComponents {
   state?: string;
   pincode?: string;
   formattedAddress?: string;
+  streetAddress?: string;
 }
 
 declare global {
@@ -68,49 +70,66 @@ export default function HybridMapPicker({
 
   // --------------------------------------------------------------------------
   // Reverse Geocoding (OpenStreetMap Nominatim)
+  // Uses format=json (which supports CORS access-control-allow-origin: *)
   // --------------------------------------------------------------------------
   const reverseGeocodeOSM = useCallback(
-    async (latitude: number, longitude: number) => {
+    async (latitude: number, longitude: number, autoApply = false) => {
       setIsGeocoding(true);
       try {
-        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&addressdetails=1`;
-        const res = await fetch(url, {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`;
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           const addr = data.address || {};
 
+          // In India, locality can be suburb, neighbourhood, residential area, village, or quarter
           const locality =
             addr.suburb ||
             addr.neighbourhood ||
             addr.residential ||
-            addr.commercial ||
             addr.quarter ||
+            addr.village ||
+            addr.subdivision ||
             addr.city_district ||
+            addr.commercial ||
+            addr.hamlet ||
             '';
 
+          // City can be city, town, municipality, or district
           const city =
             addr.city ||
             addr.town ||
-            addr.village ||
+            addr.municipality ||
+            addr.city_district ||
             addr.county ||
+            addr.state_district ||
+            addr.district ||
             '';
 
-          const state = addr.state || '';
-          const pincode = addr.postcode || '';
+          const state = addr.state || addr.province || '';
+          const pincode = (addr.postcode || '').replace(/\D/g, '');
+          const streetAddress =
+            [addr.house_number || addr.building || addr.amenity, addr.road]
+              .filter(Boolean)
+              .join(', ') || addr.road || '';
 
-          if (locality || city || state || pincode) {
-            setDetectedAddress({
+          if (locality || city || state || pincode || streetAddress) {
+            const components: DetectedAddressComponents = {
               locality,
               city,
               state,
               pincode,
-              formattedAddress: data.display_name
-            });
-            setAppliedBadge(false);
+              formattedAddress: data.display_name,
+              streetAddress
+            };
+            setDetectedAddress(components);
+
+            if (autoApply && onAddressDetected) {
+              onAddressDetected(components);
+              setAppliedBadge(true);
+            } else {
+              setAppliedBadge(false);
+            }
           }
         }
       } catch (err) {
@@ -119,7 +138,7 @@ export default function HybridMapPicker({
         setIsGeocoding(false);
       }
     },
-    []
+    [onAddressDetected]
   );
 
   // --------------------------------------------------------------------------
@@ -385,7 +404,11 @@ export default function HybridMapPicker({
   // --------------------------------------------------------------------------
   // GPS Device Geolocation ("Detect My Location")
   // --------------------------------------------------------------------------
-  const handleDetectLocation = () => {
+  const handleDetectLocation = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (typeof window === 'undefined' || !navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
       return;
@@ -416,7 +439,8 @@ export default function HybridMapPicker({
           }
         }
 
-        reverseGeocodeOSM(newLat, newLng);
+        // Auto-apply address so clicking "Use current location" reflects immediately in the fields
+        reverseGeocodeOSM(newLat, newLng, true);
         setIsLocating(false);
       },
       (error) => {
@@ -429,9 +453,13 @@ export default function HybridMapPicker({
 
   // --------------------------------------------------------------------------
   // Search City / Area (OSM Nominatim Search)
+  // Non-form implementation prevents outer form submission & page refresh
   // --------------------------------------------------------------------------
-  const handleSearchPlace = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearchPlace = async (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!searchQuery.trim()) return;
 
     try {
@@ -461,7 +489,8 @@ export default function HybridMapPicker({
             }
           }
 
-          reverseGeocodeOSM(newLat, newLng);
+          // Auto-apply so the searched address reflects directly in the fields
+          reverseGeocodeOSM(newLat, newLng, true);
         }
       }
     } catch (err) {
@@ -471,7 +500,11 @@ export default function HybridMapPicker({
     }
   };
 
-  const handleApplyAddress = () => {
+  const handleApplyAddress = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (detectedAddress && onAddressDetected) {
       onAddressDetected(detectedAddress);
       setAppliedBadge(true);
@@ -479,129 +512,137 @@ export default function HybridMapPicker({
   };
 
   return (
-    <div className="rounded-2xl border border-[#EDEDED] bg-white overflow-hidden shadow-apple-sm transition-all space-y-3 p-4">
-      {/* MAP HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Compass className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-xs sm:text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5">
-              <span>Interactive Map & Pin</span>
-              {isGoogleProvider ? (
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                  Google Maps
-                </span>
-              ) : (
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
-                  Free OpenStreetMap
-                </span>
-              )}
-            </h4>
-            <p className="text-[11px] text-[#86868B]">
-              Click anywhere on map or drag the pin to pinpoint your property.
-            </p>
-          </div>
-        </div>
-
-        {/* GPS BUTTON */}
-        <button
-          type="button"
-          onClick={handleDetectLocation}
-          disabled={isLocating}
-          className="px-3 py-1.5 rounded-xl bg-[#F5F5F7] hover:bg-[#EDEDED] text-[#1D1D1F] text-xs font-bold inline-flex items-center gap-1.5 transition-all self-start sm:self-center disabled:opacity-50"
-        >
-          {isLocating ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
-          ) : (
-            <Crosshair className="w-3.5 h-3.5 text-blue-600" />
-          )}
-          <span>{isLocating ? 'Detecting GPS...' : 'Use My Current Location'}</span>
-        </button>
-      </div>
-
-      {/* SEARCH PLACE SEARCHBAR */}
-      <form onSubmit={handleSearchPlace} className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#86868B]" />
+    <div className="space-y-4">
+      {/* SEARCH PLACE SEARCHBAR & CURRENT LOCATION BUTTON (No <form> to avoid nested form submission) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        <div className="relative flex-1 flex items-center">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search neighbourhood, society, or metro station..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#F5F5F7] text-xs text-[#1D1D1F] placeholder:text-[#86868B] border border-transparent focus:border-[#1D1D1F] focus:bg-white focus:outline-none transition-all"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSearchPlace();
+              }
+            }}
+            placeholder="Search neighbourhood, society, or landmark..."
+            className="w-full pl-5 pr-14 py-3 rounded-full border border-[#B0B0B0] hover:border-[#222222] focus:border-[#222222] focus:outline-none text-xs sm:text-sm text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] bg-white transition-colors"
           />
+          <div className="absolute right-1.5 flex items-center gap-1">
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSearchQuery('');
+                }}
+                className="p-1.5 text-[#717171] hover:text-[#222222] rounded-full transition-colors"
+                title="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSearchPlace();
+              }}
+              disabled={isGeocoding || !searchQuery.trim()}
+              title="Search location"
+              className="w-9 h-9 rounded-full bg-[#222222] hover:bg-black text-white flex items-center justify-center transition-all disabled:opacity-40 active:scale-95 shrink-0"
+            >
+              {isGeocoding ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Search className="w-4 h-4 text-white" />
+              )}
+            </button>
+          </div>
         </div>
+
         <button
-          type="submit"
-          disabled={isGeocoding || !searchQuery.trim()}
-          className="px-3.5 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all disabled:opacity-40"
+          type="button"
+          onClick={handleDetectLocation}
+          disabled={isLocating}
+          className="px-4 py-3 rounded-full border border-[#B0B0B0] hover:border-[#222222] text-[#222222] text-xs font-medium inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shrink-0 bg-white"
         >
-          {isGeocoding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Find on Map'}
+          {isLocating ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#222222]" />
+          ) : (
+            <Crosshair className="w-3.5 h-3.5 text-[#222222]" />
+          )}
+          <span>{isLocating ? 'Locating...' : 'Use current location'}</span>
         </button>
-      </form>
+      </div>
+
+      {/* CONFIRM ADDRESS BANNER WHEN DETECTED FROM MAP */}
+      {detectedAddress && (detectedAddress.locality || detectedAddress.city || detectedAddress.state) && (
+        <div className="bg-[#F7F7F7] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+          <div className="min-w-0">
+            <span className="text-[11px] font-semibold text-[#717171] uppercase tracking-wider block">
+              Location detected on map
+            </span>
+            <p className="text-xs sm:text-sm font-medium text-[#222222] truncate">
+              {detectedAddress.formattedAddress ||
+                [detectedAddress.locality, detectedAddress.city, detectedAddress.state, detectedAddress.pincode]
+                  .filter(Boolean)
+                  .join(', ')}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleApplyAddress}
+            className={`shrink-0 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              appliedBadge
+                ? 'bg-[#222222] text-white opacity-90'
+                : 'bg-[#222222] hover:bg-black text-white active:scale-95'
+            }`}
+          >
+            {appliedBadge ? '✓ Details filled into form' : 'Confirm & fill address'}
+          </button>
+        </div>
+      )}
 
       {/* ERROR ALERT */}
       {mapError && (
-        <div className="p-3 rounded-xl bg-amber-50 text-amber-900 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+        <div className="p-3 rounded-xl bg-[#F7F7F7] text-[#717171] text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#717171] shrink-0" />
           <span>{mapError}</span>
         </div>
       )}
 
-      {/* MAP CANVAS CONTAINER */}
-      <div className="relative w-full h-64 sm:h-72 rounded-xl overflow-hidden border border-[#EDEDED] bg-[#F5F5F7]">
+      {/* BORDERLESS MAP CANVAS CONTAINER WITH ISOLATION */}
+      <div
+        className="relative w-full h-72 sm:h-80 rounded-2xl overflow-hidden bg-[#F7F7F7] z-0"
+        style={{ isolation: 'isolate' }}
+      >
         {isLoading && (
-          <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-xs font-semibold text-[#86868B]">
-            <Loader2 className="w-5 h-5 animate-spin text-[#1D1D1F]" />
-            <span>Loading interactive map...</span>
+          <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-xs font-medium text-[#717171]">
+            <Loader2 className="w-5 h-5 animate-spin text-[#222222]" />
+            <span>Loading map...</span>
           </div>
         )}
 
         <div ref={mapContainerRef} className="w-full h-full" />
       </div>
 
-      {/* COORDINATES DISPLAY & ADDRESS AUTO-FILL BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-[#EDEDED]">
-        <div className="flex items-center gap-2 text-xs text-[#86868B] font-mono">
-          <span className="font-semibold text-[#1D1D1F]">Coordinates:</span>
+      {/* COORDINATES DISPLAY & PIN INSTRUCTION */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-[#717171]">
+        <p className="text-[11px] sm:text-xs">
+          Drag the pin or map to fine-tune the exact location.
+        </p>
+        <div className="flex items-center gap-1.5 font-mono text-[11px]">
+          <span>Coordinates:</span>
           <span>
             {lat.toFixed(5)}, {lng.toFixed(5)}
           </span>
-          {isGeocoding && <Loader2 className="w-3 h-3 animate-spin text-blue-600 ml-1" />}
+          {isGeocoding && <Loader2 className="w-3 h-3 animate-spin text-[#222222] ml-1" />}
         </div>
-
-        {/* DETECTED ADDRESS PILL */}
-        {detectedAddress && (detectedAddress.locality || detectedAddress.city) && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#1D1D1F] font-semibold truncate max-w-[220px]">
-              {[detectedAddress.locality, detectedAddress.city].filter(Boolean).join(', ')}
-            </span>
-            <button
-              type="button"
-              onClick={handleApplyAddress}
-              disabled={appliedBadge}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-all ${
-                appliedBadge
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
-              }`}
-            >
-              {appliedBadge ? (
-                <>
-                  <Check className="w-3 h-3 text-emerald-600" />
-                  <span>Applied</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3 h-3" />
-                  <span>Apply to Form</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -46,30 +46,30 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
   },
   {
     stepNumber: 3,
-    key: 'basic_details',
-    title: 'Basic Details & Description',
-    shortLabel: 'Details',
-    description: 'Provide an appealing title and descriptive overview of your property.',
-    isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.title && p.title.trim().length >= 5 && p.description && p.description.trim().length >= 10)
-  },
-  {
-    stepNumber: 4,
     key: 'location',
     title: 'Location & Address',
     shortLabel: 'Location',
     description: 'Specify the street address, locality, city, postal code, and optional map coordinates.',
     isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.location?.city && p.location?.addressLine1 && p.location?.pincode)
+    isCompleted: (p) => Boolean(p.location?.city && (p.location?.addressLine1 || p.location?.address) && p.location?.pincode)
+  },
+  {
+    stepNumber: 4,
+    key: 'basic_details',
+    title: 'Basic Details & Floor Plan',
+    shortLabel: 'Basics',
+    description: 'Share guest capacity, rooms, beds, bathrooms, and title description.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.title && p.title.trim().length >= 5 && p.description && p.description.trim().length >= 10)
   },
   {
     stepNumber: 5,
-    key: 'photos',
-    title: 'Photos & Media',
-    shortLabel: 'Photos',
-    description: 'Upload high-resolution photographs to showcase your property to prospective tenants.',
+    key: 'property_structure',
+    title: 'Rooms or Units',
+    shortLabel: 'Structure',
+    description: 'Tell us about the rooms or units and accommodation structure.',
     isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.photos && p.photos.length >= 1)
+    isCompleted: (p) => Boolean(p.units && p.units.length > 0)
   },
   {
     stepNumber: 6,

@@ -101,7 +101,7 @@ export default function RegisterPage() {
     if (!password) {
       errors.password = 'Password is required.';
     } else if (password.length < 8) {
-      errors.password = 'Must be at least 8 characters long.';
+      errors.password = 'Must be at least 8 characters.';
     }
 
     if (!confirmPassword) {
