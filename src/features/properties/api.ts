@@ -790,7 +790,15 @@ export async function deleteProperty(propertyId: string): Promise<PropertyApiRes
     if (!res.ok) {
       if (shouldFallbackToSimulation(res, data)) {
         const ctx = await resolveRequestContext();
-        return propertyBackend.deleteProperty(ctx, propertyId);
+        const simRes = propertyBackend.deleteProperty(ctx, propertyId);
+        if (typeof window !== 'undefined' && simRes.success) {
+          if (window.sessionStorage?.getItem('apnastay_active_draft_id') === propertyId) {
+            window.sessionStorage?.removeItem('apnastay_active_draft_id');
+            window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
+            window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
+          }
+        }
+        return simRes;
       }
       return {
         success: false,
@@ -799,6 +807,18 @@ export async function deleteProperty(propertyId: string): Promise<PropertyApiRes
         error: data?.message || data?.error || 'Failed to delete property.'
       };
     }
+
+    // Keep local cache and session state synchronized when deleted from remote CMS
+    const ctx = await resolveRequestContext();
+    propertyBackend.deleteProperty(ctx, propertyId);
+    if (typeof window !== 'undefined') {
+      if (window.sessionStorage?.getItem('apnastay_active_draft_id') === propertyId) {
+        window.sessionStorage?.removeItem('apnastay_active_draft_id');
+        window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
+        window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
+      }
+    }
+
     return {
       success: true,
       status: res.status,
@@ -806,7 +826,15 @@ export async function deleteProperty(propertyId: string): Promise<PropertyApiRes
     };
   } catch (err) {
     const ctx = await resolveRequestContext();
-    return propertyBackend.deleteProperty(ctx, propertyId);
+    const simRes = propertyBackend.deleteProperty(ctx, propertyId);
+    if (typeof window !== 'undefined' && simRes.success) {
+      if (window.sessionStorage?.getItem('apnastay_active_draft_id') === propertyId) {
+        window.sessionStorage?.removeItem('apnastay_active_draft_id');
+        window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
+        window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
+      }
+    }
+    return simRes;
   }
 }
 
