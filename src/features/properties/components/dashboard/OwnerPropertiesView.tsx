@@ -27,7 +27,8 @@ import {
   Filter,
   RefreshCw,
   SlidersHorizontal,
-  Trash2
+  Trash2,
+  MoreVertical
 } from 'lucide-react';
 import type { Property, PropertyStatus, PropertyType, PropertySortOption } from '../../types';
 import {
@@ -70,7 +71,7 @@ const SORT_OPTIONS: { value: PropertySortOption; label: string }[] = [
   { value: 'completeness_desc', label: 'Highest Completeness' }
 ];
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 12;
 
 export default function OwnerPropertiesView() {
   const router = useRouter();
@@ -79,6 +80,9 @@ export default function OwnerPropertiesView() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+
+  // 3-dot action menu active ID
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   // Filters & Search
   const [activeTab, setActiveTab] = useState<FilterTabKey>('active');
@@ -97,6 +101,26 @@ export default function OwnerPropertiesView() {
 
   // Quick Preview modal state
   const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
+
+  // Close 3-dot menu when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (activeMenuId && !(e.target as Element).closest('[data-property-menu]')) {
+        setActiveMenuId(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMenuId(null);
+      }
+    };
+    window.addEventListener('click', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('click', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeMenuId]);
 
   const fetchProperties = async () => {
     try {
@@ -125,6 +149,7 @@ export default function OwnerPropertiesView() {
   // Reset pagination when filter criteria change
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
+    setActiveMenuId(null);
   }, [activeTab, searchQuery, selectedType, sortOption]);
 
   // Compute tab counts
@@ -223,9 +248,16 @@ export default function OwnerPropertiesView() {
 
   // Open confirmation modal for an action
   const handleOpenActionModal = (prop: Property, action: LifecycleActionType) => {
+    setActiveMenuId(null);
     setModalProperty(prop);
     setModalAction(action);
     setModalError(null);
+  };
+
+  // Open preview modal
+  const handleOpenPreview = (prop: Property) => {
+    setActiveMenuId(null);
+    setPreviewProperty(prop);
   };
 
   // Close confirmation modal
@@ -649,9 +681,10 @@ export default function OwnerPropertiesView() {
         </div>
       )}
 
-      {/* PROPERTIES LIST & CARDS */}
+      {/* PROPERTIES GRID & CARDS */}
       {!loading && paginatedProperties.length > 0 && (
-        <div className="space-y-3.5">
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5 sm:gap-6">
           {paginatedProperties.map((prop) => {
             const template = getPropertyTemplate(prop.propertyType);
             const isDraft = prop.status === 'draft';
@@ -659,325 +692,383 @@ export default function OwnerPropertiesView() {
             const isUnpublished = prop.status === 'unpublished';
             const isArchived = prop.status === 'archived';
             const coverPhoto = prop.photos?.find((p) => p.isCover) || prop.photos?.[0];
+            const isMenuOpen = activeMenuId === prop.id;
 
             return (
               <div
                 key={prop.id}
-                className="bg-white rounded-2xl p-5 border border-[#EDEDED] shadow-apple-sm hover:border-[#D1D1D6] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-white rounded-3xl p-4 border border-[#EDEDED] shadow-apple-sm hover:shadow-apple-md hover:border-[#D1D1D6] transition-all duration-300 flex flex-col justify-between group relative"
               >
-                {/* LEFT: PHOTO + DETAILS */}
-                <div className="flex items-start gap-4 flex-1">
+                {/* TOP: SQUARE FEATURED PHOTO THUMBNAIL */}
+                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#F5F5F7] border border-[#EDEDED]/80 mb-3.5 select-none">
                   {coverPhoto ? (
-                    <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-[#F5F5F7] overflow-hidden shrink-0 border border-[#EDEDED] relative group">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={getSafeImageUrl(coverPhoto.thumbnailUrl || coverPhoto.url)}
-                        alt="Cover"
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
-                      />
-                    </div>
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={getSafeImageUrl(coverPhoto.thumbnailUrl || coverPhoto.url)}
+                      alt={prop.title || 'Property photo'}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
+                      onClick={() => handleOpenPreview(prop)}
+                    />
                   ) : (
-                    <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-[#F5F5F7] flex items-center justify-center text-[#1D1D1F] shrink-0 border border-[#EDEDED]">
-                      <Building2 className="w-8 h-8 text-[#86868B]" />
+                    <div
+                      className="w-full h-full flex flex-col items-center justify-center text-[#86868B] p-4 text-center cursor-pointer"
+                      onClick={() => handleOpenPreview(prop)}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-apple-xs mb-2 border border-[#EDEDED]">
+                        <Building2 className="w-6 h-6 text-[#1D1D1F]" />
+                      </div>
+                      <span className="text-xs font-semibold text-[#86868B]">No Photos Yet</span>
                     </div>
                   )}
 
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    {/* TITLE & BADGES */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-sm sm:text-base text-[#1D1D1F] truncate max-w-md">
-                        {prop.title || `New ${template.label} Draft`}
-                      </h3>
-
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#F5F5F7] text-[#1D1D1F] shrink-0">
-                        {prop.customPropertyType || template.label}
-                      </span>
-
-                      {/* STATUS BADGES */}
-                      {isDraft && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
-                          <Clock className="w-3 h-3 text-amber-600" />
-                          <span>Unlisted · Draft ({prop.completenessScore}% complete)</span>
-                        </span>
-                      )}
-
-                      {isPublished && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                          <span>Published Live</span>
-                        </span>
-                      )}
-
-                      {isUnpublished && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 shrink-0">
-                          <EyeOff className="w-3 h-3 text-zinc-500" />
-                          <span>Unlisted · Off-Market</span>
-                        </span>
-                      )}
-
-                      {isArchived && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
-                          <Archive className="w-3 h-3 text-slate-500" />
-                          <span>Archived</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* METADATA LINE */}
-                    <div className="text-xs text-[#86868B] flex items-center gap-2 flex-wrap">
-                      <span className="capitalize">{prop.rentalStructure.replace(/_/g, ' ')}</span>
-
-                      <span>•</span>
-                      <span>{prop.units?.length || 0} Unit{prop.units?.length === 1 ? '' : 's'}</span>
-
-                      {prop.photos && prop.photos.length > 0 && (
-                        <>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
-                            <Camera className="w-3 h-3" />
-                            <span>{prop.photos.length} Photo{prop.photos.length > 1 ? 's' : ''}</span>
-                          </span>
-                        </>
-                      )}
-
-                      {(prop.location?.locality || prop.location?.city) && (
-                        <>
-                          <span>•</span>
-                          <span className="inline-flex items-center gap-1 text-[#1D1D1F] font-medium">
-                            <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
-                            <span>{[prop.location?.locality, prop.location?.city].filter(Boolean).join(', ')}</span>
-                          </span>
-                        </>
-                      )}
-
-                      {/* BASIC PRICE */}
-                      {prop.pricing && (
-                        <>
-                          <span>•</span>
-                          <span className="font-extrabold text-emerald-700">
-                            {formatPricingDisplay(prop.pricing, prop.pricing.monthlyRent || 0)}
-                          </span>
-                        </>
-                      )}
-
-                      {prop.updatedAt && (
-                        <>
-                          <span>•</span>
-                          <span className="text-[11px] text-[#86868B]">
-                            Updated {formatTimestamp(prop.updatedAt)}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* COMPLETENESS PROGRESS BAR (FOR DRAFTS) */}
+                  {/* FLOATING STATUS BADGE (TOP-LEFT) */}
+                  <div className="absolute top-3 left-3 z-10 pointer-events-none">
                     {isDraft && (
-                      <div className="pt-1 max-w-xs flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-[#EDEDED] rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              (prop.completenessScore || 0) >= 80
-                                ? 'bg-emerald-600'
-                                : (prop.completenessScore || 0) >= 50
-                                ? 'bg-amber-500'
-                                : 'bg-rose-500'
-                            }`}
-                            style={{ width: `${Math.max(10, prop.completenessScore || 15)}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-bold text-[#86868B] shrink-0">
-                          {prop.completenessScore}%
-                        </span>
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-amber-500/90 text-white backdrop-blur-md shadow-sm">
+                        <Clock className="w-3 h-3" />
+                        <span>Draft ({prop.completenessScore}%)</span>
+                      </span>
+                    )}
+                    {isPublished && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-600/90 text-white backdrop-blur-md shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        <span>Published</span>
+                      </span>
+                    )}
+                    {isUnpublished && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-zinc-800/80 text-white backdrop-blur-md shadow-sm">
+                        <EyeOff className="w-3 h-3 text-zinc-300" />
+                        <span>Unlisted</span>
+                      </span>
+                    )}
+                    {isArchived && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-slate-700/85 text-white backdrop-blur-md shadow-sm">
+                        <Archive className="w-3 h-3 text-slate-300" />
+                        <span>Archived</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* FLOATING 3-DOT MENU BUTTON & DROPDOWN (TOP-RIGHT) */}
+                  <div className="absolute top-3 right-3 z-20" data-property-menu>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuId(isMenuOpen ? null : prop.id);
+                      }}
+                      aria-label="Property options"
+                      aria-expanded={isMenuOpen}
+                      className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#1D1D1F] backdrop-blur-md shadow-sm hover:shadow-md flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+
+                    {/* DROPDOWN MENU */}
+                    {isMenuOpen && (
+                      <div
+                        className="absolute right-0 mt-2 w-48 bg-white rounded-2xl border border-[#EDEDED] shadow-apple-lg p-1.5 z-30 animate-in fade-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* DRAFT ACTIONS */}
+                        {isDraft && (
+                          <div className="space-y-0.5">
+                            <Link
+                              href={`/owner/dashboard/properties/${prop.id}/edit`}
+                              onClick={() => setActiveMenuId(null)}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Continue Setup</span>
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPreview(prop)}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Quick Preview</span>
+                            </button>
+
+                            {prop.completenessScore >= 80 && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenActionModal(prop, 'publish')}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition-colors text-left"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Publish Live</span>
+                              </button>
+                            )}
+
+                            <div className="my-1 border-t border-[#EDEDED]" />
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'archive')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Archive className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Archive Draft</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'delete')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete Permanently</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* PUBLISHED ACTIONS */}
+                        {isPublished && (
+                          <div className="space-y-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPreview(prop)}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Quick Preview</span>
+                            </button>
+
+                            <Link
+                              href={`/owner/dashboard/properties/${prop.id}/edit`}
+                              onClick={() => setActiveMenuId(null)}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Manage / Edit</span>
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'unpublish')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-amber-700 hover:bg-amber-50 flex items-center gap-2 transition-colors text-left"
+                            >
+                              <EyeOff className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Unlist (Pause)</span>
+                            </button>
+
+                            <div className="my-1 border-t border-[#EDEDED]" />
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'archive')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Archive className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Archive Listing</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'delete')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete Permanently</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* UNPUBLISHED ACTIONS */}
+                        {isUnpublished && (
+                          <div className="space-y-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'publish')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Publish Live</span>
+                            </button>
+
+                            <Link
+                              href={`/owner/dashboard/properties/${prop.id}/edit`}
+                              onClick={() => setActiveMenuId(null)}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Edit Listing</span>
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPreview(prop)}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Quick Preview</span>
+                            </button>
+
+                            <div className="my-1 border-t border-[#EDEDED]" />
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'archive')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#86868B] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Archive className="w-3.5 h-3.5 text-[#86868B]" />
+                              <span>Archive Listing</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'delete')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete Permanently</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* ARCHIVED ACTIONS */}
+                        {isArchived && (
+                          <div className="space-y-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'restore')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-bold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 text-[#1D1D1F]" />
+                              <span>Restore Listing</span>
+                            </button>
+
+                            <div className="my-1 border-t border-[#EDEDED]" />
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenActionModal(prop, 'delete')}
+                              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors text-left"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete Permanently</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* RIGHT: ACTION TOOLBAR */}
-                <div className="flex items-center gap-2 self-end md:self-center flex-wrap shrink-0">
-                  {/* PREVIEW BUTTON (AVAILABLE FOR DRAFT, PUBLISHED, UNPUBLISHED) */}
-                  {!isArchived && (
-                    <button
-                      type="button"
-                      onClick={() => setPreviewProperty(prop)}
-                      className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold transition-all inline-flex items-center gap-1.5"
-                      title="Quick Preview"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-[#86868B]" />
-                      <span className="hidden sm:inline">Preview</span>
-                    </button>
-                  )}
-
-                  {/* DRAFT ACTIONS */}
-                  {isDraft && (
-                    <>
-                      {prop.completenessScore >= 80 && (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenActionModal(prop, 'publish')}
-                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
-                          title="Publish listing live"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Publish Live</span>
-                        </button>
-                      )}
-
-                      <Link
-                        href={`/owner/dashboard/properties/${prop.id}/edit`}
-                        className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
-                      >
-                        <span>Continue Setup</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'archive')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#86868B] hover:text-[#1D1D1F] text-xs font-semibold transition-all"
-                        title="Archive draft"
-                      >
-                        <Archive className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'delete')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
-                        title="Delete draft"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* PUBLISHED ACTIONS */}
-                  {isPublished && (
-                    <>
-                      <Link
-                        href={`/owner/dashboard/properties/${prop.id}/edit`}
-                        className="px-3.5 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold transition-all inline-flex items-center gap-1.5"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
-                        <span>Manage</span>
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'unpublish')}
-                        className="px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50/60 hover:bg-amber-100/60 text-amber-800 text-xs font-bold transition-all inline-flex items-center gap-1.5"
-                      >
-                        <EyeOff className="w-3.5 h-3.5" />
-                        <span>Unlist</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'archive')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
-                        title="Archive listing"
-                      >
-                        <Archive className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'delete')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
-                        title="Delete listing"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* UNPUBLISHED ACTIONS */}
-                  {isUnpublished && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'publish')}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Publish</span>
-                      </button>
-
-                      <Link
-                        href={`/owner/dashboard/properties/${prop.id}/edit`}
-                        className="px-3.5 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold transition-all inline-flex items-center gap-1.5"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
-                        <span>Edit</span>
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'archive')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
-                        title="Archive listing"
-                      >
-                        <Archive className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'delete')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
-                        title="Delete listing"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* ARCHIVED ACTIONS */}
-                  {isArchived && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'restore')}
-                        className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Restore Listing</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenActionModal(prop, 'delete')}
-                        className="px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-apple-xs active:scale-[0.98]"
-                        title="Permanently delete archived listing"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Delete Permanently</span>
-                      </button>
+                  {/* FLOATING PHOTO COUNT (BOTTOM-LEFT) */}
+                  {prop.photos && prop.photos.length > 0 && (
+                    <div className="absolute bottom-3 left-3 z-10 pointer-events-none">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-md shadow-sm">
+                        <Camera className="w-3 h-3" />
+                        <span>{prop.photos.length}</span>
+                      </span>
                     </div>
                   )}
+                </div>
+
+                {/* DETAILS BELOW THUMBNAIL */}
+                <div className="space-y-2 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* TITLE */}
+                    <h3
+                      onClick={() => handleOpenPreview(prop)}
+                      className="font-bold text-sm sm:text-base text-[#1D1D1F] line-clamp-1 hover:text-[#FF385C] cursor-pointer transition-colors"
+                      title={prop.title || `New ${template.label} Draft`}
+                    >
+                      {prop.title || `New ${template.label} Draft`}
+                    </h3>
+
+                    {/* LOCATION */}
+                    <div className="flex items-center gap-1 text-xs text-[#86868B] mt-0.5 truncate">
+                      <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+                      <span className="truncate">
+                        {[prop.location?.locality, prop.location?.city].filter(Boolean).join(', ') || 'Location Pending'}
+                      </span>
+                    </div>
+
+                    {/* STRUCTURE & UNITS BADGES */}
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#86868B] mt-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-md bg-[#F5F5F7] text-[#1D1D1F] font-bold text-[10px] uppercase">
+                        {prop.customPropertyType || template.label}
+                      </span>
+                      <span>•</span>
+                      <span className="capitalize">{prop.rentalStructure.replace(/_/g, ' ')}</span>
+                      <span>•</span>
+                      <span>{prop.units?.length || 0} Unit{prop.units?.length === 1 ? '' : 's'}</span>
+                    </div>
+                  </div>
+
+                  {/* DRAFT COMPLETENESS PROGRESS BAR */}
+                  {isDraft && (
+                    <div className="pt-2">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-[#86868B] mb-1">
+                        <span>Completeness</span>
+                        <span>{prop.completenessScore}%</span>
+                      </div>
+                      <div className="h-1.5 bg-[#EDEDED] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            (prop.completenessScore || 0) >= 80
+                              ? 'bg-emerald-600'
+                              : (prop.completenessScore || 0) >= 50
+                              ? 'bg-amber-500'
+                              : 'bg-rose-500'
+                          }`}
+                          style={{ width: `${Math.max(10, prop.completenessScore || 15)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PRICE & PREVIEW FOOTER */}
+                  <div className="pt-2.5 mt-2 border-t border-[#EDEDED] flex items-center justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] uppercase text-[#86868B] font-bold block">
+                        Rent
+                      </span>
+                      <span className="font-extrabold text-sm sm:text-base text-[#1D1D1F]">
+                        {prop.pricing
+                          ? formatPricingDisplay(prop.pricing, prop.pricing.monthlyRent || 0)
+                          : 'Price Pending'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenPreview(prop)}
+                      className="text-xs font-bold text-[#86868B] hover:text-[#1D1D1F] px-2.5 py-1.5 rounded-xl hover:bg-[#F5F5F7] transition-all inline-flex items-center gap-1 border border-transparent hover:border-[#EDEDED]"
+                      title="Quick Preview"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Preview</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })}
-
-          {/* PAGINATION / LOAD MORE */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#86868B]">
-            <div>
-              Showing <span className="font-bold text-[#1D1D1F]">{paginatedProperties.length}</span> of{' '}
-              <span className="font-bold text-[#1D1D1F]">{filteredAndSortedProperties.length}</span> properties
-            </div>
-
-            {hasMoreToLoad && (
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                className="px-5 py-2.5 rounded-xl border border-[#EDEDED] bg-white hover:bg-[#F5F5F7] text-xs font-bold text-[#1D1D1F] transition-all shadow-apple-xs active:scale-[0.98]"
-              >
-                Load More Properties
-              </button>
-            )}
-          </div>
         </div>
-      )}
+
+        {/* PAGINATION / LOAD MORE */}
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#86868B]">
+          <div>
+            Showing <span className="font-bold text-[#1D1D1F]">{paginatedProperties.length}</span> of{' '}
+            <span className="font-bold text-[#1D1D1F]">{filteredAndSortedProperties.length}</span> properties
+          </div>
+
+          {hasMoreToLoad && (
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              className="px-5 py-2.5 rounded-xl border border-[#EDEDED] bg-white hover:bg-[#F5F5F7] text-xs font-bold text-[#1D1D1F] transition-all shadow-apple-xs active:scale-[0.98]"
+            >
+              Load More Properties
+            </button>
+          )}
+        </div>
+      </>
+    )}
 
       {/* QUICK PREVIEW MODAL */}
       <PropertyPreviewModal

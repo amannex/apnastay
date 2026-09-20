@@ -18,7 +18,8 @@ import {
   Clock,
   AlertCircle,
   Trash2,
-  Edit3
+  Edit3,
+  MoreVertical
 } from 'lucide-react';
 import { fetchSession, getSessionRole } from '../lib/auth/session';
 import { can, getOwnerVerificationStatus, canPublishProperty, submitOwnerVerification } from '../features/auth';
@@ -43,6 +44,18 @@ export default function OwnerDashboardPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [actionToast, setActionToast] = useState<string | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // Close 3-dot menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (activeMenuId && !(e.target as Element).closest('[data-property-overview-menu]')) {
+        setActiveMenuId(null);
+      }
+    };
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [activeMenuId]);
 
   useEffect(() => {
     fetchSession().then((profile) => {
@@ -328,86 +341,139 @@ export default function OwnerDashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {properties.map((prop) => {
                 const coverPhoto = prop.photos?.find((p) => p.isCover)?.url || prop.photos?.[0]?.url;
                 const isArchived = prop.status === 'archived';
                 const isDraft = prop.status === 'draft';
                 const isPublished = prop.status === 'published';
+                const isMenuOpen = activeMenuId === prop.id;
 
                 return (
                   <div
                     key={prop.id}
-                    className="p-4 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all hover:border-[#D1D1D6]"
+                    className="bg-white rounded-3xl p-4 border border-[#EDEDED] shadow-apple-sm hover:shadow-apple-md hover:border-[#D1D1D6] transition-all flex flex-col justify-between group relative"
                   >
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#E1224D] shadow-sm shrink-0 overflow-hidden border border-[#EDEDED]">
-                        {coverPhoto ? (
-                          <img
-                            src={coverPhoto}
-                            alt={prop.title || 'Property'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Building2 className="w-6 h-6" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-sm text-[#1D1D1F]">
-                            {prop.title || 'Untitled Property'}
-                          </h4>
-                          <span
-                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded uppercase ${
-                              isPublished
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : isDraft
-                                ? 'bg-amber-100 text-amber-800'
-                                : isArchived
-                                ? 'bg-rose-100 text-rose-800'
-                                : 'bg-slate-200 text-slate-700'
-                            }`}
-                          >
-                            {isPublished ? 'Published' : isDraft ? 'Unlisted (Draft)' : isArchived ? 'Archived' : 'Unlisted'}
-                          </span>
+                    {/* SQUARE THUMBNAIL */}
+                    <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#F5F5F7] border border-[#EDEDED]/80 mb-3 select-none">
+                      {coverPhoto ? (
+                        <img
+                          src={coverPhoto}
+                          alt={prop.title || 'Property'}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-[#86868B] p-4 text-center">
+                          <Building2 className="w-8 h-8 opacity-40 mb-1" />
+                          <span className="text-[11px] font-semibold">No Photo</span>
                         </div>
-                        <p className="text-xs text-[#6E6E73] mt-0.5">
-                          {prop.location?.city || 'Location Pending'} • {formatCurrency(prop.pricing?.monthlyRent)} / month
-                          {prop.units && prop.units.length > 0 ? ` • ${prop.units.length} Unit${prop.units.length > 1 ? 's' : ''}` : ''}
-                        </p>
+                      )}
+
+                      {/* STATUS BADGE (TOP LEFT) */}
+                      <div className="absolute top-3 left-3 z-10 pointer-events-none">
+                        <span
+                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase backdrop-blur-md shadow-sm ${
+                            isPublished
+                              ? 'bg-emerald-600/90 text-white'
+                              : isDraft
+                              ? 'bg-amber-500/90 text-white'
+                              : isArchived
+                              ? 'bg-slate-700/85 text-white'
+                              : 'bg-zinc-800/80 text-white'
+                          }`}
+                        >
+                          {isPublished ? 'Published' : isDraft ? 'Draft' : isArchived ? 'Archived' : 'Unlisted'}
+                        </span>
+                      </div>
+
+                      {/* 3-DOT MENU BUTTON (TOP RIGHT) */}
+                      <div className="absolute top-3 right-3 z-20" data-property-overview-menu>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenuId(isMenuOpen ? null : prop.id);
+                          }}
+                          aria-label="Property options"
+                          className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#1D1D1F] backdrop-blur-md shadow-sm hover:shadow-md flex items-center justify-center transition-all focus-visible:outline-none"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {isMenuOpen && (
+                          <div
+                            className="absolute right-0 mt-2 w-44 bg-white rounded-2xl border border-[#EDEDED] shadow-apple-lg p-1.5 z-30 animate-in fade-in zoom-in-95 duration-150"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="space-y-0.5">
+                              {can(user, 'apnastay_manage_visits') && !isArchived && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    alert(`Viewing visits for ${prop.title}...`);
+                                  }}
+                                  className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors text-left"
+                                >
+                                  <Key className="w-3.5 h-3.5 text-[#86868B]" />
+                                  <span>Self-Tour Visits</span>
+                                </button>
+                              )}
+
+                              {can(user, 'apnastay_edit_own_property') && !isArchived && (
+                                <Link
+                                  href={`/owner/dashboard/properties/${prop.id}/edit`}
+                                  onClick={() => setActiveMenuId(null)}
+                                  className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-[#1D1D1F] hover:bg-[#F5F5F7] flex items-center gap-2 transition-colors"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
+                                  <span>Edit Listing</span>
+                                </Link>
+                              )}
+
+                              <div className="my-1 border-t border-[#EDEDED]" />
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveMenuId(null);
+                                  setPropertyToDelete(prop);
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors text-left"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Delete Property</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                      {can(user, 'apnastay_manage_visits') && !isArchived && (
-                        <button
-                          type="button"
-                          onClick={() => alert(`Viewing visits for ${prop.title}...`)}
-                          className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#EDEDED] text-[#1D1D1F] text-xs font-bold transition-all border border-[#EDEDED]"
-                        >
-                          Visits
-                        </button>
-                      )}
+                    {/* DETAILS */}
+                    <div className="space-y-2 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-bold text-sm text-[#1D1D1F] line-clamp-1" title={prop.title || 'Untitled'}>
+                          {prop.title || 'Untitled Property'}
+                        </h4>
+                        <p className="text-xs text-[#86868B] mt-0.5 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+                          <span className="truncate">{prop.location?.city || 'Location Pending'}</span>
+                          {prop.units && prop.units.length > 0 && (
+                            <>
+                              <span>•</span>
+                              <span>{prop.units.length} Unit{prop.units.length > 1 ? 's' : ''}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
 
-                      {can(user, 'apnastay_edit_own_property') && !isArchived && (
-                        <Link
-                          href={`/owner/dashboard/properties/${prop.id}/edit`}
-                          className="px-3.5 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span>Edit</span>
-                        </Link>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => setPropertyToDelete(prop)}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] bg-white hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all inline-flex items-center gap-1"
-                        title="Delete Property"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Delete</span>
-                      </button>
+                      <div className="pt-2 mt-1 border-t border-[#EDEDED] flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#86868B]">Monthly Rent</span>
+                        <span className="font-extrabold text-sm text-[#1D1D1F]">
+                          {formatCurrency(prop.pricing?.monthlyRent)} /mo
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );
