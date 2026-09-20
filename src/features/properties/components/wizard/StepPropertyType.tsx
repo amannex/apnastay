@@ -4,41 +4,82 @@ import React from 'react';
 import {
   Home,
   Building2,
-  Sparkles,
   Users,
   GraduationCap,
-  Building,
   Layers,
   DoorOpen,
   Coffee,
-  Briefcase,
+  BedDouble,
   PlusCircle,
-  CheckCircle2,
-  ArrowRight
+  Check
 } from 'lucide-react';
 import type { PropertyType } from '../../types';
 
-interface PropertyTypeOption {
+export interface PropertyTypeOption {
   id: PropertyType;
   title: string;
+  description: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const PROPERTY_TYPES: PropertyTypeOption[] = [
-  { id: 'house', title: 'House', icon: Home },
-  { id: 'apartment', title: 'Flat / apartment', icon: Building2 },
-  { id: 'villa', title: 'Villa', icon: Sparkles },
-  { id: 'pg', title: 'PG / Paying guest', icon: Users },
-  { id: 'hostel', title: 'Hostel', icon: GraduationCap },
-  { id: 'coliving', title: 'Co-living', icon: Coffee },
-  { id: 'independent_floor', title: 'Independent floor', icon: Layers },
-  { id: 'room', title: 'Room / Studio', icon: DoorOpen },
-  { id: 'building', title: 'Entire building', icon: Building },
-  { id: 'commercial', title: 'Commercial', icon: Briefcase },
-  { id: 'other', title: 'Other', icon: PlusCircle }
+export const APNASTAY_PROPERTY_TYPES: PropertyTypeOption[] = [
+  {
+    id: 'apartment',
+    title: 'Apartment / Flat',
+    description: 'Flats in residential societies or standalone buildings',
+    icon: Building2
+  },
+  {
+    id: 'independent_house',
+    title: 'Independent House',
+    description: 'Standalone house, villa, or independent bungalow',
+    icon: Home
+  },
+  {
+    id: 'builder_floor',
+    title: 'Builder Floor',
+    description: 'Dedicated single floor in a low-rise residential building',
+    icon: Layers
+  },
+  {
+    id: 'pg',
+    title: 'PG',
+    description: 'Paying guest accommodation with food & managed amenities',
+    icon: Users
+  },
+  {
+    id: 'hostel',
+    title: 'Hostel',
+    description: 'Student or working professional managed community living',
+    icon: GraduationCap
+  },
+  {
+    id: 'co_living',
+    title: 'Co-living',
+    description: 'Community-driven furnished living with shared spaces',
+    icon: Coffee
+  },
+  {
+    id: 'room',
+    title: 'Room',
+    description: 'Private or shared individual room in a flat or house',
+    icon: DoorOpen
+  },
+  {
+    id: 'bed_space',
+    title: 'Bed / Bed Space',
+    description: 'Individual bed space in a shared room or dorm',
+    icon: BedDouble
+  },
+  {
+    id: 'other',
+    title: 'Other',
+    description: 'Specialty, penthouse, farmstay, or custom format',
+    icon: PlusCircle
+  }
 ];
 
-interface StepPropertyTypeProps {
+export interface StepPropertyTypeProps {
   selectedType: PropertyType | null;
   customPropertyType: string;
   onSelectType: (type: PropertyType) => void;
@@ -56,15 +97,24 @@ export default function StepPropertyType({
   const isOtherSelected = selectedType === 'other';
 
   return (
-    <div className="w-full max-w-2xl sm:max-w-3xl mx-auto animate-fade-in py-2">
-      {/* SECTION HEADING (Centered, clean Airbnb typography) */}
-      <h1 className="text-2xl sm:text-[32px] font-semibold text-[#222222] text-center tracking-tight mb-6 sm:mb-8">
-        Which of these best describes your place?
-      </h1>
+    <div className="w-full max-w-3xl sm:max-w-4xl mx-auto animate-fade-in py-2">
+      {/* SECTION HEADING & SUPPORTING TEXT */}
+      <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 space-y-2">
+        <h1 className="text-2xl sm:text-[32px] font-semibold text-[#1D1D1F] tracking-tight leading-tight">
+          What type of property are you listing?
+        </h1>
+        <p className="text-sm sm:text-base text-[#717171] font-normal leading-relaxed">
+          Choose the option that best describes your property.
+        </p>
+      </div>
 
-      {/* PROPERTY TYPE CARDS GRID (3-columns matching Screenshot 1) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4">
-        {PROPERTY_TYPES.map((option) => {
+      {/* SELECTABLE PROPERTY TYPE CARDS */}
+      <div
+        role="radiogroup"
+        aria-label="Property type selection"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4"
+      >
+        {APNASTAY_PROPERTY_TYPES.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedType === option.id;
 
@@ -72,20 +122,43 @@ export default function StepPropertyType({
             <button
               key={option.id}
               type="button"
+              role="radio"
+              aria-checked={isSelected}
               onClick={() => onSelectType(option.id)}
-              className={`text-left p-4 sm:p-5 rounded-xl border transition-all duration-150 flex flex-col justify-between min-h-[96px] sm:min-h-[108px] active:scale-[0.98] ${
+              className={`group relative text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 flex flex-col justify-between min-h-[112px] sm:min-h-[126px] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1D1D1F] focus-visible:ring-offset-2 ${
                 isSelected
-                  ? 'border-2 border-[#222222] bg-[#F7F7F7]'
-                  : 'border border-[#DDDDDD] hover:border-[#222222] bg-white'
+                  ? 'border-2 border-[#1D1D1F] bg-[#FAFAFA] shadow-apple-xs ring-1 ring-[#1D1D1F]/5'
+                  : 'border border-[#E5E5EA] hover:border-[#1D1D1F] bg-white hover:shadow-apple-xs'
               }`}
             >
-              <div className="w-7 h-7 flex items-center justify-start text-[#222222]">
-                <Icon className="w-6 h-6 stroke-[1.75]" />
+              <div className="flex items-start justify-between w-full">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                    isSelected
+                      ? 'bg-[#1D1D1F] text-white'
+                      : 'bg-[#F5F5F7] text-[#1D1D1F] group-hover:bg-[#EBEBEB]'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 stroke-[1.8]" />
+                </div>
+
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-[#1D1D1F] text-white flex items-center justify-center shadow-xs">
+                    <Check className="w-3 h-3 stroke-[2.5]" />
+                  </div>
+                )}
               </div>
 
-              <span className="text-sm sm:text-base font-semibold text-[#222222] tracking-tight mt-3">
-                {option.title}
-              </span>
+              <div className="mt-3.5">
+                <div className="text-sm sm:text-base font-semibold text-[#1D1D1F] tracking-tight">
+                  {option.title}
+                </div>
+                {option.description && (
+                  <p className="text-xs text-[#717171] leading-relaxed mt-0.5 line-clamp-2">
+                    {option.description}
+                  </p>
+                )}
+              </div>
             </button>
           );
         })}
@@ -93,10 +166,10 @@ export default function StepPropertyType({
 
       {/* CUSTOM "OTHER" SPECIFICATION INPUT */}
       {isOtherSelected && (
-        <div className="mt-6 p-4 rounded-xl border border-[#DDDDDD] bg-[#F7F7F7] animate-fade-in space-y-1.5">
+        <div className="mt-6 p-4 sm:p-5 rounded-2xl border border-[#E5E5EA] bg-[#FAFAFA] animate-fade-in space-y-2 max-w-lg mx-auto">
           <label
             htmlFor="customPropertyType"
-            className="block text-xs font-semibold text-[#222222] uppercase tracking-wider"
+            className="block text-xs font-semibold text-[#1D1D1F] uppercase tracking-wider"
           >
             Specify Property Format
           </label>
@@ -106,7 +179,7 @@ export default function StepPropertyType({
             value={customPropertyType}
             onChange={(e) => onChangeCustomType(e.target.value)}
             placeholder="e.g. Student Housing, Farmstay, Penthouse"
-            className="w-full px-4 py-2.5 rounded-lg border border-[#DDDDDD] text-sm text-[#222222] bg-white placeholder-[#717171] focus:outline-none focus:border-[#222222] transition-all"
+            className="w-full px-4 py-2.5 rounded-xl border border-[#D1D1D6] text-sm text-[#1D1D1F] bg-white placeholder-[#8E8E93] focus:outline-none focus:border-[#1D1D1F] focus:ring-1 focus:ring-[#1D1D1F] transition-all"
             autoFocus
           />
         </div>

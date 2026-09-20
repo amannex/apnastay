@@ -189,6 +189,7 @@ class PropertyBackendStore {
       propertyType: partial.propertyType || 'apartment',
       customPropertyType: partial.customPropertyType,
       rentalStructure: partial.rentalStructure || 'multiple_units',
+      propertyStructure: partial.propertyStructure || (partial.rentalStructure === 'multiple_units' ? 'multiple_units' : 'single_unit'),
       title: partial.title || `Property ${partial.id}`,
       description: partial.description || '',
       status: partial.status || 'draft',
@@ -352,6 +353,7 @@ class PropertyBackendStore {
         propertyType: payload.propertyType,
         customPropertyType: payload.propertyType === 'other' && payload.customPropertyType ? sanitizeText(payload.customPropertyType, 100) : undefined,
         rentalStructure,
+        propertyStructure: payload.propertyStructure || (rentalStructure === 'multiple_units' ? 'multiple_units' : 'single_unit'),
         title: sanitizedTitle,
         description: sanitizedDesc,
         status: 'draft',
@@ -444,7 +446,7 @@ class PropertyBackendStore {
    */
   public getOwnerProperties(
     ctx: BackendRequestContext,
-    filterStatus?: PropertyStatus | 'active' | 'all'
+    filterStatus?: PropertyStatus | 'active' | 'all' | 'unlisted'
   ): PropertyApiResponse<Property[]> {
     try {
       this.assertAuthenticated(ctx);
@@ -459,6 +461,9 @@ class PropertyBackendStore {
         }
         if (filterStatus === 'all') {
           return true;
+        }
+        if (filterStatus === 'unlisted') {
+          return p.status === 'draft' || p.status === 'unpublished';
         }
         return p.status === filterStatus;
       });
@@ -521,6 +526,7 @@ class PropertyBackendStore {
         property.customPropertyType = payload.customPropertyType ? sanitizeText(payload.customPropertyType, 100) : undefined;
       }
       if (payload.rentalStructure !== undefined) property.rentalStructure = payload.rentalStructure;
+      if (payload.propertyStructure !== undefined) property.propertyStructure = payload.propertyStructure;
 
       if (payload.location !== undefined) {
         if (payload.location.pincode) {
@@ -534,17 +540,26 @@ class PropertyBackendStore {
             };
           }
         }
+        const finalLocality = payload.location.locality !== undefined ? (payload.location.locality ? sanitizeText(payload.location.locality, 150) : undefined) : property.location?.locality;
+        const finalCity = payload.location.city !== undefined ? sanitizeText(payload.location.city, 100) : (property.location?.city ?? '');
+        const finalLat = payload.location.latitude ?? property.location?.latitude;
+        const finalLng = payload.location.longitude ?? property.location?.longitude;
+        const defaultPublicLoc = [finalLocality, finalCity].filter(Boolean).join(', ');
+
         property.location = {
           addressLine1: payload.location.addressLine1 !== undefined ? sanitizeText(payload.location.addressLine1, 200) : (property.location?.addressLine1 ?? ''),
-          locality: payload.location.locality !== undefined ? (payload.location.locality ? sanitizeText(payload.location.locality, 150) : undefined) : property.location?.locality,
+          address: payload.location.address !== undefined ? sanitizeText(payload.location.address, 200) : (property.location?.address ?? (payload.location.addressLine1 ? sanitizeText(payload.location.addressLine1, 200) : property.location?.addressLine1)),
+          locality: finalLocality,
           addressLine2: payload.location.addressLine2 !== undefined ? (payload.location.addressLine2 ? sanitizeText(payload.location.addressLine2, 200) : undefined) : property.location?.addressLine2,
-          city: payload.location.city !== undefined ? sanitizeText(payload.location.city, 100) : (property.location?.city ?? ''),
+          city: finalCity,
           state: payload.location.state !== undefined ? (payload.location.state ? sanitizeText(payload.location.state, 100) : undefined) : property.location?.state,
           pincode: payload.location.pincode !== undefined ? validateAndSanitizePincode(payload.location.pincode).value : (property.location?.pincode ?? ''),
-          latitude: payload.location.latitude ?? property.location?.latitude,
-          longitude: payload.location.longitude ?? property.location?.longitude,
+          latitude: finalLat,
+          longitude: finalLng,
+          coordinates: payload.location.coordinates || (finalLat !== undefined && finalLng !== undefined ? { latitude: finalLat, longitude: finalLng } : property.location?.coordinates),
           landmark: payload.location.landmark !== undefined ? (payload.location.landmark ? sanitizeText(payload.location.landmark, 150) : undefined) : property.location?.landmark,
-          hideExactAddress: payload.location.hideExactAddress ?? property.location?.hideExactAddress
+          hideExactAddress: payload.location.hideExactAddress ?? (property.location?.hideExactAddress ?? true),
+          publicLocation: payload.location.publicLocation ? sanitizeText(payload.location.publicLocation, 150) : (property.location?.publicLocation || defaultPublicLoc || undefined)
         };
       }
 
@@ -2506,6 +2521,7 @@ class PropertyBackendStore {
         ...property,
         location: property.location ? {
           ...property.location,
+          address: property.location.hideExactAddress ? undefined : property.location.address,
           addressLine1: property.location.hideExactAddress ? '' : property.location.addressLine1,
           addressLine2: property.location.hideExactAddress ? '' : property.location.addressLine2
         } : undefined

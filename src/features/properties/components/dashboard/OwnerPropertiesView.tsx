@@ -11,7 +11,6 @@ import {
   AlertCircle,
   ArrowRight,
   Sparkles,
-  Loader2,
   MapPin,
   Camera,
   Archive,
@@ -23,12 +22,12 @@ import {
   Check,
   Search,
   X,
-  Copy,
   Eye,
   ArrowUpDown,
   Filter,
   RefreshCw,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Trash2
 } from 'lucide-react';
 import type { Property, PropertyStatus, PropertyType, PropertySortOption } from '../../types';
 import {
@@ -37,7 +36,7 @@ import {
   unpublishProperty,
   archiveProperty,
   restoreProperty,
-  duplicateProperty
+  deleteProperty
 } from '../../api';
 import { getPropertyTemplate } from '../../templates';
 import { getSafeImageUrl } from '../wizard/StepPhotos';
@@ -46,7 +45,7 @@ import { normalizePropertyError } from '../../errorMessages';
 import LifecycleConfirmationModal, { LifecycleActionType } from '../dialogs/LifecycleConfirmationModal';
 import PropertyPreviewModal from '../dialogs/PropertyPreviewModal';
 
-type FilterTabKey = 'active' | 'published' | 'draft' | 'unpublished' | 'archived';
+type FilterTabKey = 'active' | 'published' | 'unlisted' | 'archived';
 
 const PROPERTY_TYPES: { value: string; label: string }[] = [
   { value: 'all', label: 'All Property Types' },
@@ -99,9 +98,6 @@ export default function OwnerPropertiesView() {
   // Quick Preview modal state
   const [previewProperty, setPreviewProperty] = useState<Property | null>(null);
 
-  // Duplicating state
-  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
-
   const fetchProperties = async () => {
     try {
       setLoading(true);
@@ -135,8 +131,7 @@ export default function OwnerPropertiesView() {
   const counts = useMemo(() => {
     let active = 0;
     let published = 0;
-    let draft = 0;
-    let unpublished = 0;
+    let unlisted = 0;
     let archived = 0;
 
     properties.forEach((p) => {
@@ -145,12 +140,11 @@ export default function OwnerPropertiesView() {
       } else {
         active++;
         if (p.status === 'published') published++;
-        if (p.status === 'draft') draft++;
-        if (p.status === 'unpublished') unpublished++;
+        if (p.status === 'draft' || p.status === 'unpublished') unlisted++;
       }
     });
 
-    return { active, published, draft, unpublished, archived, total: properties.length };
+    return { active, published, unlisted, archived, total: properties.length };
   }, [properties]);
 
   // Filtered & Sorted properties
@@ -162,10 +156,8 @@ export default function OwnerPropertiesView() {
           return p.status !== 'archived';
         case 'published':
           return p.status === 'published';
-        case 'draft':
-          return p.status === 'draft';
-        case 'unpublished':
-          return p.status === 'unpublished';
+        case 'unlisted':
+          return p.status === 'draft' || p.status === 'unpublished';
         case 'archived':
           return p.status === 'archived';
         default:
@@ -252,7 +244,7 @@ export default function OwnerPropertiesView() {
     setModalError(null);
 
     try {
-      let res;
+      let res: any;
       switch (modalAction) {
         case 'unpublish':
           res = await unpublishProperty(modalProperty.id);
@@ -266,23 +258,32 @@ export default function OwnerPropertiesView() {
         case 'publish':
           res = await publishProperty(modalProperty.id, { strict: true });
           break;
+        case 'delete':
+          res = await deleteProperty(modalProperty.id);
+          break;
       }
 
-      if (res.success && res.data) {
-        // Update local property list
-        const updated = res.data;
-        setProperties((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      if (res.success) {
+        if (modalAction === 'delete') {
+          // Permanently remove from local property list
+          setProperties((prev) => prev.filter((p) => p.id !== modalProperty.id));
+          setSuccessToast(`"${modalProperty.title}" was permanently deleted.`);
+        } else if (res.data) {
+          // Update local property list
+          const updated = res.data;
+          setProperties((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
 
-        const actionPastTense =
-          modalAction === 'unpublish'
-            ? 'unpublished'
-            : modalAction === 'archive'
-            ? 'archived'
-            : modalAction === 'restore'
-            ? 'restored to active listings'
-            : 'published live';
+          const actionPastTense =
+            modalAction === 'unpublish'
+              ? 'unlisted'
+              : modalAction === 'archive'
+              ? 'archived'
+              : modalAction === 'restore'
+              ? 'restored to active listings'
+              : 'published live';
 
-        setSuccessToast(`"${modalProperty.title}" was successfully ${actionPastTense}.`);
+          setSuccessToast(`"${modalProperty.title}" was successfully ${actionPastTense}.`);
+        }
         setTimeout(() => setSuccessToast(null), 4000);
         handleCloseModal();
       } else {
@@ -292,30 +293,6 @@ export default function OwnerPropertiesView() {
       setModalError(err.message || `An unexpected error occurred while performing ${modalAction}.`);
     } finally {
       setIsProcessingAction(false);
-    }
-  };
-
-  // Duplicate property action
-  const handleDuplicateProperty = async (prop: Property) => {
-    try {
-      setDuplicatingId(prop.id);
-      const res = await duplicateProperty(prop.id);
-      if (res.success && res.data) {
-        const newDraft = res.data;
-        setProperties((prev) => [newDraft, ...prev]);
-        setSuccessToast(`Successfully duplicated "${prop.title}". Saved as a new draft.`);
-        setTimeout(() => setSuccessToast(null), 4000);
-        // Switch tab to draft if not currently on drafts or active
-        if (activeTab === 'archived' || activeTab === 'published') {
-          setActiveTab('draft');
-        }
-      } else {
-        setError(res.error || 'Failed to duplicate property.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while duplicating property.');
-    } finally {
-      setDuplicatingId(null);
     }
   };
 
@@ -356,7 +333,7 @@ export default function OwnerPropertiesView() {
             My Properties
           </h1>
           <p className="text-xs sm:text-sm text-[#86868B] mt-1 max-w-xl leading-relaxed">
-            Manage your houses, flats, PGs, and commercial spaces. Monitor listing completeness, duplicate properties, or manage drafts.
+            Manage your houses, flats, PGs, and commercial spaces. Monitor listing completeness, manage drafts, and organize your portfolio.
           </p>
         </div>
 
@@ -454,34 +431,17 @@ export default function OwnerPropertiesView() {
             <button
               type="button"
               role="tab"
-              aria-selected={activeTab === 'draft'}
-              onClick={() => setActiveTab('draft')}
+              aria-selected={activeTab === 'unlisted'}
+              onClick={() => setActiveTab('unlisted')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
-                activeTab === 'draft'
+                activeTab === 'unlisted'
                   ? 'bg-white text-amber-800 shadow-sm'
                   : 'text-[#86868B] hover:text-[#1D1D1F]'
               }`}
             >
-              <span>Drafts</span>
+              <span>Unlisted</span>
               <span className="px-1.5 py-0.2 rounded-full bg-amber-50 text-[10px] font-extrabold text-amber-800">
-                {counts.draft}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'unpublished'}
-              onClick={() => setActiveTab('unpublished')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 inline-flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none ${
-                activeTab === 'unpublished'
-                  ? 'bg-white text-[#1D1D1F] shadow-sm'
-                  : 'text-[#86868B] hover:text-[#1D1D1F]'
-              }`}
-            >
-              <span>Unpublished</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-[#EDEDED] text-[10px] font-extrabold text-[#1D1D1F]">
-                {counts.unpublished}
+                {counts.unlisted}
               </span>
             </button>
 
@@ -649,11 +609,11 @@ export default function OwnerPropertiesView() {
         </div>
       )}
 
-      {/* EMPTY TAB STATE: NO DRAFTS / NO PUBLISHED / NO ARCHIVED */}
+      {/* EMPTY TAB STATE: NO UNLISTED / NO PUBLISHED / NO ARCHIVED */}
       {!loading && properties.length > 0 && filteredAndSortedProperties.length === 0 && !isFiltered && (
         <div className="bg-white rounded-3xl p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-[#F5F5F7] text-[#86868B] flex items-center justify-center mx-auto">
-            {activeTab === 'draft' ? (
+            {activeTab === 'unlisted' ? (
               <Clock className="w-6 h-6 text-amber-600" />
             ) : activeTab === 'published' ? (
               <Sparkles className="w-6 h-6 text-emerald-600" />
@@ -662,31 +622,27 @@ export default function OwnerPropertiesView() {
             )}
           </div>
           <h4 className="text-sm font-bold text-[#1D1D1F]">
-            {activeTab === 'draft'
-              ? 'No Saved Drafts'
+            {activeTab === 'unlisted'
+              ? 'No Unlisted Properties'
               : activeTab === 'published'
               ? 'No Published Properties'
-              : activeTab === 'archived'
-              ? 'No Archived Properties'
-              : 'No Unpublished Properties'}
+              : 'No Archived Properties'}
           </h4>
           <p className="text-xs text-[#86868B] max-w-sm mx-auto">
-            {activeTab === 'draft'
-              ? 'You have no incomplete drafts. In-progress properties will appear here.'
+            {activeTab === 'unlisted'
+              ? 'You have no unlisted properties. Drafts and paused listings will appear here.'
               : activeTab === 'published'
               ? 'None of your properties are currently published live to tenants.'
-              : activeTab === 'archived'
-              ? 'Archived properties are safely preserved here and can be restored anytime.'
-              : 'You have no listings in unpublished private status.'}
+              : 'Archived properties are safely preserved here and can be restored anytime.'}
           </p>
-          {activeTab === 'draft' && (
+          {activeTab === 'unlisted' && (
             <div className="pt-2">
               <Link
                 href="/owner/dashboard/properties/new"
                 className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                <span>Start a New Draft</span>
+                <span>Start a New Listing</span>
               </Link>
             </div>
           )}
@@ -703,7 +659,6 @@ export default function OwnerPropertiesView() {
             const isUnpublished = prop.status === 'unpublished';
             const isArchived = prop.status === 'archived';
             const coverPhoto = prop.photos?.find((p) => p.isCover) || prop.photos?.[0];
-            const isDuplicating = duplicatingId === prop.id;
 
             return (
               <div
@@ -742,7 +697,7 @@ export default function OwnerPropertiesView() {
                       {isDraft && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
                           <Clock className="w-3 h-3 text-amber-600" />
-                          <span>Draft ({prop.completenessScore}% complete)</span>
+                          <span>Unlisted · Draft ({prop.completenessScore}% complete)</span>
                         </span>
                       )}
 
@@ -756,7 +711,7 @@ export default function OwnerPropertiesView() {
                       {isUnpublished && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 shrink-0">
                           <EyeOff className="w-3 h-3 text-zinc-500" />
-                          <span>Unpublished</span>
+                          <span>Unlisted · Off-Market</span>
                         </span>
                       )}
 
@@ -853,24 +808,6 @@ export default function OwnerPropertiesView() {
                     </button>
                   )}
 
-                  {/* DUPLICATE BUTTON */}
-                  {!isArchived && (
-                    <button
-                      type="button"
-                      onClick={() => handleDuplicateProperty(prop)}
-                      disabled={isDuplicating}
-                      className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold transition-all inline-flex items-center gap-1.5 disabled:opacity-50"
-                      title="Duplicate Listing"
-                    >
-                      {isDuplicating ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#86868B]" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5 text-[#86868B]" />
-                      )}
-                      <span className="hidden sm:inline">Duplicate</span>
-                    </button>
-                  )}
-
                   {/* DRAFT ACTIONS */}
                   {isDraft && (
                     <>
@@ -897,10 +834,19 @@ export default function OwnerPropertiesView() {
                       <button
                         type="button"
                         onClick={() => handleOpenActionModal(prop, 'archive')}
-                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
+                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#86868B] hover:text-[#1D1D1F] text-xs font-semibold transition-all"
                         title="Archive draft"
                       >
                         <Archive className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenActionModal(prop, 'delete')}
+                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
+                        title="Delete draft"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </>
                   )}
@@ -922,7 +868,7 @@ export default function OwnerPropertiesView() {
                         className="px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50/60 hover:bg-amber-100/60 text-amber-800 text-xs font-bold transition-all inline-flex items-center gap-1.5"
                       >
                         <EyeOff className="w-3.5 h-3.5" />
-                        <span>Unpublish</span>
+                        <span>Unlist</span>
                       </button>
 
                       <button
@@ -932,6 +878,15 @@ export default function OwnerPropertiesView() {
                         title="Archive listing"
                       >
                         <Archive className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenActionModal(prop, 'delete')}
+                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
+                        title="Delete listing"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </>
                   )}
@@ -964,19 +919,40 @@ export default function OwnerPropertiesView() {
                       >
                         <Archive className="w-3.5 h-3.5" />
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenActionModal(prop, 'delete')}
+                        className="px-3 py-2 rounded-xl border border-[#EDEDED] hover:bg-rose-50 hover:border-rose-200 text-[#86868B] hover:text-rose-600 text-xs font-semibold transition-all"
+                        title="Delete listing"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </>
                   )}
 
                   {/* ARCHIVED ACTIONS */}
                   {isArchived && (
-                    <button
-                      type="button"
-                      onClick={() => handleOpenActionModal(prop, 'restore')}
-                      className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Restore Listing</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenActionModal(prop, 'restore')}
+                        className="px-4 py-2 rounded-xl bg-[#1D1D1F] hover:bg-black text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Restore Listing</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenActionModal(prop, 'delete')}
+                        className="px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-apple-xs active:scale-[0.98]"
+                        title="Permanently delete archived listing"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete Permanently</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

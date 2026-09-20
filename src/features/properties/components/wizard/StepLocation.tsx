@@ -1,27 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  MapPin,
-  Navigation,
-  Compass,
-  Building,
-  Sparkles,
-  ArrowLeft,
-  ArrowRight,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  ChevronDown,
-  ChevronUp,
-  Info
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronDown, MapPin, X, Check } from 'lucide-react';
 import type { PropertyType, RentalStructure } from '../../types';
-import { getPropertyTemplate } from '../../templates';
 import HybridMapPicker, { DetectedAddressComponents } from './HybridMapPicker';
 
 export interface LocationFormData {
   addressLine1: string;
+  address?: string; // Private exact address alias
   locality: string;
   city: string;
   state: string;
@@ -29,7 +15,12 @@ export interface LocationFormData {
   landmark?: string;
   latitude?: number;
   longitude?: number;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
   hideExactAddress?: boolean;
+  publicLocation?: string; // Public approximate location e.g. "Sector 62, Noida"
 }
 
 interface StepLocationProps {
@@ -42,77 +33,122 @@ interface StepLocationProps {
   isSaving?: boolean;
 }
 
-const COMMON_INDIAN_STATES = [
-  'Andhra Pradesh',
-  'Arunachal Pradesh',
-  'Assam',
-  'Bihar',
-  'Chandigarh',
-  'Chhattisgarh',
-  'Delhi',
-  'Goa',
-  'Gujarat',
-  'Haryana',
-  'Himachal Pradesh',
-  'Jammu and Kashmir',
-  'Jharkhand',
-  'Karnataka',
-  'Kerala',
-  'Ladakh',
-  'Madhya Pradesh',
-  'Maharashtra',
-  'Manipur',
-  'Meghalaya',
-  'Mizoram',
-  'Nagaland',
-  'Odisha',
-  'Puducherry',
-  'Punjab',
-  'Rajasthan',
-  'Sikkim',
-  'Tamil Nadu',
-  'Telangana',
-  'Tripura',
-  'Uttar Pradesh',
-  'Uttarakhand',
-  'West Bengal'
-];
+export const INDIAN_STATES_AND_CITIES: Record<string, string[]> = {
+  'Andaman and Nicobar Islands': ['Port Blair'],
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Kurnool', 'Tirupati', 'Rajahmundry', 'Kakinada', 'Kadapa', 'Anantapur'],
+  'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat', 'Tawang', 'Ziro'],
+  'Assam': ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat', 'Nagaon', 'Tezpur', 'Tinsukia'],
+  'Bihar': ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Purnia', 'Darbhanga', 'Bihar Sharif'],
+  'Chandigarh': ['Chandigarh'],
+  'Chhattisgarh': ['Raipur', 'Bhilai', 'Bilaspur', 'Korba', 'Durg', 'Rajnandgaon'],
+  'Dadra and Nagar Haveli and Daman and Diu': ['Daman', 'Diu', 'Silvassa'],
+  'Delhi': ['New Delhi', 'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Central Delhi', 'Dwarka', 'Rohini', 'Saket', 'Connaught Place'],
+  'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
+  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Gandhinagar', 'Junagadh', 'Anand'],
+  'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Hisar', 'Karnal', 'Sonipat', 'Panchkula'],
+  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan', 'Mandi', 'Kullu', 'Manali'],
+  'Jammu and Kashmir': ['Srinagar', 'Jammu', 'Anantnag', 'Baramulla', 'Kathua', 'Udhampur'],
+  'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Deoghar', 'Hazaribagh'],
+  'Karnataka': ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi-Dharwad', 'Belagavi', 'Shivamogga', 'Tumakuru', 'Manipal', 'Udupi'],
+  'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Palakkad', 'Alappuzha', 'Kannur', 'Kottayam'],
+  'Ladakh': ['Leh', 'Kargil'],
+  'Lakshadweep': ['Kavaratti'],
+  'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior', 'Ujjain', 'Sagar', 'Dewas', 'Satna'],
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Navi Mumbai', 'Chhatrapati Sambhajinagar', 'Solapur', 'Kolhapur'],
+  'Manipur': ['Imphal', 'Churachandpur', 'Thoubal'],
+  'Meghalaya': ['Shillong', 'Tura', 'Jowai'],
+  'Mizoram': ['Aizawl', 'Lunglei', 'Champhai'],
+  'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung'],
+  'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Berhampur', 'Sambalpur', 'Puri', 'Balasore'],
+  'Puducherry': ['Puducherry', 'Karaikal', 'Mahe', 'Yanam'],
+  'Punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali', 'Hoshiarpur'],
+  'Rajasthan': ['Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer', 'Udaipur', 'Bhilwara', 'Alwar', 'Sikar'],
+  'Sikkim': ['Gangtok', 'Namchi', 'Gyalshing'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Tiruppur', 'Vellore', 'Erode'],
+  'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam', 'Secunderabad'],
+  'Tripura': ['Agartala', 'Udaipur', 'Dharmanagar'],
+  'Uttar Pradesh': ['Noida', 'Greater Noida', 'Ghaziabad', 'Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Prayagraj', 'Meerut', 'Bareilly', 'Aligarh', 'Moradabad', 'Gorakhpur', 'Mathura'],
+  'Uttarakhand': ['Dehradun', 'Haridwar', 'Roorkee', 'Haldwani', 'Rishikesh', 'Nainital'],
+  'West Bengal': ['Kolkata', 'Howrah', 'Siliguri', 'Durgapur', 'Asansol', 'Bidhannagar', 'Kharagpur']
+};
+
+export const STATE_ALIASES: Record<string, string> = {
+  'nct of delhi': 'Delhi',
+  'national capital territory of delhi': 'Delhi',
+  'delhi': 'Delhi',
+  'new delhi': 'Delhi',
+  'up': 'Uttar Pradesh',
+  'uttar pradesh': 'Uttar Pradesh',
+  'mp': 'Madhya Pradesh',
+  'madhya pradesh': 'Madhya Pradesh',
+  'ap': 'Andhra Pradesh',
+  'andhra pradesh': 'Andhra Pradesh',
+  'tn': 'Tamil Nadu',
+  'tamil nadu': 'Tamil Nadu',
+  'tamilnadu': 'Tamil Nadu',
+  'ka': 'Karnataka',
+  'karnataka': 'Karnataka',
+  'mh': 'Maharashtra',
+  'maharashtra': 'Maharashtra',
+  'wb': 'West Bengal',
+  'west bengal': 'West Bengal',
+  'orissa': 'Odisha',
+  'odisha': 'Odisha',
+  'uttaranchal': 'Uttarakhand',
+  'uttarakhand': 'Uttarakhand',
+  'pondicherry': 'Puducherry',
+  'puducherry': 'Puducherry',
+  'telengana': 'Telangana',
+  'telangana': 'Telangana',
+  'jammu & kashmir': 'Jammu and Kashmir',
+  'j&k': 'Jammu and Kashmir',
+  'andaman and nicobar islands': 'Andaman and Nicobar Islands',
+  'andaman and nicobar': 'Andaman and Nicobar Islands',
+  'dadra and nagar haveli': 'Dadra and Nagar Haveli and Daman and Diu',
+  'daman and diu': 'Dadra and Nagar Haveli and Daman and Diu',
+  'dadra and nagar haveli and daman and diu': 'Dadra and Nagar Haveli and Daman and Diu',
+  'lakshadweep': 'Lakshadweep'
+};
 
 export default function StepLocation({
-  propertyType,
-  customPropertyType,
-  rentalStructure,
   initialValues,
   onBack,
   onSave,
   isSaving = false
 }: StepLocationProps) {
-  const template = getPropertyTemplate(propertyType);
-
   // Form State
-  const [addressLine1, setAddressLine1] = useState<string>(initialValues?.addressLine1 || '');
+  const [addressLine1, setAddressLine1] = useState<string>(
+    initialValues?.addressLine1 || initialValues?.address || ''
+  );
   const [locality, setLocality] = useState<string>(initialValues?.locality || '');
-  const [city, setCity] = useState<string>(initialValues?.city || '');
   const [state, setState] = useState<string>(initialValues?.state || '');
+  const [city, setCity] = useState<string>(initialValues?.city || '');
+  const [customCity, setCustomCity] = useState<string>('');
+  const [isCustomCity, setIsCustomCity] = useState<boolean>(false);
   const [pincode, setPincode] = useState<string>(initialValues?.pincode || '');
-  const [landmark, setLandmark] = useState<string>(initialValues?.landmark || '');
   const [hideExactAddress, setHideExactAddress] = useState<boolean>(
-    initialValues?.hideExactAddress ?? false
+    initialValues?.hideExactAddress ?? true
   );
 
-  // Interactive Map State
-  const [showMap, setShowMap] = useState<boolean>(true);
-
-  // Advanced Coordinates (Optional / Future map support)
-  const [showCoordinates, setShowCoordinates] = useState<boolean>(
-    Boolean(initialValues?.latitude || initialValues?.longitude)
-  );
+  // Map state
   const [latitude, setLatitude] = useState<string>(
-    initialValues?.latitude !== undefined ? String(initialValues.latitude) : ''
+    initialValues?.latitude !== undefined
+      ? String(initialValues.latitude)
+      : initialValues?.coordinates?.latitude !== undefined
+      ? String(initialValues.coordinates.latitude)
+      : ''
   );
   const [longitude, setLongitude] = useState<string>(
-    initialValues?.longitude !== undefined ? String(initialValues.longitude) : ''
+    initialValues?.longitude !== undefined
+      ? String(initialValues.longitude)
+      : initialValues?.coordinates?.longitude !== undefined
+      ? String(initialValues.coordinates.longitude)
+      : ''
   );
+
+  // Popup confirmation modal state
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [addressFilledBadge, setAddressFilledBadge] = useState<boolean>(false);
 
   // Validation Errors
   const [errors, setErrors] = useState<{
@@ -121,31 +157,45 @@ export default function StepLocation({
     city?: string;
     state?: string;
     pincode?: string;
-    coordinates?: string;
   }>({});
 
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const initializedRef = React.useRef(false);
+  const initializedRef = useRef(false);
+
+  // Available cities for selected state
+  const availableCities = state && INDIAN_STATES_AND_CITIES[state] ? INDIAN_STATES_AND_CITIES[state] : [];
 
   // Sync state if initialValues arrive asynchronously (e.g. after draft fetch)
   useEffect(() => {
     if (!initializedRef.current && initialValues) {
-      if (initialValues.addressLine1) setAddressLine1(initialValues.addressLine1);
+      if (initialValues.addressLine1 || initialValues.address) {
+        setAddressLine1(initialValues.addressLine1 || initialValues.address || '');
+      }
       if (initialValues.locality) setLocality(initialValues.locality);
-      if (initialValues.city) setCity(initialValues.city);
       if (initialValues.state) setState(initialValues.state);
+      if (initialValues.city) {
+        const initCity = initialValues.city;
+        setCity(initCity);
+        if (initialValues.state && INDIAN_STATES_AND_CITIES[initialValues.state]) {
+          const list = INDIAN_STATES_AND_CITIES[initialValues.state];
+          if (!list.includes(initCity)) {
+            setIsCustomCity(true);
+            setCustomCity(initCity);
+          }
+        }
+      }
       if (initialValues.pincode) setPincode(initialValues.pincode);
-      if (initialValues.landmark) setLandmark(initialValues.landmark);
       if (initialValues.hideExactAddress !== undefined) {
         setHideExactAddress(initialValues.hideExactAddress);
       }
       if (initialValues.latitude !== undefined) {
         setLatitude(String(initialValues.latitude));
-        setShowCoordinates(true);
+      } else if (initialValues.coordinates?.latitude !== undefined) {
+        setLatitude(String(initialValues.coordinates.latitude));
       }
       if (initialValues.longitude !== undefined) {
         setLongitude(String(initialValues.longitude));
-        setShowCoordinates(true);
+      } else if (initialValues.coordinates?.longitude !== undefined) {
+        setLongitude(String(initialValues.coordinates.longitude));
       }
 
       if (
@@ -159,100 +209,202 @@ export default function StepLocation({
     }
   }, [initialValues]);
 
+  const handleStateChange = (newState: string) => {
+    setState(newState);
+    if (errors.state) setErrors((prev) => ({ ...prev, state: undefined }));
+
+    const citiesInNewState = INDIAN_STATES_AND_CITIES[newState] || [];
+    // If current city is in the new state, keep it, otherwise reset or keep custom
+    if (city && !citiesInNewState.includes(city) && !isCustomCity) {
+      setCity('');
+    }
+  };
+
+  const handleCitySelectChange = (value: string) => {
+    if (value === '__other__') {
+      setIsCustomCity(true);
+      setCity(customCity);
+    } else {
+      setIsCustomCity(false);
+      setCity(value);
+      if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
+    }
+  };
+
+  const handleCustomCityChange = (val: string) => {
+    setCustomCity(val);
+    setCity(val);
+    if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
+  };
+
   const getCurrentFormData = (): LocationFormData => {
-    const latNum = latitude.trim() ? parseFloat(latitude.trim()) : undefined;
-    const lngNum = longitude.trim() ? parseFloat(longitude.trim()) : undefined;
+    const latNum = latitude ? parseFloat(latitude) : undefined;
+    const lngNum = longitude ? parseFloat(longitude) : undefined;
+    const coords =
+      latNum !== undefined && lngNum !== undefined && !isNaN(latNum) && !isNaN(lngNum)
+        ? { latitude: latNum, longitude: lngNum }
+        : undefined;
+
+    const finalCity = isCustomCity ? customCity.trim() : city.trim();
+    const computedPublicLoc = [locality.trim(), finalCity].filter(Boolean).join(', ');
 
     return {
       addressLine1: addressLine1.trim(),
+      address: addressLine1.trim(),
       locality: locality.trim(),
-      city: city.trim(),
+      city: finalCity,
       state: state.trim(),
       pincode: pincode.trim(),
-      landmark: landmark.trim() || undefined,
-      latitude: !isNaN(latNum as number) ? latNum : undefined,
-      longitude: !isNaN(lngNum as number) ? lngNum : undefined,
-      hideExactAddress
+      latitude: latNum,
+      longitude: lngNum,
+      coordinates: coords,
+      hideExactAddress,
+      publicLocation: computedPublicLoc || undefined
     };
   };
 
   const validate = (): boolean => {
-    const newErrors: typeof errors = {};
+    const newErrors: {
+      addressLine1?: string;
+      locality?: string;
+      city?: string;
+      state?: string;
+      pincode?: string;
+    } = {};
+
     const trimmedAddress = addressLine1.trim();
     const trimmedLocality = locality.trim();
-    const trimmedCity = city.trim();
+    const finalCity = isCustomCity ? customCity.trim() : city.trim();
     const trimmedState = state.trim();
     const trimmedPincode = pincode.trim();
 
     if (!trimmedAddress) {
-      newErrors.addressLine1 = 'Please enter the street address / building details.';
+      newErrors.addressLine1 = 'Please enter your street address.';
     } else if (trimmedAddress.length < 5) {
       newErrors.addressLine1 = 'Address must be at least 5 characters.';
     }
 
     if (!trimmedLocality) {
-      newErrors.locality = 'Please enter the locality or area (e.g. Sector 62, Koramangala).';
+      newErrors.locality = 'Please enter the locality or sector.';
     } else if (trimmedLocality.length < 2) {
       newErrors.locality = 'Locality must be at least 2 characters.';
     }
 
-    if (!trimmedCity) {
-      newErrors.city = 'Please enter the city.';
-    } else if (trimmedCity.length < 2) {
+    if (!trimmedState) {
+      newErrors.state = 'Please select a state.';
+    }
+
+    if (!finalCity) {
+      newErrors.city = 'Please select or enter a city.';
+    } else if (finalCity.length < 2) {
       newErrors.city = 'City must be at least 2 characters.';
     }
 
-    if (!trimmedState) {
-      newErrors.state = 'Please enter or select the state.';
-    }
-
-    // Validate 6-digit Indian PIN code (cannot start with 0)
     const pincodeRegex = /^[1-9][0-9]{5}$/;
     if (!trimmedPincode) {
       newErrors.pincode = 'Please enter the 6-digit PIN code.';
     } else if (!pincodeRegex.test(trimmedPincode)) {
-      newErrors.pincode = 'Please enter a valid 6-digit Indian PIN code (e.g. 201310).';
-    }
-
-    // Validate coordinates if provided
-    if (latitude.trim() || longitude.trim()) {
-      const latNum = parseFloat(latitude.trim());
-      const lngNum = parseFloat(longitude.trim());
-      if (isNaN(latNum) || latNum < -90 || latNum > 90) {
-        newErrors.coordinates = 'Latitude must be a valid number between -90 and 90.';
-      } else if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
-        newErrors.coordinates = 'Longitude must be a valid number between -180 and 180.';
-      }
+      newErrors.pincode = 'Please enter a valid 6-digit PIN code.';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleBlur = (field: string) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
+  // Called when form is submitted by clicking Next
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      onSave(getCurrentFormData());
+      setShowConfirmModal(true);
     }
   };
 
+  // Called when user confirms location in popup modal
+  const handleConfirmLocationModal = () => {
+    setShowConfirmModal(false);
+    onSave(getCurrentFormData());
+  };
+
   const handleAddressDetected = (detected: DetectedAddressComponents) => {
+    // 1. Street Address
+    if (detected.streetAddress) {
+      setAddressLine1(detected.streetAddress);
+      if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: undefined }));
+    } else if (detected.formattedAddress && !addressLine1.trim()) {
+      setAddressLine1(detected.formattedAddress);
+      if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: undefined }));
+    }
+
+    // 2. Locality
     if (detected.locality) {
       setLocality(detected.locality);
       if (errors.locality) setErrors((prev) => ({ ...prev, locality: undefined }));
     }
-    if (detected.city) {
-      setCity(detected.city);
-      if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
-    }
+
+    // 3. State
+    let matchedState = '';
     if (detected.state) {
-      setState(detected.state);
-      if (errors.state) setErrors((prev) => ({ ...prev, state: undefined }));
+      const stateTrimmed = detected.state.trim();
+      const stateLower = stateTrimmed.toLowerCase();
+      matchedState = STATE_ALIASES[stateLower] || '';
+      if (!matchedState) {
+        const allStates = Object.keys(INDIAN_STATES_AND_CITIES);
+        const found = allStates.find(
+          (s) =>
+            s.toLowerCase() === stateLower ||
+            stateLower.includes(s.toLowerCase()) ||
+            s.toLowerCase().includes(stateLower)
+        );
+        if (found) matchedState = found;
+      }
+
+      if (matchedState) {
+        setState(matchedState);
+        if (errors.state) setErrors((prev) => ({ ...prev, state: undefined }));
+      } else {
+        setState(stateTrimmed);
+      }
     }
+
+    // 4. City
+    const stateToUse = matchedState || state;
+    const citiesInState =
+      stateToUse && INDIAN_STATES_AND_CITIES[stateToUse]
+        ? INDIAN_STATES_AND_CITIES[stateToUse]
+        : [];
+
+    if (detected.city) {
+      const detectedCityTrimmed = detected.city.trim();
+      const foundCity = citiesInState.find(
+        (c) =>
+          c.toLowerCase() === detectedCityTrimmed.toLowerCase() ||
+          detectedCityTrimmed.toLowerCase().includes(c.toLowerCase()) ||
+          c.toLowerCase().includes(detectedCityTrimmed.toLowerCase())
+      );
+
+      if (foundCity) {
+        setCity(foundCity);
+        setIsCustomCity(false);
+        setCustomCity('');
+      } else {
+        setCity(detectedCityTrimmed);
+        setCustomCity(detectedCityTrimmed);
+        setIsCustomCity(true);
+      }
+      if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
+    } else if (detected.locality) {
+      const foundFromLocality = citiesInState.find(
+        (c) => c.toLowerCase() === detected.locality!.trim().toLowerCase()
+      );
+      if (foundFromLocality) {
+        setCity(foundFromLocality);
+        setIsCustomCity(false);
+        setCustomCity('');
+        if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
+      }
+    }
+
+    // 5. PIN code
     if (detected.pincode) {
       const cleaned = detected.pincode.replace(/[^0-9]/g, '');
       if (cleaned.length === 6) {
@@ -260,121 +412,69 @@ export default function StepLocation({
         if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: undefined }));
       }
     }
+
+    setAddressFilledBadge(true);
+    setTimeout(() => {
+      setAddressFilledBadge(false);
+    }, 4500);
   };
 
-  const handleBackClick = () => {
-    onBack(getCurrentFormData());
-  };
-
-  const formatDisplayAddress = () => {
-    const parts = [
-      locality.trim(),
-      city.trim(),
-      state.trim() ? `${state.trim()}` : '',
-      pincode.trim() ? `- ${pincode.trim()}` : ''
-    ].filter(Boolean);
-
-    if (parts.length === 0) return 'e.g. Knowledge Park 2, Greater Noida, Uttar Pradesh - 201310';
-    return parts.join(' ');
-  };
+  const finalCityDisplay = isCustomCity ? customCity : city;
 
   return (
-    <form id="location-form" onSubmit={handleSubmit} className="space-y-8 animate-fade-in max-w-2xl mx-auto py-2 sm:py-6" noValidate>
-      {/* SECTION HEADER */}
-      <div className="space-y-2">
-        <h2 className="text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight leading-tight">
-          Where&apos;s your place located?
-        </h2>
-        <p className="text-sm sm:text-base text-[#717171]">
-          Your address is only shared with guests after they&apos;ve made a reservation.
-        </p>
-      </div>
+    <>
+      <form
+        id="location-form"
+        onSubmit={handleSubmit}
+        className="w-full max-w-2xl mx-auto animate-fade-in py-2 space-y-6"
+        noValidate
+      >
+        {/* TITLE OF STEP CENTERED */}
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <h1 className="font-outfit text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight leading-tight">
+            Where is your property located?
+          </h1>
+          <p className="font-inter text-sm sm:text-base text-[#717171] leading-relaxed">
+            Add your property&apos;s location so tenants can find accommodation in the right area.
+          </p>
+        </div>
 
-      <div className="space-y-5">
-        {/* 0. INTERACTIVE HYBRID MAP PICKER (OPENSTREETMAP + GOOGLE MAPS) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#1D1D1F] uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-primary" />
-              <span>Map & Pin Location</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowMap(!showMap)}
-              className="text-xs font-semibold text-primary hover:underline transition-colors"
-            >
-              {showMap ? 'Hide Map' : 'Show Map'}
-            </button>
+        {/* FEEDBACK BADGE WHEN LOCATION IS FILLED FROM MAP */}
+        {addressFilledBadge && (
+          <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl flex items-center justify-center gap-2 text-xs sm:text-sm font-medium animate-fade-in font-inter">
+            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Location details detected from map and populated below.</span>
           </div>
+        )}
 
-          {showMap && (
-            <HybridMapPicker
-              initialLatitude={latitude ? parseFloat(latitude) : undefined}
-              initialLongitude={longitude ? parseFloat(longitude) : undefined}
-              onCoordinatesChange={(newLat, newLng) => {
-                setLatitude(String(newLat));
-                setLongitude(String(newLng));
-                setShowCoordinates(true);
-                if (errors.coordinates) setErrors((prev) => ({ ...prev, coordinates: undefined }));
+        {/* CLEAN INPUT FIELDS */}
+        <div className="space-y-4">
+          {/* Street Address */}
+          <div>
+            <label htmlFor="address-line1" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
+              Street address
+            </label>
+            <input
+              id="address-line1"
+              type="text"
+              value={addressLine1}
+              onChange={(e) => {
+                setAddressLine1(e.target.value);
+                if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: undefined }));
               }}
-              onAddressDetected={handleAddressDetected}
-              cityHint={city}
-              localityHint={locality}
+              placeholder="House / Flat No., Building, Street"
+              className="w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors bg-white font-inter"
             />
-          )}
-        </div>
-
-        {/* 1. ADDRESS LINE 1 */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="address-line1"
-              className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5"
-            >
-              <Building className="w-4 h-4 text-[#86868B]" />
-              <span>Flat / House No., Building Name & Street</span>
-              <span className="text-rose-500">*</span>
-            </label>
+            {errors.addressLine1 && (
+              <p className="text-xs text-[#222222] mt-1 font-inter">{errors.addressLine1}</p>
+            )}
           </div>
 
-          <input
-            id="address-line1"
-            type="text"
-            value={addressLine1}
-            onChange={(e) => {
-              setAddressLine1(e.target.value);
-              if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: undefined }));
-            }}
-            onBlur={() => handleBlur('addressLine1')}
-            placeholder="e.g. Flat 402, Tower B, Lotus Greens Boulevard, Sector 100"
-            className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all ${
-              errors.addressLine1
-                ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
-            }`}
-          />
-
-          {errors.addressLine1 && (
-            <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>{errors.addressLine1}</span>
-            </p>
-          )}
-        </div>
-
-        {/* 2. LOCALITY / AREA & LANDMARK (2 COLS) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          {/* LOCALITY / AREA */}
-          <div className="space-y-2">
-            <label
-              htmlFor="property-locality"
-              className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5"
-            >
-              <Compass className="w-4 h-4 text-[#86868B]" />
-              <span>Locality / Area</span>
-              <span className="text-rose-500">*</span>
+          {/* Locality / Sector */}
+          <div>
+            <label htmlFor="property-locality" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
+              Locality / Sector
             </label>
-
             <input
               id="property-locality"
               type="text"
@@ -383,312 +483,230 @@ export default function StepLocation({
                 setLocality(e.target.value);
                 if (errors.locality) setErrors((prev) => ({ ...prev, locality: undefined }));
               }}
-              onBlur={() => handleBlur('locality')}
-              placeholder="e.g. Knowledge Park 2, Sector 62, Koramangala"
-              className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all ${
-                errors.locality
-                  ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                  : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
-              }`}
+              placeholder="e.g. Sector 62, Koramangala, Indirapuram"
+              className="w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors bg-white font-inter"
             />
-
-            <p className="text-xs text-[#86868B]">
-              Neighbourhood, sector, or colony name tenants search by.
-            </p>
-
             {errors.locality && (
-              <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{errors.locality}</span>
-              </p>
+              <p className="text-xs text-[#222222] mt-1 font-inter">{errors.locality}</p>
             )}
           </div>
 
-          {/* LANDMARK */}
-          <div className="space-y-2">
-            <label
-              htmlFor="property-landmark"
-              className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5"
-            >
-              <Navigation className="w-4 h-4 text-[#86868B]" />
-              <span>Landmark (Optional)</span>
-            </label>
-
-            <input
-              id="property-landmark"
-              type="text"
-              value={landmark}
-              onChange={(e) => setLandmark(e.target.value)}
-              placeholder="e.g. Near Pari Chowk Metro / Opposite Sharda Hospital"
-              className="w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5 focus:outline-none transition-all"
-            />
-
-            <p className="text-xs text-[#86868B]">
-              Prominent nearby metro station, hospital, mall, or university.
-            </p>
-          </div>
-        </div>
-
-        {/* 3. CITY, STATE & PINCODE (3 COLS) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          {/* CITY */}
-          <div className="space-y-2">
-            <label
-              htmlFor="property-city"
-              className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5"
-            >
-              <span>City</span>
-              <span className="text-rose-500">*</span>
-            </label>
-
-            <input
-              id="property-city"
-              type="text"
-              value={city}
-              onChange={(e) => {
-                setCity(e.target.value);
-                if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
-              }}
-              onBlur={() => handleBlur('city')}
-              placeholder="e.g. Greater Noida"
-              className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all ${
-                errors.city
-                  ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                  : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
-              }`}
-            />
-
-            {errors.city && (
-              <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{errors.city}</span>
-              </p>
-            )}
-          </div>
-
-          {/* STATE */}
-          <div className="space-y-2">
-            <label
-              htmlFor="property-state"
-              className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5"
-            >
-              <span>State / UT</span>
-              <span className="text-rose-500">*</span>
-            </label>
-
-            <div className="relative">
-              <input
-                id="property-state"
-                type="text"
-                list="indian-states-list"
-                value={state}
-                onChange={(e) => {
-                  setState(e.target.value);
-                  if (errors.state) setErrors((prev) => ({ ...prev, state: undefined }));
-                }}
-                onBlur={() => handleBlur('state')}
-                placeholder="e.g. Uttar Pradesh"
-                className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all ${
-                  errors.state
-                    ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                    : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
-                }`}
-              />
-              <datalist id="indian-states-list">
-                {COMMON_INDIAN_STATES.map((s) => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
+          {/* State & City Dropdowns (2 Columns) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* State Dropdown */}
+            <div>
+              <label htmlFor="property-state" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
+                State / UT
+              </label>
+              <div className="relative">
+                <select
+                  id="property-state"
+                  value={state}
+                  onChange={(e) => handleStateChange(e.target.value)}
+                  className={`w-full px-4 py-3 pr-10 rounded-xl border border-[#B0B0B0] bg-white focus:border-[#222222] focus:outline-none transition-colors appearance-none cursor-pointer font-inter ${
+                    !state
+                      ? 'text-xs sm:text-[13px] text-[#9E9E9E]'
+                      : 'text-sm sm:text-base text-[#222222]'
+                  }`}
+                >
+                  <option value="" disabled className="text-xs sm:text-[13px] text-[#9E9E9E]">
+                    Select State / UT
+                  </option>
+                  {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
+                    <option key={s} value={s} className="text-sm text-[#222222]">
+                      {s}
+                    </option>
+                  ))}
+                  {state && !Object.keys(INDIAN_STATES_AND_CITIES).includes(state) && (
+                    <option value={state} className="text-sm text-[#222222]">{state}</option>
+                  )}
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#717171] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+              {errors.state && (
+                <p className="text-xs text-[#222222] mt-1 font-inter">{errors.state}</p>
+              )}
             </div>
 
-            {errors.state && (
-              <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{errors.state}</span>
-              </p>
-            )}
+            {/* City Dropdown */}
+            <div>
+              <label htmlFor="property-city" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
+                City
+              </label>
+              <div className="relative">
+                <select
+                  id="property-city"
+                  value={isCustomCity ? '__other__' : city}
+                  disabled={!state}
+                  onChange={(e) => handleCitySelectChange(e.target.value)}
+                  className={`w-full px-4 py-3 pr-10 rounded-xl border border-[#B0B0B0] bg-white disabled:bg-[#F7F7F7] disabled:text-[#9E9E9E] disabled:cursor-not-allowed focus:border-[#222222] focus:outline-none transition-colors appearance-none cursor-pointer font-inter ${
+                    !city && !isCustomCity
+                      ? 'text-xs sm:text-[13px] text-[#9E9E9E]'
+                      : 'text-sm sm:text-base text-[#222222]'
+                  }`}
+                >
+                  <option value="" disabled className="text-xs sm:text-[13px] text-[#9E9E9E]">
+                    {state ? 'Select City' : 'Select State first'}
+                  </option>
+                  {availableCities.map((c) => (
+                    <option key={c} value={c} className="text-sm text-[#222222]">
+                      {c}
+                    </option>
+                  ))}
+                  <option value="__other__" className="text-sm text-[#222222]">Other (Enter city name)</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#717171] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              {/* Custom City text input when "Other" is chosen */}
+              {isCustomCity && (
+                <input
+                  type="text"
+                  value={customCity}
+                  onChange={(e) => handleCustomCityChange(e.target.value)}
+                  placeholder="Enter city name"
+                  className="mt-2 w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors bg-white font-inter"
+                />
+              )}
+
+              {errors.city && (
+                <p className="text-xs text-[#222222] mt-1 font-inter">{errors.city}</p>
+              )}
+            </div>
           </div>
 
-          {/* PINCODE */}
-          <div className="space-y-2">
-            <label
-              htmlFor="property-pincode"
-              className="text-sm font-bold text-[#1D1D1F] flex items-center gap-1.5"
-            >
-              <span>PIN Code</span>
-              <span className="text-rose-500">*</span>
+          {/* PIN code */}
+          <div>
+            <label htmlFor="property-pincode" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
+              PIN code
             </label>
-
             <input
               id="property-pincode"
               type="text"
               maxLength={6}
               value={pincode}
               onChange={(e) => {
-                // Keep only numeric characters
                 const cleaned = e.target.value.replace(/[^0-9]/g, '');
                 setPincode(cleaned);
                 if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: undefined }));
               }}
-              onBlur={() => handleBlur('pincode')}
-              placeholder="e.g. 201310"
-              className={`w-full px-4 py-3.5 rounded-2xl bg-[#F5F5F7] border text-sm text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:outline-none transition-all font-mono tracking-wider ${
-                errors.pincode
-                  ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50'
-                  : 'border-[#EDEDED] focus:border-[#1D1D1F] focus:ring-4 focus:ring-black/5'
-              }`}
+              placeholder="6-digit PIN"
+              className="w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors font-mono bg-white"
             />
-
             {errors.pincode && (
-              <p className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{errors.pincode}</span>
-              </p>
+              <p className="text-xs text-[#222222] mt-1 font-inter">{errors.pincode}</p>
             )}
           </div>
         </div>
 
-        {/* 4. PRIVACY TOGGLE BOX */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] transition-all">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={hideExactAddress}
-              onChange={(e) => setHideExactAddress(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-[#1D1D1F] focus:ring-black/10 border-[#EDEDED]"
-            />
-            <div className="space-y-1">
-              <div className="text-sm font-bold text-[#1D1D1F] flex items-center gap-2">
-                {hideExactAddress ? (
-                  <EyeOff className="w-4 h-4 text-amber-600" />
-                ) : (
-                  <Eye className="w-4 h-4 text-emerald-600" />
-                )}
-                <span>Protect exact street address & flat number</span>
-              </div>
-              <p className="text-xs text-[#86868B] leading-relaxed">
-                {hideExactAddress
-                  ? 'Only Locality and City will be shown publicly in search results. Your exact building/flat number will be shared only after a booking is confirmed or inquiry approved.'
-                  : 'Full address will be visible to prospective tenants on the property page.'}
-              </p>
-            </div>
-          </label>
+        {/* BORDERLESS MAP WITH ISOLATED STACKING CONTEXT */}
+        <div className="pt-2 relative z-0" style={{ isolation: 'isolate' }}>
+          <HybridMapPicker
+            initialLatitude={latitude ? parseFloat(latitude) : undefined}
+            initialLongitude={longitude ? parseFloat(longitude) : undefined}
+            onCoordinatesChange={(newLat, newLng) => {
+              setLatitude(String(newLat));
+              setLongitude(String(newLng));
+            }}
+            onAddressDetected={handleAddressDetected}
+            cityHint={finalCityDisplay}
+            localityHint={locality}
+          />
         </div>
+      </form>
 
-        {/* 5. FUTURE MAP COORDINATES ACCORDION (OPTIONAL) */}
-        <div className="border border-[#EDEDED] rounded-2xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowCoordinates(!showCoordinates)}
-            className="w-full px-4 py-3.5 bg-white hover:bg-[#F5F5F7] flex items-center justify-between text-left transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#86868B]" />
-              <span className="text-xs sm:text-sm font-bold text-[#1D1D1F]">
-                Map Coordinates & Pin (Optional)
-              </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                Future Map Support
-              </span>
-            </div>
-            {showCoordinates ? (
-              <ChevronUp className="w-4 h-4 text-[#86868B]" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-[#86868B]" />
-            )}
-          </button>
+      {/* LOCATION CONFIRMATION POPUP MODAL */}
+      {showConfirmModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-location-title"
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+        >
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 relative animate-scale-in">
+            {/* Close icon */}
+            <button
+              type="button"
+              onClick={() => setShowConfirmModal(false)}
+              className="absolute right-5 top-5 p-2 text-[#717171] hover:text-[#222222] rounded-full hover:bg-[#F7F7F7] transition-colors"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-          {showCoordinates && (
-            <div className="p-4 sm:p-5 bg-[#F9F9FB] border-t border-[#EDEDED] space-y-4 animate-fade-in">
-              <p className="text-xs text-[#86868B] flex items-center gap-1.5">
-                <Info className="w-4 h-4 shrink-0 text-blue-600" />
-                <span>
-                  ApnaStay supports GPS coordinates to position your listing precisely on future search maps. You can leave this blank if you do not have exact coordinates.
-                </span>
+            {/* Modal Header */}
+            <div className="space-y-1.5 pr-8">
+              <div className="w-10 h-10 rounded-2xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] mb-3">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <h2 id="confirm-location-title" className="font-outfit text-xl sm:text-2xl font-semibold text-[#222222] tracking-tight">
+                Confirm property location
+              </h2>
+              <p className="font-inter text-xs sm:text-sm text-[#717171] leading-relaxed">
+                Please verify that the address details below are accurate before proceeding to the next step.
               </p>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="coord-lat" className="text-xs font-bold text-[#1D1D1F]">
-                    Latitude
-                  </label>
-                  <input
-                    id="coord-lat"
-                    type="number"
-                    step="any"
-                    value={latitude}
-                    onChange={(e) => {
-                      setLatitude(e.target.value);
-                      if (errors.coordinates) setErrors((prev) => ({ ...prev, coordinates: undefined }));
-                    }}
-                    placeholder="e.g. 28.4744"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#EDEDED] text-xs text-[#1D1D1F] focus:border-[#1D1D1F] focus:outline-none font-mono"
-                  />
+            {/* Location Details Card */}
+            <div className="bg-[#F7F7F7] rounded-2xl p-4 sm:p-5 space-y-3 font-inter text-xs sm:text-sm">
+              <div>
+                <span className="text-[#717171] text-xs block">Street address</span>
+                <p className="font-medium text-[#222222] mt-0.5">{addressLine1}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#EBEBEB]">
+                <div>
+                  <span className="text-[#717171] text-xs block">Locality / Sector</span>
+                  <p className="font-medium text-[#222222] mt-0.5">{locality}</p>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="coord-lng" className="text-xs font-bold text-[#1D1D1F]">
-                    Longitude
-                  </label>
-                  <input
-                    id="coord-lng"
-                    type="number"
-                    step="any"
-                    value={longitude}
-                    onChange={(e) => {
-                      setLongitude(e.target.value);
-                      if (errors.coordinates) setErrors((prev) => ({ ...prev, coordinates: undefined }));
-                    }}
-                    placeholder="e.g. 77.5040"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#EDEDED] text-xs text-[#1D1D1F] focus:border-[#1D1D1F] focus:outline-none font-mono"
-                  />
+                <div>
+                  <span className="text-[#717171] text-xs block">City</span>
+                  <p className="font-medium text-[#222222] mt-0.5">{finalCityDisplay}</p>
                 </div>
               </div>
 
-              {errors.coordinates && (
-                <p className="text-xs text-rose-600 font-semibold flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{errors.coordinates}</span>
-                </p>
+              <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#EBEBEB]">
+                <div>
+                  <span className="text-[#717171] text-xs block">State / UT</span>
+                  <p className="font-medium text-[#222222] mt-0.5">{state}</p>
+                </div>
+                <div>
+                  <span className="text-[#717171] text-xs block">PIN code</span>
+                  <p className="font-medium text-[#222222] mt-0.5 font-mono">{pincode}</p>
+                </div>
+              </div>
+
+              {latitude && longitude && (
+                <div className="pt-1 border-t border-[#EBEBEB]">
+                  <span className="text-[#717171] text-xs block">Map Coordinates</span>
+                  <p className="font-mono text-xs text-[#222222] mt-0.5">
+                    {parseFloat(latitude).toFixed(5)}, {parseFloat(longitude).toFixed(5)}
+                  </p>
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        {/* 6. TENANT SEARCH PREVIEW */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EDEDED] shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-[#86868B]">
-            <span className="flex items-center gap-1.5 text-[#1D1D1F]">
-              <MapPin className="w-3.5 h-3.5 text-primary" />
-              <span>Location Preview</span>
-            </span>
-            <span className="text-[11px] font-semibold text-[#1D1D1F] bg-[#F5F5F7] px-2 py-0.5 rounded-full">
-              Search Discoverable
-            </span>
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="px-5 py-3 rounded-xl border border-[#B0B0B0] hover:border-[#222222] text-[#222222] text-xs sm:text-sm font-semibold transition-colors"
+              >
+                Edit details
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLocationModal}
+                disabled={isSaving}
+                className="px-6 py-3 rounded-xl bg-[#222222] hover:bg-black text-white text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 shadow-apple-xs"
+              >
+                <span>Confirm & Continue</span>
+              </button>
+            </div>
           </div>
-
-          <div className="text-sm font-extrabold text-[#1D1D1F]">
-            {formatDisplayAddress()}
-          </div>
-
-          {landmark.trim() && (
-            <p className="text-xs text-[#86868B]">
-              <span className="font-semibold text-[#1D1D1F]">Landmark:</span> {landmark.trim()}
-            </p>
-          )}
-
-          {addressLine1.trim() && (
-            <p className="text-xs text-[#86868B] pt-1 border-t border-[#EDEDED]">
-              <span className="font-semibold">Full Address:</span> {addressLine1.trim()}
-              {hideExactAddress && (
-                <span className="text-[#86868B] ml-1 font-semibold">
-                  (Private — shown only after booking confirmation)
-                </span>
-              )}
-            </p>
-          )}
         </div>
-      </div>
-    </form>
+      )}
+    </>
   );
 }

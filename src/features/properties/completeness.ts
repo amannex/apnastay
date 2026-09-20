@@ -60,9 +60,9 @@ export function getSectionStepNumber(section: CompletenessSectionKey): number {
       return 1;
     case 'rental_structure':
       return 2;
-    case 'basic_details':
-      return 3;
     case 'location':
+      return 3;
+    case 'basic_details':
       return 4;
     case 'photos':
       return 5;
@@ -473,8 +473,8 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   const sectionKeys: CompletenessSectionKey[] = [
     'property_type',
     'rental_structure',
-    'basic_details',
     'location',
+    'basic_details',
     'photos',
     'amenities',
     'units',

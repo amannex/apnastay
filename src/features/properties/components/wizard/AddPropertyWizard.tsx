@@ -39,7 +39,8 @@ import {
   FileCheck2,
   ListPlus,
   Bookmark,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 import { normalizePropertyError, NormalizedPropertyError } from '../../errorMessages';
 import type {
@@ -61,8 +62,10 @@ import {
   updatePropertyUnits,
   updatePropertyPricing,
   updatePropertyRules,
-  publishProperty
+  publishProperty,
+  deleteProperty
 } from '../../api';
+import LifecycleConfirmationModal from '../dialogs/LifecycleConfirmationModal';
 import { AMENITY_REGISTRY } from '../../amenities';
 import { getUnitTerminology, calculateUnitAvailability } from '../../units';
 import {
@@ -80,6 +83,7 @@ import {
 } from '../../rules';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
+import StepPropertyStructure from './StepPropertyStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
 import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
@@ -162,6 +166,9 @@ export default function AddPropertyWizard({
   const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
   const [basicDetailsSubStep, setBasicDetailsSubStep] = useState<'basics' | 'title_description'>('basics');
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [isDeletingDraft, setIsDeletingDraft] = useState<boolean>(false);
+  const [deleteDraftError, setDeleteDraftError] = useState<string | null>(null);
 
   // Phase 13: Structural change guard and unsaved changes tracking
   const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
@@ -229,7 +236,26 @@ export default function AddPropertyWizard({
     // Only target a property if explicitly passed as a prop or explicitly present in URL query
     const targetPropertyId = propPropertyId || draftIdFromUrl;
 
-    if (!targetPropertyId) return;
+    if (!targetPropertyId) {
+      try {
+        const cached =
+          window.sessionStorage?.getItem('apnastay_wizard_substep_draft') ||
+          window.sessionStorage?.getItem('apnastay_wizard_substep1_draft');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.propertyType) {
+            setSelectedType(parsed.propertyType);
+          }
+          if (parsed.customPropertyType) {
+            setCustomPropertyType(parsed.customPropertyType);
+          }
+          if (parsed.rentalStructure) {
+            setSelectedStructure(parsed.rentalStructure);
+          }
+        }
+      } catch (_) {}
+      return;
+    }
 
     setIsLoadingDraft(true);
     getProperty(targetPropertyId)
@@ -254,15 +280,20 @@ export default function AddPropertyWizard({
           // Restore location form fields
           if (prop.location) {
             setLocationData({
-              addressLine1: prop.location.addressLine1 || '',
+              addressLine1: prop.location.addressLine1 || prop.location.address || '',
+              address: prop.location.address || prop.location.addressLine1 || '',
               locality: prop.location.locality || '',
               city: prop.location.city || '',
               state: prop.location.state || '',
               pincode: prop.location.pincode || '',
               landmark: prop.location.landmark || '',
-              latitude: prop.location.latitude,
-              longitude: prop.location.longitude,
-              hideExactAddress: prop.location.hideExactAddress
+              latitude: prop.location.latitude ?? prop.location.coordinates?.latitude,
+              longitude: prop.location.longitude ?? prop.location.coordinates?.longitude,
+              coordinates: prop.location.coordinates,
+              publicLocation:
+                prop.location.publicLocation ||
+                [prop.location.locality, prop.location.city].filter(Boolean).join(', '),
+              hideExactAddress: prop.location.hideExactAddress ?? true
             });
           }
 
@@ -364,11 +395,14 @@ export default function AddPropertyWizard({
       setShowStructuralGuard(true);
       return;
     }
+    const typeChanged = selectedType !== type;
     setSelectedType(type);
     setHasUnsavedChanges(true);
     clearError();
-    const template = getPropertyTemplate(type);
-    setSelectedStructure(template.defaultRentalStructure);
+    if (typeChanged || !selectedStructure) {
+      const template = getPropertyTemplate(type);
+      setSelectedStructure(template.defaultRentalStructure);
+    }
   };
 
   const handleSelectStructure = (structure: RentalStructure) => {
@@ -466,13 +500,64 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
-  // Step 3: Basic Details Back & Save Handlers
+  // Step 3: Location Back & Save Handlers
   // --------------------------------------------------------------------------
-  const handleBackFromBasicDetails = (currentValues: BasicDetailsFormData) => {
-    setBasicDetails(currentValues);
+  const handleBackFromLocation = (currentValues: LocationFormData) => {
+    setLocationData(currentValues);
     setCurrentStep(2);
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=2`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSaveLocation = async (data: LocationFormData) => {
+    if (!createdProperty || isSubmitting) return;
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      const res = await updateProperty(createdProperty.id, {
+        location: {
+          addressLine1: data.addressLine1,
+          address: data.address || data.addressLine1,
+          locality: data.locality,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+          landmark: data.landmark,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          coordinates: data.coordinates || (data.latitude && data.longitude ? { latitude: data.latitude, longitude: data.longitude } : undefined),
+          hideExactAddress: data.hideExactAddress ?? true,
+          publicLocation: data.publicLocation || [data.locality, data.city].filter(Boolean).join(', ')
+        }
+      });
+
+      if (res.success && res.data) {
+        setLocationData(data);
+        syncDraftState(res.data, 4);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setAppError(res, 'Failed to save property location.');
+      }
+    } catch (err: any) {
+      setAppError(err, 'Network error while saving location.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Step 4: Basic Details Back & Save Handlers
+  // --------------------------------------------------------------------------
+  const handleBackFromBasicDetails = (currentValues: BasicDetailsFormData) => {
+    setBasicDetails(currentValues);
+    setCurrentStep(3);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -497,7 +582,7 @@ export default function AddPropertyWizard({
       if (res.success && res.data) {
         setBasicDetails(data);
         setBasicDetailsSubStep('basics');
-        syncDraftState(res.data, 4);
+        syncDraftState(res.data, 5);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save basic property details.');
@@ -510,20 +595,22 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
-  // Step 4: Location Back & Save Handlers
+  // Step 5: Accommodation Structure Back & Save Handlers (Substep 5)
   // --------------------------------------------------------------------------
-  const handleBackFromLocation = (currentValues: LocationFormData) => {
-    setLocationData(currentValues);
-    setCurrentStep(3);
+  const handleBackFromPropertyStructure = () => {
+    setCurrentStep(4);
     setBasicDetailsSubStep('title_description');
     if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSaveLocation = async (data: LocationFormData) => {
+  const handleSavePropertyStructure = async (
+    newUnits: PropertyUnit[],
+    structure: 'single_unit' | 'multiple_units'
+  ) => {
     if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -531,31 +618,30 @@ export default function AddPropertyWizard({
 
     try {
       const res = await updateProperty(createdProperty.id, {
-        location: {
-          addressLine1: data.addressLine1,
-          locality: data.locality,
-          city: data.city,
-          state: data.state,
-          pincode: data.pincode,
-          landmark: data.landmark,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          hideExactAddress: data.hideExactAddress
-        }
+        units: newUnits,
+        propertyStructure: structure
       });
 
       if (res.success && res.data) {
-        setLocationData(data);
+        setUnits(newUnits);
         syncDraftState(res.data, 5);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setAppError(res, 'Failed to save property location.');
+        setAppError(res, 'Failed to save accommodation structure.');
+        throw new Error(res.error || 'Failed to save accommodation structure.');
       }
     } catch (err: any) {
-      setAppError(err, 'Network error while saving location.');
+      setAppError(err, 'Network error while saving accommodation structure.');
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleContinueToStep2 = () => {
+    if (onSaved && createdProperty) {
+      onSaved(createdProperty);
+    }
+    handleJumpToStep(6);
   };
 
   // --------------------------------------------------------------------------
@@ -564,6 +650,7 @@ export default function AddPropertyWizard({
   const handleBackFromPhotos = (currentPhotos: PropertyPhoto[]) => {
     setPhotos(currentPhotos);
     setCurrentStep(4);
+    setBasicDetailsSubStep('title_description');
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
       window.history.replaceState(null, '', newUrl);
@@ -801,9 +888,18 @@ export default function AddPropertyWizard({
   };
 
   const handleSaveAndExit = async () => {
-    if (createdProperty && typeof window !== 'undefined') {
-      if (createdProperty.status === 'draft') {
+    if (typeof window !== 'undefined') {
+      if (createdProperty && createdProperty.status === 'draft') {
         window.sessionStorage?.setItem('apnastay_active_draft_id', createdProperty.id);
+      } else if (selectedType || selectedStructure) {
+        window.sessionStorage?.setItem(
+          'apnastay_wizard_substep_draft',
+          JSON.stringify({
+            propertyType: selectedType,
+            customPropertyType,
+            rentalStructure: selectedStructure
+          })
+        );
       }
     }
     if (onExit) {
@@ -817,10 +913,37 @@ export default function AddPropertyWizard({
     await handleSaveAndExit();
   };
 
+  const handleDeleteDraft = async () => {
+    const targetId = createdProperty?.id || propPropertyId;
+    if (!targetId) return;
+    setIsDeletingDraft(true);
+    setDeleteDraftError(null);
+    try {
+      const res = await deleteProperty(targetId);
+      if (res.success) {
+        if (typeof window !== 'undefined') {
+          window.sessionStorage?.removeItem('apnastay_active_draft_id');
+          window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
+          window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
+        }
+        setShowDeleteModal(false);
+        router.push('/owner/dashboard/properties');
+      } else {
+        setDeleteDraftError(res.error || 'Failed to delete listing.');
+      }
+    } catch (err: any) {
+      setDeleteDraftError(err.message || 'An error occurred while deleting listing.');
+    } finally {
+      setIsDeletingDraft(false);
+    }
+  };
+
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
       window.sessionStorage?.removeItem('apnastay_active_draft_id');
+      window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
+      window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
       window.history.replaceState(null, '', window.location.pathname);
     }
     setCurrentStep(1);
@@ -854,10 +977,12 @@ export default function AddPropertyWizard({
         return 'Individual Unit (Flat)';
       case 'individual_room':
         return 'Individual Room';
+      case 'shared_room':
+        return 'Shared Room';
       case 'individual_bed':
-        return 'Individual Bed';
+        return 'Individual Bed / Bed Space';
       case 'multiple_units':
-        return 'Multiple Units';
+        return 'Multiple Rooms / Units';
       default:
         return '';
     }
@@ -876,14 +1001,14 @@ export default function AddPropertyWizard({
     } else if (currentStep === 2) {
       handleJumpToStep(1);
     } else if (currentStep === 3) {
+      handleJumpToStep(2);
+    } else if (currentStep === 4) {
       if (basicDetailsSubStep === 'title_description') {
         setBasicDetailsSubStep('basics');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        handleJumpToStep(2);
+        handleJumpToStep(3);
       }
-    } else if (currentStep === 4) {
-      handleJumpToStep(3);
     } else if (currentStep === 5) {
       handleJumpToStep(4);
     } else if (currentStep === 6) {
@@ -949,7 +1074,7 @@ export default function AddPropertyWizard({
       return (
         <button
           type="submit"
-          form="basic-details-form"
+          form="location-form"
           disabled={isSubmitting}
           className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
             isSubmitting
@@ -973,7 +1098,31 @@ export default function AddPropertyWizard({
       return (
         <button
           type="submit"
-          form="location-form"
+          form="basic-details-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    if (currentStep === 5) {
+      return (
+        <button
+          type="submit"
+          form="property-structure-form"
           disabled={isSubmitting}
           className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
             isSubmitting
@@ -1065,12 +1214,25 @@ export default function AddPropertyWizard({
           </span>
         </Link>
 
-        {/* Right: Questions? and Save & exit buttons */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        {/* Right: Questions?, Delete (if draft/property exists), and Save & exit buttons */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {(createdProperty?.id || propPropertyId) && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              disabled={isSubmitting || isDeletingDraft}
+              className="p-2 sm:px-3.5 sm:py-2.5 rounded-full border border-rose-200 hover:border-rose-300 hover:bg-rose-50 text-xs sm:text-sm font-semibold text-rose-600 transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center gap-1.5 shrink-0 shadow-apple-xs disabled:opacity-50"
+              title="Delete property listing"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setShowQuestionsModal(true)}
-            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
+            className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
           >
             <span>Questions?</span>
           </button>
@@ -1192,8 +1354,37 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 3: BASIC DETAILS */}
+      {/* STEP 3: LOCATION */}
       {currentStep === 3 && selectedType && selectedStructure && !isLoadingDraft && (
+        <div className="w-full">
+          <StepLocation
+            propertyType={selectedType}
+            customPropertyType={customPropertyType}
+            rentalStructure={selectedStructure}
+            initialValues={{
+              addressLine1: locationData.addressLine1 ?? createdProperty?.location?.addressLine1,
+              address: locationData.address ?? createdProperty?.location?.address,
+              locality: locationData.locality ?? createdProperty?.location?.locality,
+              city: locationData.city ?? createdProperty?.location?.city,
+              state: locationData.state ?? createdProperty?.location?.state,
+              pincode: locationData.pincode ?? createdProperty?.location?.pincode,
+              landmark: locationData.landmark ?? createdProperty?.location?.landmark,
+              latitude: locationData.latitude ?? createdProperty?.location?.latitude,
+              longitude: locationData.longitude ?? createdProperty?.location?.longitude,
+              coordinates: locationData.coordinates ?? createdProperty?.location?.coordinates,
+              publicLocation: locationData.publicLocation ?? createdProperty?.location?.publicLocation,
+              hideExactAddress:
+                locationData.hideExactAddress ?? createdProperty?.location?.hideExactAddress
+            }}
+            onBack={handleBackFromLocation}
+            onSave={handleSaveLocation}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 4: BASIC DETAILS */}
+      {currentStep === 4 && selectedType && selectedStructure && !isLoadingDraft && (
         <div className="w-full">
           <StepBasicDetails
             propertyType={selectedType}
@@ -1219,40 +1410,24 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 4: LOCATION */}
-      {currentStep === 4 && selectedType && selectedStructure && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
-          <StepLocation
-            propertyType={selectedType}
-            customPropertyType={customPropertyType}
-            rentalStructure={selectedStructure}
-            initialValues={{
-              addressLine1: locationData.addressLine1 ?? createdProperty?.location?.addressLine1,
-              locality: locationData.locality ?? createdProperty?.location?.locality,
-              city: locationData.city ?? createdProperty?.location?.city,
-              state: locationData.state ?? createdProperty?.location?.state,
-              pincode: locationData.pincode ?? createdProperty?.location?.pincode,
-              landmark: locationData.landmark ?? createdProperty?.location?.landmark,
-              latitude: locationData.latitude ?? createdProperty?.location?.latitude,
-              longitude: locationData.longitude ?? createdProperty?.location?.longitude,
-              hideExactAddress:
-                locationData.hideExactAddress ?? createdProperty?.location?.hideExactAddress
-            }}
-            onBack={handleBackFromLocation}
-            onSave={handleSaveLocation}
-            isSaving={isSubmitting}
-          />
-        </div>
-      )}
-
-      {/* STEP 5: PHOTOS (PHASE 5) */}
+      {/* STEP 5: ACCOMMODATION STRUCTURE (SUBSTEP 5) */}
       {currentStep === 5 && createdProperty && !isLoadingDraft && (
-        <div className="space-y-6 animate-fade-in">
-          <StepPhotos
+        <div className="w-full">
+          <StepPropertyStructure
             propertyId={createdProperty.id}
-            initialPhotos={photos.length > 0 ? photos : createdProperty.photos || []}
-            onBack={handleBackFromPhotos}
-            onSave={handleSavePhotos}
+            propertyType={selectedType || createdProperty.propertyType}
+            customPropertyType={customPropertyType || createdProperty.customPropertyType}
+            rentalStructure={selectedStructure || createdProperty.rentalStructure}
+            initialPropertyStructure={createdProperty.propertyStructure}
+            initialUnits={units.length > 0 ? units : createdProperty.units || []}
+            locationSummary={
+              locationData.publicLocation ||
+              createdProperty.location?.publicLocation ||
+              [createdProperty.location?.locality, createdProperty.location?.city].filter(Boolean).join(', ')
+            }
+            onBack={handleBackFromPropertyStructure}
+            onSave={handleSavePropertyStructure}
+            onContinueToStep2={handleContinueToStep2}
             isSaving={isSubmitting}
           />
         </div>
@@ -1424,7 +1599,7 @@ export default function AddPropertyWizard({
       {/* ==================================================================== */}
       {/* 3. STICKY BOTTOM NAVIGATION BAR WITH 3-PHASE PROGRESS                */}
       {/* ==================================================================== */}
-      <footer className="sticky bottom-0 bg-white z-30 shadow-lg border-t border-[#EDEDED]">
+      <footer className="sticky bottom-0 bg-white z-50 shadow-lg border-t border-[#EDEDED]">
         {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
         <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
           {/* Phase 1: Steps 1-4 */}
@@ -1433,16 +1608,18 @@ export default function AddPropertyWizard({
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 4
+                  currentStep >= 5
                     ? 100
-                    : currentStep === 3
+                    : currentStep === 4
                     ? basicDetailsSubStep === 'title_description'
-                      ? 85
-                      : 65
+                      ? 90
+                      : 75
+                    : currentStep === 3
+                    ? 55
                     : currentStep === 2
-                    ? 45
+                    ? 35
                     : currentStep === 1
-                    ? 20
+                    ? 15
                     : 0
                 }%`,
               }}
@@ -1517,6 +1694,22 @@ export default function AddPropertyWizard({
           </div>
         </div>
       )}
+
+      {/* DELETE LISTING CONFIRMATION MODAL */}
+      <LifecycleConfirmationModal
+        isOpen={showDeleteModal}
+        actionType="delete"
+        propertyTitle={createdProperty?.title || 'this property listing'}
+        onConfirm={handleDeleteDraft}
+        onCancel={() => {
+          if (!isDeletingDraft) {
+            setShowDeleteModal(false);
+            setDeleteDraftError(null);
+          }
+        }}
+        isProcessing={isDeletingDraft}
+        errorMessage={deleteDraftError}
+      />
     </div>
   );
 }

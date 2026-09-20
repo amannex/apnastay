@@ -4,24 +4,31 @@
 // ============================================================================
 
 export type PropertyType =
-  | 'house'
   | 'apartment'
-  | 'villa'
+  | 'independent_house'
+  | 'builder_floor'
   | 'pg'
   | 'hostel'
+  | 'co_living'
+  | 'room'
+  | 'bed_space'
+  | 'other'
+  // Compatibility aliases
+  | 'house'
+  | 'villa'
   | 'coliving'
   | 'building'
   | 'independent_floor'
-  | 'room'
-  | 'commercial'
-  | 'other';
+  | 'commercial';
 
 export type RentalStructure =
   | 'entire_property'
-  | 'individual_unit'
   | 'individual_room'
+  | 'shared_room'
   | 'individual_bed'
-  | 'multiple_units';
+  | 'multiple_units'
+  // Compatibility alias
+  | 'individual_unit';
 
 export type PropertyStatus =
   | 'draft'
@@ -54,6 +61,7 @@ export type TemplateStructure =
 
 export interface PropertyLocation {
   addressLine1: string;
+  address?: string; // Private / exact street address
   locality?: string;
   addressLine2?: string;
   city: string;
@@ -61,8 +69,13 @@ export interface PropertyLocation {
   pincode: string;
   latitude?: number;
   longitude?: number;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
   landmark?: string;
   hideExactAddress?: boolean;
+  publicLocation?: string; // Public / approximate location (e.g. "Sector 62, Noida")
 }
 
 export type PropertyAvailabilityType =
@@ -327,10 +340,11 @@ export interface PropertyBed {
 export interface PropertyUnit {
   id: string;
   propertyId: string;
-  unitType?: string; // e.g., "1BHK", "2BHK", "Single Room", "Double Sharing"
+  unitType?: string; // e.g., "1BHK", "2BHK", "Single Room", "Double Sharing", "2 sharing"
   nameOrNumber: string; // e.g., "Flat 101", "Room 204", "Ground Floor"
   description?: string;
   capacity: number; // e.g., 2 persons
+  occupancyModel?: 'private' | 'shared' | 'entire' | string;
   furnishing?: 'fully_furnished' | 'semi_furnished' | 'unfurnished';
   floor?: string | number;
   carpetAreaSqft?: number;
@@ -349,6 +363,7 @@ export interface Property {
   propertyType: PropertyType;
   customPropertyType?: string; // If propertyType === 'other'
   rentalStructure: RentalStructure;
+  propertyStructure?: 'single_unit' | 'multiple_units';
   title: string;
   description: string;
   status: PropertyStatus;
@@ -393,6 +408,7 @@ export interface CreatePropertyDraftPayload {
   propertyType: PropertyType;
   customPropertyType?: string;
   rentalStructure?: RentalStructure;
+  propertyStructure?: 'single_unit' | 'multiple_units';
   title?: string;
   description?: string;
   availability?: PropertyAvailability;
@@ -406,6 +422,7 @@ export interface UpdatePropertyPayload {
   propertyType?: PropertyType;
   customPropertyType?: string;
   rentalStructure?: RentalStructure;
+  propertyStructure?: 'single_unit' | 'multiple_units';
   availability?: PropertyAvailability;
   location?: Partial<PropertyLocation>;
   pricing?: Partial<PropertyPricing>;

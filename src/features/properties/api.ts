@@ -199,7 +199,7 @@ export async function getProperty(propertyId: string): Promise<PropertyApiRespon
  * Endpoint: GET /wp-json/apnastay/v1/owner/properties
  */
 export async function getOwnerProperties(
-  statusFilter?: PropertyStatus | 'active' | 'all'
+  statusFilter?: PropertyStatus | 'active' | 'all' | 'unlisted'
 ): Promise<PropertyApiResponse<Property[]>> {
   try {
     const url = statusFilter

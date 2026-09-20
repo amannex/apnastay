@@ -35,8 +35,8 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     label: 'Apartment / Flat',
     description: 'Residential flat or multi-flat gated society offering modern amenities.',
     structure: 'multi_unit',
-    defaultRentalStructure: 'individual_unit',
-    allowedRentalStructures: ['individual_unit', 'entire_property', 'multiple_units'],
+    defaultRentalStructure: 'entire_property',
+    allowedRentalStructures: ['entire_property', 'individual_room', 'shared_room', 'multiple_units', 'individual_unit'],
     unitTerminology: {
       singular: 'Flat',
       plural: 'Flats',
@@ -84,7 +84,7 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     description: 'Managed accommodation with shared or private rooms, meals, and utilities.',
     structure: 'rooms_beds',
     defaultRentalStructure: 'individual_bed',
-    allowedRentalStructures: ['individual_bed', 'individual_room'],
+    allowedRentalStructures: ['individual_bed', 'individual_room', 'shared_room', 'multiple_units'],
     unitTerminology: {
       singular: 'Room',
       plural: 'Rooms',
@@ -109,7 +109,7 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     description: 'Community living with high-capacity dorms, study halls, and dining facilities.',
     structure: 'rooms_beds',
     defaultRentalStructure: 'individual_bed',
-    allowedRentalStructures: ['individual_bed', 'individual_room'],
+    allowedRentalStructures: ['individual_bed', 'individual_room', 'shared_room', 'multiple_units'],
     unitTerminology: {
       singular: 'Dorm / Room',
       plural: 'Dorms / Rooms',
@@ -134,7 +134,7 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     description: 'Designer community living with private suites, shared lounges, and social events.',
     structure: 'rooms_beds',
     defaultRentalStructure: 'individual_room',
-    allowedRentalStructures: ['individual_room', 'individual_bed'],
+    allowedRentalStructures: ['individual_room', 'individual_bed', 'shared_room', 'multiple_units'],
     unitTerminology: {
       singular: 'Studio / Room',
       plural: 'Studios / Rooms',
@@ -204,7 +204,7 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     description: 'Independent single room or 1RK studio unit with private or shared bath.',
     structure: 'single_unit',
     defaultRentalStructure: 'individual_room',
-    allowedRentalStructures: ['individual_room', 'entire_property'],
+    allowedRentalStructures: ['individual_room', 'entire_property', 'shared_room', 'multiple_units'],
     unitTerminology: {
       singular: 'Room',
       plural: 'Rooms',
@@ -245,6 +245,100 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
     ]
   },
 
+  independent_house: {
+    id: 'independent_house',
+    label: 'Independent House',
+    description: 'Standalone residential bungalow or house for family or private living.',
+    structure: 'single_unit',
+    defaultRentalStructure: 'entire_property',
+    allowedRentalStructures: ['entire_property', 'individual_room', 'shared_room', 'multiple_units'],
+    unitTerminology: {
+      singular: 'Property',
+      plural: 'Properties',
+      placeholder: 'Entire House'
+    },
+    hasUnits: false,
+    hasBeds: false,
+    suggestedAmenities: [
+      'Private Garden',
+      'Dedicated Car Parking',
+      '100% Power Backup',
+      'Water Storage Tank',
+      'Pet Friendly',
+      'Solar Water Heater'
+    ]
+  },
+
+  builder_floor: {
+    id: 'builder_floor',
+    label: 'Builder Floor',
+    description: 'Dedicated single floor in a low-rise residential building with private entrance.',
+    structure: 'single_unit',
+    defaultRentalStructure: 'entire_property',
+    allowedRentalStructures: ['entire_property', 'individual_room', 'shared_room', 'multiple_units'],
+    unitTerminology: {
+      singular: 'Floor',
+      plural: 'Floors',
+      placeholder: '2nd Floor'
+    },
+    hasUnits: false,
+    hasBeds: false,
+    suggestedAmenities: [
+      'Private Lift Access',
+      'Dedicated Car Stilt Parking',
+      'Separate Water Meter',
+      'Power Inverter Backup',
+      'Modular Kitchen'
+    ]
+  },
+
+  co_living: {
+    id: 'co_living',
+    label: 'Co-living',
+    description: 'Designer community living with private suites, shared lounges, and social events.',
+    structure: 'rooms_beds',
+    defaultRentalStructure: 'individual_room',
+    allowedRentalStructures: ['individual_room', 'individual_bed', 'shared_room', 'multiple_units'],
+    unitTerminology: {
+      singular: 'Studio / Room',
+      plural: 'Studios / Rooms',
+      placeholder: 'Suite 4A'
+    },
+    hasUnits: true,
+    hasBeds: true,
+    suggestedAmenities: [
+      'Ergonomic WFH Desk & Chair',
+      'Coworking Lounge & High-Speed Fiber',
+      'Community Events & Game Zone',
+      'Fully Equipped Shared Kitchen',
+      'Housekeeping & Linen Change',
+      'NFC Smart-Lock Keyless Entry'
+    ]
+  },
+
+  bed_space: {
+    id: 'bed_space',
+    label: 'Bed / Bed Space',
+    description: 'Individual bed space in a shared room, hostel, or co-living space.',
+    structure: 'rooms_beds',
+    defaultRentalStructure: 'individual_bed',
+    allowedRentalStructures: ['individual_bed', 'shared_room', 'multiple_units'],
+    unitTerminology: {
+      singular: 'Bed Space',
+      plural: 'Bed Spaces',
+      placeholder: 'Bed A, Room 101'
+    },
+    hasUnits: true,
+    hasBeds: true,
+    suggestedAmenities: [
+      'Individual Storage Locker',
+      'High-Speed Wi-Fi',
+      'Daily Housekeeping',
+      'Power Backup',
+      'RO Drinking Water'
+    ]
+  },
+
   other: {
     id: 'other',
     label: 'Other / Custom Property',
@@ -255,6 +349,7 @@ export const PROPERTY_TEMPLATES: Record<PropertyType, PropertyTemplate> = {
       'entire_property',
       'individual_unit',
       'individual_room',
+      'shared_room',
       'individual_bed',
       'multiple_units'
     ],
@@ -355,6 +450,7 @@ export function getBasicFieldsConfig(
       };
 
     case 'coliving':
+    case 'co_living':
       return {
         titleLabel: 'Co-Living Property Name',
         titlePlaceholder: 'e.g., UrbanNest Co-Living, Sector 62',
@@ -385,6 +481,7 @@ export function getBasicFieldsConfig(
       };
 
     case 'house':
+    case 'independent_house':
       return {
         titleLabel: 'Property Name / House Title',
         titlePlaceholder: 'e.g., Independent House near Pari Chowk',
@@ -430,8 +527,9 @@ export function getBasicFieldsConfig(
       };
 
     case 'independent_floor':
+    case 'builder_floor':
       return {
-        titleLabel: 'Independent Floor Title',
+        titleLabel: 'Builder Floor / Independent Floor Title',
         titlePlaceholder: 'e.g., 1st Floor Builder Apartment with Terrace Access',
         titleHelp: 'Specify the floor level and key exclusive benefits (terrace, elevator, stilt parking).',
         descriptionLabel: 'Floor Description',
@@ -442,6 +540,21 @@ export function getBasicFieldsConfig(
         priceHelp: 'Monthly rental amount for this independent floor.',
         availabilityLabel: 'When is this floor available for move-in?',
         availabilityHelp: 'Indicate whether it is vacant now or ready from a future date.'
+      };
+
+    case 'bed_space':
+      return {
+        titleLabel: 'Bed Space Title',
+        titlePlaceholder: 'e.g., Bed Space in 2-Sharing AC Room near Metro',
+        titleHelp: 'Mention sharing type (single/double/triple) and primary location/connectivity.',
+        descriptionLabel: 'Bed Space & Room Description',
+        descriptionPlaceholder: 'Describe the room, attached washroom, cupboard/locker, utilities included, housekeeping, and quiet study hours.',
+        descriptionHelp: 'Students and professionals value cleanliness, storage, and transparent monthly bills.',
+        priceLabel: 'Monthly Rent per Bed',
+        pricePlaceholder: 'e.g., 6000',
+        priceHelp: 'Monthly rent for this single bed space.',
+        availabilityLabel: 'When is this bed space available?',
+        availabilityHelp: 'Specify immediate move-in readiness or vacancy date.'
       };
 
     case 'room':

@@ -55,9 +55,9 @@ export default function LifecycleConfirmationModal({
         return {
           icon: <EyeOff className="w-6 h-6 text-amber-600" />,
           iconBg: 'bg-amber-50',
-          title: 'Unpublish Listing?',
-          description: `Are you sure you want to unpublish "${propertyTitle}"? It will no longer be visible to prospective tenants on ApnaStay, but all your units, photos, and configurations will be safely preserved. You can publish it again at any time.`,
-          confirmText: 'Unpublish Listing',
+          title: 'Unlist Property?',
+          description: `Are you sure you want to unlist "${propertyTitle}"? It will be moved to your Unlisted listings and taken off the marketplace. All your units, photos, and configurations will be safely preserved, and you can publish it live again at any time.`,
+          confirmText: 'Unlist Property',
           confirmButtonClass: 'bg-amber-600 hover:bg-amber-700 text-white'
         };
       case 'archive':
@@ -86,6 +86,15 @@ export default function LifecycleConfirmationModal({
           description: `Publish "${propertyTitle}"? It will become publicly visible and ready to receive inquiries from tenants on ApnaStay.`,
           confirmText: 'Publish Live',
           confirmButtonClass: 'bg-emerald-600 hover:bg-emerald-700 text-white'
+        };
+      case 'delete':
+        return {
+          icon: <Trash2 className="w-6 h-6 text-rose-600" />,
+          iconBg: 'bg-rose-50',
+          title: 'Delete Property Permanently?',
+          description: `Are you sure you want to permanently delete "${propertyTitle}"? All associated units, beds, pricing, photos, and configurations will be irreversibly removed. This action cannot be undone.`,
+          confirmText: 'Delete Permanently',
+          confirmButtonClass: 'bg-rose-600 hover:bg-rose-700 text-white'
         };
       default:
         return {
