@@ -52,14 +52,14 @@ export default function PropertyIntroStep({
       stepLabel: 'Step 3',
       title: 'Finish up and publish',
       description:
-        'Finally, you’ll set up your pricing structure, security deposit, tenant preferences, and house rules before publishing your property.',
-      modalTitle: 'Step 3: Finish & Publish',
+        'In this final step, you’ll set up your pricing, security deposit, choose tenant preferences and house rules, and publish your property live on ApnaStay.',
+      modalTitle: 'Step 3: Pricing, Rules & Publishing',
       modalDesc:
-        'You are almost done! Review final pricing, deposit terms, and rules to launch your listing.',
+        'You are on the final step! Setting clear monthly rent, deposit terms, and house rules ensures smooth tenant onboarding and automated agreements.',
       modalTips: [
-        'Review your monthly rent and deposit terms.',
-        'Set tenant preferences and notice periods clearly.',
-        'Submit to immediately publish or save as draft.'
+        'Review your monthly rent, security deposit, and maintenance charges.',
+        'Set tenant preferences (families, bachelors, professionals) and house rules.',
+        'Preview your listing and publish live instantly on ApnaStay.'
       ]
     }
   }[phase];
@@ -152,13 +152,13 @@ export default function PropertyIntroStep({
         <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
           {/* Portion 1: Step 1 (Completed for phase >= 1) */}
           <div className="h-full bg-[#222222] rounded-full transition-all duration-500" />
-          {/* Portion 2: Step 2 (Grey when phase 2 starts, solid black if phase > 2) */}
+          {/* Portion 2: Step 2 (Completed if phase >= 3) */}
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              phase > 2 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
+              phase >= 3 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
             }`}
           />
-          {/* Portion 3: Step 3 (Solid black if phase > 3) */}
+          {/* Portion 3: Step 3 (Grey when starting phase 3, solid black if > 3) */}
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               phase > 3 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'

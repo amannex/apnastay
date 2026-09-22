@@ -171,6 +171,14 @@ export default function AddPropertyWizard({
     }
     return false;
   });
+  const [showPhase3Intro, setShowPhase3Intro] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const rawStep = params.get('step');
+      return rawStep === 'phase3' || rawStep === 'intro3';
+    }
+    return false;
+  });
 
   // Phase 13: Structural change guard and unsaved changes tracking
   const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
@@ -327,11 +335,16 @@ export default function AddPropertyWizard({
             return;
           }
 
-          // Check for Phase 2 intro in URL query
+          // Check for Phase 2 or Phase 3 intro in URL query
           const rawStep = params.get('step');
           if (rawStep === 'phase2' || rawStep === 'intro2') {
             setShowPhase2Intro(true);
             setCurrentStep(5);
+            return;
+          }
+          if (rawStep === 'phase3' || rawStep === 'intro3') {
+            setShowPhase3Intro(true);
+            setCurrentStep(7);
             return;
           }
 
@@ -387,6 +400,7 @@ export default function AddPropertyWizard({
       return;
     }
     setShowPhase2Intro(false);
+    setShowPhase3Intro(false);
     setCurrentStep(targetStep);
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -729,8 +743,18 @@ export default function AddPropertyWizard({
       if (res.success && res.data) {
         setAmenities(currentAmenities);
         setCustomAmenities(currentCustom);
-        syncDraftState(res.data, 7);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (isStepApplicable(7, selectedType, selectedStructure)) {
+          syncDraftState(res.data, 7);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          syncDraftState(res.data, 8);
+          setShowPhase3Intro(true);
+          if (typeof window !== 'undefined') {
+            const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase3`;
+            window.history.replaceState(null, '', newUrl);
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       } else {
         setAppError(res, 'Failed to save property amenities.');
       }
@@ -767,17 +791,32 @@ export default function AddPropertyWizard({
       if (res.success && res.data) {
         setUnits(res.data.units || currentUnits);
         syncDraftState(res.data, 8);
+        setShowPhase3Intro(true);
+        if (typeof window !== 'undefined') {
+          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase3`;
+          window.history.replaceState(null, '', newUrl);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         // Safe local state fallback so wizard never halts
         setUnits(currentUnits);
         syncDraftState({ ...createdProperty, units: currentUnits }, 8);
+        setShowPhase3Intro(true);
+        if (typeof window !== 'undefined') {
+          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
+          window.history.replaceState(null, '', newUrl);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
       // Safe fallback
       setUnits(currentUnits);
       syncDraftState({ ...createdProperty, units: currentUnits }, 8);
+      setShowPhase3Intro(true);
+      if (typeof window !== 'undefined') {
+        const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
+        window.history.replaceState(null, '', newUrl);
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
@@ -788,6 +827,11 @@ export default function AddPropertyWizard({
     if (!createdProperty) return;
     // Simply advance to pricing without requiring units
     syncDraftState(createdProperty, 8);
+    setShowPhase3Intro(true);
+    if (typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
+      window.history.replaceState(null, '', newUrl);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -795,9 +839,9 @@ export default function AddPropertyWizard({
   // Step 8: Pricing & Availability Back & Save Handlers (Phase 8)
   // --------------------------------------------------------------------------
   const handleBackFromPricing = () => {
-    setCurrentStep(7);
+    setShowPhase3Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=7`;
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1012,7 +1056,12 @@ export default function AddPropertyWizard({
     } else if (currentStep === 7) {
       handleJumpToStep(6);
     } else if (currentStep === 8) {
-      handleJumpToStep(isStepApplicable(7, selectedType, selectedStructure) ? 7 : 6);
+      setShowPhase3Intro(true);
+      if (createdProperty && typeof window !== 'undefined') {
+        const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
+        window.history.replaceState(null, '', newUrl);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 9) {
       handleJumpToStep(8);
     } else if (currentStep === 10) {
@@ -1183,6 +1232,23 @@ export default function AddPropertyWizard({
         onBack={() => {
           setShowPhase2Intro(false);
           handleJumpToStep(5);
+        }}
+        onExit={handleSaveAndExit}
+      />
+    );
+  }
+
+  if (showPhase3Intro) {
+    return (
+      <PropertyIntroStep
+        phase={3}
+        onStart={() => {
+          setShowPhase3Intro(false);
+          handleJumpToStep(8);
+        }}
+        onBack={() => {
+          setShowPhase3Intro(false);
+          handleJumpToStep(isStepApplicable(7, selectedType, selectedStructure) ? 7 : 6);
         }}
         onExit={handleSaveAndExit}
       />
