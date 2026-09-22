@@ -39,8 +39,7 @@ import {
   FileCheck2,
   ListPlus,
   Bookmark,
-  X,
-  Trash2
+  X
 } from 'lucide-react';
 import { normalizePropertyError, NormalizedPropertyError } from '../../errorMessages';
 import type {
@@ -62,10 +61,8 @@ import {
   updatePropertyUnits,
   updatePropertyPricing,
   updatePropertyRules,
-  publishProperty,
-  deleteProperty
+  publishProperty
 } from '../../api';
-import LifecycleConfirmationModal from '../dialogs/LifecycleConfirmationModal';
 import { AMENITY_REGISTRY } from '../../amenities';
 import { getUnitTerminology, calculateUnitAvailability } from '../../units';
 import {
@@ -166,9 +163,6 @@ export default function AddPropertyWizard({
   const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
   const [basicDetailsSubStep, setBasicDetailsSubStep] = useState<'basics' | 'title_description'>('basics');
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [isDeletingDraft, setIsDeletingDraft] = useState<boolean>(false);
-  const [deleteDraftError, setDeleteDraftError] = useState<string | null>(null);
 
   // Phase 13: Structural change guard and unsaved changes tracking
   const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
@@ -913,31 +907,6 @@ export default function AddPropertyWizard({
     await handleSaveAndExit();
   };
 
-  const handleDeleteDraft = async () => {
-    const targetId = createdProperty?.id || propPropertyId;
-    if (!targetId) return;
-    setIsDeletingDraft(true);
-    setDeleteDraftError(null);
-    try {
-      const res = await deleteProperty(targetId);
-      if (res.success) {
-        if (typeof window !== 'undefined') {
-          window.sessionStorage?.removeItem('apnastay_active_draft_id');
-          window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
-          window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
-        }
-        setShowDeleteModal(false);
-        router.push('/owner/dashboard/properties');
-      } else {
-        setDeleteDraftError(res.error || 'Failed to delete listing.');
-      }
-    } catch (err: any) {
-      setDeleteDraftError(err.message || 'An error occurred while deleting listing.');
-    } finally {
-      setIsDeletingDraft(false);
-    }
-  };
-
   // Reset wizard to create another property
   const handleReset = () => {
     if (typeof window !== 'undefined') {
@@ -1214,20 +1183,8 @@ export default function AddPropertyWizard({
           </span>
         </Link>
 
-        {/* Right: Questions?, Delete (if draft/property exists), and Save & exit buttons */}
+        {/* Right: Questions? and Save & exit buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {(createdProperty?.id || propPropertyId) && (
-            <button
-              type="button"
-              onClick={() => setShowDeleteModal(true)}
-              disabled={isSubmitting || isDeletingDraft}
-              className="p-2 sm:px-3.5 sm:py-2.5 rounded-full border border-rose-200 hover:border-rose-300 hover:bg-rose-50 text-xs sm:text-sm font-semibold text-rose-600 transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center gap-1.5 shrink-0 shadow-apple-xs disabled:opacity-50"
-              title="Delete property listing"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Delete</span>
-            </button>
-          )}
 
           <button
             type="button"
@@ -1695,21 +1652,7 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* DELETE LISTING CONFIRMATION MODAL */}
-      <LifecycleConfirmationModal
-        isOpen={showDeleteModal}
-        actionType="delete"
-        propertyTitle={createdProperty?.title || 'this property listing'}
-        onConfirm={handleDeleteDraft}
-        onCancel={() => {
-          if (!isDeletingDraft) {
-            setShowDeleteModal(false);
-            setDeleteDraftError(null);
-          }
-        }}
-        isProcessing={isDeletingDraft}
-        errorMessage={deleteDraftError}
-      />
+
     </div>
   );
 }
