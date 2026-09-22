@@ -5,12 +5,64 @@ import Link from 'next/link';
 import AnimatedIsometricHouse from './AnimatedIsometricHouse';
 
 export interface PropertyIntroStepProps {
+  phase?: 1 | 2 | 3;
   onStart: () => void;
+  onBack?: () => void;
   onExit?: () => void;
 }
 
-export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStepProps) {
+export default function PropertyIntroStep({
+  phase = 1,
+  onStart,
+  onBack,
+  onExit
+}: PropertyIntroStepProps) {
   const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
+
+  const stepMeta = {
+    1: {
+      stepLabel: 'Step 1',
+      title: 'Tell us about your property',
+      description:
+        'In this step, we’ll ask you what type of property you have, what you are offering, where it is located, and how your accommodation is structured.',
+      modalTitle: 'Need Help Getting Started?',
+      modalDesc:
+        'Adding your property takes about 5 minutes. You can save your draft at any point and return later. Our automated KYC and lease engine handles the rest!',
+      modalTips: [
+        'Have clear photos of the bedroom and living space ready.',
+        'Ensure accurate rental amounts and deposit terms.',
+        'Your listing goes live instantly after a quick review.'
+      ]
+    },
+    2: {
+      stepLabel: 'Step 2',
+      title: 'Make your place stand out',
+      description:
+        'In this step, you’ll add some of the amenities your property offers, details about units and rooms, and photos to make your accommodation stand out.',
+      modalTitle: 'Step 2: Make Your Place Stand Out',
+      modalDesc:
+        'Highlight what makes your place unique. Rich amenities and clear room breakdowns help attract high-quality prospective tenants.',
+      modalTips: [
+        'Select all true amenities and utilities included.',
+        'Configure room and bed arrangements accurately for tenant clarity.',
+        'Detailed listings receive up to 3x more viewing requests.'
+      ]
+    },
+    3: {
+      stepLabel: 'Step 3',
+      title: 'Finish up and publish',
+      description:
+        'Finally, you’ll set up your pricing structure, security deposit, tenant preferences, and house rules before publishing your property.',
+      modalTitle: 'Step 3: Finish & Publish',
+      modalDesc:
+        'You are almost done! Review final pricing, deposit terms, and rules to launch your listing.',
+      modalTips: [
+        'Review your monthly rent and deposit terms.',
+        'Set tenant preferences and notice periods clearly.',
+        'Submit to immediately publish or save as draft.'
+      ]
+    }
+  }[phase];
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col justify-between overflow-y-auto min-h-screen text-[#1D1D1F]">
@@ -78,15 +130,15 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
           {/* INTRODUCTION TEXT (order-2 on mobile: appears below house) */}
           <div className="order-2 lg:order-1 lg:col-span-6 space-y-3 sm:space-y-4 max-w-xl">
             <div className="text-sm sm:text-base lg:text-lg font-semibold text-[#222222]">
-              Step 1
+              {stepMeta.stepLabel}
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-[48px] font-semibold tracking-tight text-[#222222] leading-[1.18] sm:leading-[1.15]">
-              Tell us about your property
+              {stepMeta.title}
             </h1>
 
             <p className="text-xs sm:text-base text-[#484848] font-normal leading-relaxed max-w-lg">
-              In this step, we’ll ask you what type of property you have, what you are offering, where it is located, and how your accommodation is structured.
+              {stepMeta.description}
             </p>
           </div>
         </div>
@@ -98,15 +150,37 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
       <footer className="sticky bottom-0 bg-white z-30 shadow-lg">
         {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
         <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
-          {/* Portion 1: Tell us about your place (Active - Solid Black) */}
+          {/* Portion 1: Step 1 (Completed for phase >= 1) */}
           <div className="h-full bg-[#222222] rounded-full transition-all duration-500" />
-          {/* Portion 2: Stand out */}
-          <div className="h-full bg-[#E5E5EA] rounded-full transition-all duration-500" />
-          {/* Portion 3: Finish up & publish */}
-          <div className="h-full bg-[#E5E5EA] rounded-full transition-all duration-500" />
+          {/* Portion 2: Step 2 (Solid black if phase >= 2) */}
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              phase >= 2 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
+            }`}
+          />
+          {/* Portion 3: Step 3 (Solid black if phase >= 3) */}
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              phase >= 3 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
+            }`}
+          />
         </div>
 
-        <div className="max-w-7xl mx-auto px-5 sm:px-12 py-3.5 sm:py-5 flex items-center justify-end">
+        <div
+          className={`max-w-7xl mx-auto px-5 sm:px-12 py-3.5 sm:py-5 flex items-center ${
+            onBack ? 'justify-between' : 'justify-end'
+          }`}
+        >
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-sm sm:text-base font-semibold text-[#222222] underline underline-offset-4 hover:text-black transition-colors"
+            >
+              Back
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onStart}
@@ -122,7 +196,7 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#EDEDED] space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-base text-[#1D1D1F]">Need Help Getting Started?</h3>
+              <h3 className="font-extrabold text-base text-[#1D1D1F]">{stepMeta.modalTitle}</h3>
               <button
                 type="button"
                 onClick={() => setShowQuestionsModal(false)}
@@ -133,15 +207,15 @@ export default function PropertyIntroStep({ onStart, onExit }: PropertyIntroStep
             </div>
 
             <p className="text-xs text-[#6E6E73] leading-relaxed">
-              Adding your property takes about 5 minutes. You can save your draft at any point and return later. Our automated KYC and lease engine handles the rest!
+              {stepMeta.modalDesc}
             </p>
 
             <div className="p-3.5 rounded-2xl bg-[#F5F5F7] text-xs space-y-1.5 text-[#1D1D1F]">
               <p className="font-bold">Key Guidelines:</p>
               <ul className="list-disc list-inside space-y-1 text-[#6E6E73]">
-                <li>Have clear photos of the bedroom and living space ready.</li>
-                <li>Ensure accurate rental amounts and deposit terms.</li>
-                <li>Your listing goes live instantly after a quick review.</li>
+                {stepMeta.modalTips.map((tip, i) => (
+                  <li key={i}>{tip}</li>
+                ))}
               </ul>
             </div>
 

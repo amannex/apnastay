@@ -163,6 +163,14 @@ export default function AddPropertyWizard({
   const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
   const [basicDetailsSubStep, setBasicDetailsSubStep] = useState<'basics' | 'title_description'>('basics');
+  const [showPhase2Intro, setShowPhase2Intro] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const rawStep = params.get('step');
+      return rawStep === 'phase2' || rawStep === 'intro2';
+    }
+    return false;
+  });
 
   // Phase 13: Structural change guard and unsaved changes tracking
   const [showStructuralGuard, setShowStructuralGuard] = useState<boolean>(false);
@@ -319,6 +327,14 @@ export default function AddPropertyWizard({
             return;
           }
 
+          // Check for Phase 2 intro in URL query
+          const rawStep = params.get('step');
+          if (rawStep === 'phase2' || rawStep === 'intro2') {
+            setShowPhase2Intro(true);
+            setCurrentStep(5);
+            return;
+          }
+
           // Determine step from props, URL, or intelligent progress evaluation
           const stepParam = propInitialStep || Number(params.get('step'));
           if (stepParam >= 1 && stepParam <= 10) {
@@ -370,6 +386,7 @@ export default function AddPropertyWizard({
     if (targetStep === 7 && !isStepApplicable(7, selectedType, selectedStructure)) {
       return;
     }
+    setShowPhase2Intro(false);
     setCurrentStep(targetStep);
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -635,7 +652,12 @@ export default function AddPropertyWizard({
     if (onSaved && createdProperty) {
       onSaved(createdProperty);
     }
-    handleJumpToStep(6);
+    setShowPhase2Intro(true);
+    if (createdProperty && typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
+      window.history.replaceState(null, '', newUrl);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // --------------------------------------------------------------------------
@@ -683,9 +705,9 @@ export default function AddPropertyWizard({
   const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
     setAmenities(currentAmenities);
     setCustomAmenities(currentCustom);
-    setCurrentStep(5);
+    setShowPhase2Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=5`;
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -981,7 +1003,12 @@ export default function AddPropertyWizard({
     } else if (currentStep === 5) {
       handleJumpToStep(4);
     } else if (currentStep === 6) {
-      handleJumpToStep(5);
+      setShowPhase2Intro(true);
+      if (createdProperty && typeof window !== 'undefined') {
+        const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
+        window.history.replaceState(null, '', newUrl);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 7) {
       handleJumpToStep(6);
     } else if (currentStep === 8) {
@@ -1130,6 +1157,7 @@ export default function AddPropertyWizard({
   if (currentStep === 0) {
     return (
       <PropertyIntroStep
+        phase={1}
         onStart={() => {
           setCurrentStep(1);
           if (typeof window !== 'undefined') {
@@ -1138,6 +1166,23 @@ export default function AddPropertyWizard({
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             window.history.replaceState(null, '', newUrl);
           }
+        }}
+        onExit={handleSaveAndExit}
+      />
+    );
+  }
+
+  if (showPhase2Intro) {
+    return (
+      <PropertyIntroStep
+        phase={2}
+        onStart={() => {
+          setShowPhase2Intro(false);
+          handleJumpToStep(6);
+        }}
+        onBack={() => {
+          setShowPhase2Intro(false);
+          handleJumpToStep(5);
         }}
         onExit={handleSaveAndExit}
       />
