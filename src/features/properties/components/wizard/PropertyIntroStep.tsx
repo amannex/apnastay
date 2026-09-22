@@ -38,7 +38,7 @@ export default function PropertyIntroStep({
       stepLabel: 'Step 2',
       title: 'Make your place stand out',
       description:
-        'In this step, you’ll configure your accommodation structure, add some of the amenities your property offers, and set up units and rooms.',
+        'In this step, you’ll configure your accommodation structure, add amenities, and give your place a title and description.',
       modalTitle: 'Step 2: Make Your Place Stand Out',
       modalDesc:
         'Highlight what makes your place unique. Rich amenities and clear room breakdowns help attract high-quality prospective tenants.',

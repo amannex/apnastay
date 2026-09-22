@@ -376,6 +376,11 @@ export interface Property {
   photos?: PropertyPhoto[];
   completenessScore: number; // 0 - 100
   units: PropertyUnit[];
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  hasLock?: boolean;
+  guests?: number;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -429,6 +434,11 @@ export interface UpdatePropertyPayload {
   amenities?: string[];
   customAmenities?: string[];
   units?: PropertyUnit[];
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  hasLock?: boolean;
+  guests?: number;
   rules?: Partial<PropertyRules>;
   photos?: PropertyPhoto[];
   status?: PropertyStatus;

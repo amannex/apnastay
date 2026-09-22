@@ -82,6 +82,7 @@ import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepPropertyStructure from './StepPropertyStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
+import StepTitleDescription from './StepTitleDescription';
 import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
 import StepAmenities from './StepAmenities';
@@ -163,7 +164,6 @@ export default function AddPropertyWizard({
   const errorBannerRef = useRef<HTMLDivElement>(null);
   const [showQuestionsModal, setShowQuestionsModal] = useState<boolean>(false);
   const [createdProperty, setCreatedProperty] = useState<Property | null>(null);
-  const [basicDetailsSubStep, setBasicDetailsSubStep] = useState<'basics' | 'title_description'>('basics');
   const [showPhase2Intro, setShowPhase2Intro] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -401,9 +401,6 @@ export default function AddPropertyWizard({
   // Direct Stepper Navigation
   const handleJumpToStep = (targetStep: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
     if (!createdProperty && targetStep > 2) return;
-    if (targetStep === 7 && !isStepApplicable(7, selectedType, selectedStructure)) {
-      return;
-    }
     setShowPhase2Intro(false);
     setShowPhase3Intro(false);
     setCurrentStep(targetStep);
@@ -602,17 +599,21 @@ export default function AddPropertyWizard({
 
     try {
       const res = await updateProperty(createdProperty.id, {
-        title: data.title,
-        description: data.description,
-        availability: data.availability,
+        bedrooms: data.bedrooms,
+        beds: data.beds,
+        bathrooms: data.bathrooms,
+        hasLock: data.hasLock,
+        title: createdProperty.title || data.title,
+        description: createdProperty.description || data.description,
+        availability: createdProperty.availability || data.availability,
         pricing: {
-          monthlyRent: data.monthlyRent
+          ...createdProperty.pricing,
+          monthlyRent: createdProperty.pricing?.monthlyRent || data.monthlyRent || 15000
         }
       });
 
       if (res.success && res.data) {
         setBasicDetails(data);
-        setBasicDetailsSubStep('basics');
         setCreatedProperty(res.data);
         setCurrentStep(5);
         setShowPhase2Intro(true);
@@ -684,7 +685,6 @@ export default function AddPropertyWizard({
   const handleBackFromPhotos = (currentPhotos: PropertyPhoto[]) => {
     setPhotos(currentPhotos);
     setCurrentStep(4);
-    setBasicDetailsSubStep('title_description');
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
       window.history.replaceState(null, '', newUrl);
@@ -742,18 +742,8 @@ export default function AddPropertyWizard({
       if (res.success && res.data) {
         setAmenities(currentAmenities);
         setCustomAmenities(currentCustom);
-        if (isStepApplicable(7, selectedType, selectedStructure)) {
-          syncDraftState(res.data, 7);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          syncDraftState(res.data, 8);
-          setShowPhase3Intro(true);
-          if (typeof window !== 'undefined') {
-            const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase3`;
-            window.history.replaceState(null, '', newUrl);
-          }
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        syncDraftState(res.data, 7);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save property amenities.');
       }
@@ -765,7 +755,44 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
-  // Step 7: Units & Rooms Back & Save Handlers (Phase 7)
+  // Step 7: Title & Description Handlers (Parent Step 2 Substep 3)
+  // --------------------------------------------------------------------------
+  const handleBackFromTitleDescription = () => {
+    handleJumpToStep(6);
+  };
+
+  const handleSaveTitleDescription = async (data: { title: string; description: string }) => {
+    if (!createdProperty || isSubmitting) return;
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      const res = await updateProperty(createdProperty.id, {
+        title: data.title,
+        description: data.description
+      });
+
+      if (res.success && res.data) {
+        syncDraftState(res.data, 8);
+        setShowPhase3Intro(true);
+        if (typeof window !== 'undefined') {
+          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase3`;
+          window.history.replaceState(null, '', newUrl);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setAppError(res, 'Failed to save title and description.');
+      }
+    } catch (err: any) {
+      setAppError(err, 'Network error while saving title and description.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Optional Units & Rooms Back & Save Handlers
   // --------------------------------------------------------------------------
   const handleBackFromUnits = (currentUnits: PropertyUnit[]) => {
     setUnits(currentUnits);
@@ -1037,12 +1064,7 @@ export default function AddPropertyWizard({
     } else if (currentStep === 3) {
       handleJumpToStep(2);
     } else if (currentStep === 4) {
-      if (basicDetailsSubStep === 'title_description') {
-        setBasicDetailsSubStep('basics');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        handleJumpToStep(3);
-      }
+      handleJumpToStep(3);
     } else if (currentStep === 5) {
       setShowPhase2Intro(true);
       if (createdProperty && typeof window !== 'undefined') {
@@ -1186,6 +1208,30 @@ export default function AddPropertyWizard({
       );
     }
 
+    if (currentStep === 7) {
+      return (
+        <button
+          type="submit"
+          form="title-description-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -1247,7 +1293,7 @@ export default function AddPropertyWizard({
         }}
         onBack={() => {
           setShowPhase3Intro(false);
-          handleJumpToStep(isStepApplicable(7, selectedType, selectedStructure) ? 7 : 6);
+          handleJumpToStep(7);
         }}
         onExit={handleSaveAndExit}
       />
@@ -1459,8 +1505,6 @@ export default function AddPropertyWizard({
             propertyType={selectedType}
             customPropertyType={customPropertyType}
             rentalStructure={selectedStructure}
-            subStep={basicDetailsSubStep}
-            onSubStepChange={setBasicDetailsSubStep}
             initialValues={{
               title: basicDetails.title ?? createdProperty?.title,
               description: basicDetails.description ?? createdProperty?.description,
@@ -1519,17 +1563,17 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 7: UNITS & ROOMS (PHASE 7) */}
+      {/* STEP 7: TITLE & DESCRIPTION (PHASE 2 SUBSTEP 3) */}
       {currentStep === 7 && createdProperty && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
-          <StepUnits
-            propertyId={createdProperty.id}
-            propertyType={selectedType}
-            rentalStructure={selectedStructure}
-            initialUnits={units.length > 0 ? units : createdProperty.units || []}
-            onBack={handleBackFromUnits}
-            onSave={handleSaveUnits}
-            onSkip={handleSkipUnits}
+        <div className="w-full">
+          <StepTitleDescription
+            propertyType={selectedType || createdProperty.propertyType}
+            customPropertyType={customPropertyType || createdProperty.customPropertyType}
+            rentalStructure={selectedStructure || createdProperty.rentalStructure}
+            initialTitle={createdProperty.title || basicDetails.title || ''}
+            initialDescription={createdProperty.description || basicDetails.description || ''}
+            onBack={handleBackFromTitleDescription}
+            onSave={handleSaveTitleDescription}
             isSaving={isSubmitting}
           />
         </div>
@@ -1680,15 +1724,13 @@ export default function AddPropertyWizard({
                   currentStep >= 5
                     ? 100
                     : currentStep === 4
-                    ? basicDetailsSubStep === 'title_description'
-                      ? 95
-                      : 85
+                    ? 100
                     : currentStep === 3
-                    ? 65
+                    ? 75
                     : currentStep === 2
-                    ? 45
+                    ? 50
                     : currentStep === 1
-                    ? 20
+                    ? 25
                     : 0
                 }%`,
               }}
@@ -1704,7 +1746,7 @@ export default function AddPropertyWizard({
                   currentStep >= 8
                     ? 100
                     : currentStep === 7
-                    ? 90
+                    ? 100
                     : currentStep === 6
                     ? 66
                     : currentStep === 5
