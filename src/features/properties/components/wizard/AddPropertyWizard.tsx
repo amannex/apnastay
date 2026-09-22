@@ -594,6 +594,11 @@ export default function AddPropertyWizard({
         setBasicDetails(data);
         setBasicDetailsSubStep('basics');
         syncDraftState(res.data, 5);
+        setShowPhase2Intro(true);
+        if (typeof window !== 'undefined') {
+          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase2`;
+          window.history.replaceState(null, '', newUrl);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save basic property details.');
@@ -609,10 +614,9 @@ export default function AddPropertyWizard({
   // Step 5: Accommodation Structure Back & Save Handlers (Substep 5)
   // --------------------------------------------------------------------------
   const handleBackFromPropertyStructure = () => {
-    setCurrentStep(4);
-    setBasicDetailsSubStep('title_description');
+    setShowPhase2Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -652,12 +656,7 @@ export default function AddPropertyWizard({
     if (onSaved && createdProperty) {
       onSaved(createdProperty);
     }
-    setShowPhase2Intro(true);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleJumpToStep(6);
   };
 
   // --------------------------------------------------------------------------
@@ -705,12 +704,7 @@ export default function AddPropertyWizard({
   const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
     setAmenities(currentAmenities);
     setCustomAmenities(currentCustom);
-    setShowPhase2Intro(true);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleJumpToStep(5);
   };
 
   const handleSaveAmenities = async (currentAmenities: string[], currentCustom: string[]) => {
@@ -1001,14 +995,14 @@ export default function AddPropertyWizard({
         handleJumpToStep(3);
       }
     } else if (currentStep === 5) {
-      handleJumpToStep(4);
-    } else if (currentStep === 6) {
       setShowPhase2Intro(true);
       if (createdProperty && typeof window !== 'undefined') {
         const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
         window.history.replaceState(null, '', newUrl);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (currentStep === 6) {
+      handleJumpToStep(5);
     } else if (currentStep === 7) {
       handleJumpToStep(6);
     } else if (currentStep === 8) {
@@ -1178,11 +1172,11 @@ export default function AddPropertyWizard({
         phase={2}
         onStart={() => {
           setShowPhase2Intro(false);
-          handleJumpToStep(6);
+          handleJumpToStep(5);
         }}
         onBack={() => {
           setShowPhase2Intro(false);
-          handleJumpToStep(5);
+          handleJumpToStep(4);
         }}
         onExit={handleSaveAndExit}
       />
