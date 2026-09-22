@@ -139,6 +139,7 @@ export default function AddPropertyWizard({
 
   // Location draft form state (preserved on back navigation)
   const [locationData, setLocationData] = useState<Partial<LocationFormData>>({});
+  const [confirmedLocationData, setConfirmedLocationData] = useState<LocationFormData | null>(null);
 
   // Photos draft state (Phase 5)
   const [photos, setPhotos] = useState<PropertyPhoto[]>([]);
@@ -289,7 +290,7 @@ export default function AddPropertyWizard({
 
           // Restore location form fields
           if (prop.location) {
-            setLocationData({
+            const restoredLoc: LocationFormData = {
               addressLine1: prop.location.addressLine1 || prop.location.address || '',
               address: prop.location.address || prop.location.addressLine1 || '',
               locality: prop.location.locality || '',
@@ -304,7 +305,11 @@ export default function AddPropertyWizard({
                 prop.location.publicLocation ||
                 [prop.location.locality, prop.location.city].filter(Boolean).join(', '),
               hideExactAddress: prop.location.hideExactAddress ?? true
-            });
+            };
+            setLocationData(restoredLoc);
+            if (restoredLoc.addressLine1 && restoredLoc.city && restoredLoc.state) {
+              setConfirmedLocationData(restoredLoc);
+            }
           }
 
           // Restore photos form fields (Phase 5)
@@ -563,6 +568,7 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setLocationData(data);
+        setConfirmedLocationData(data);
         syncDraftState(res.data, 4);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -1445,6 +1451,8 @@ export default function AddPropertyWizard({
                 locationData.hideExactAddress ?? createdProperty?.location?.hideExactAddress
             }}
             onBack={handleBackFromLocation}
+            lastConfirmedLocation={confirmedLocationData}
+            onLocationConfirmed={(data) => setConfirmedLocationData(data)}
             onSave={handleSaveLocation}
             isSaving={isSubmitting}
           />

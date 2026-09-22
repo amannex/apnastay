@@ -214,7 +214,7 @@ export default function StepBasicDetails({
           {/* SECTION HEADING (Matching Airbnb basics step) */}
           <div>
             <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
-              Let&apos;s start with the basics
+              Tell us about your space
             </h1>
           </div>
 
@@ -342,8 +342,13 @@ export default function StepBasicDetails({
             {/* 1. PROPERTY NAME / TITLE */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="property-title" className="font-outfit text-sm sm:text-base font-semibold text-[#222222] tracking-tight">
-                  {config.titleLabel}
+                <label
+                  htmlFor="property-title"
+                  className={`font-outfit text-sm sm:text-base font-semibold tracking-tight transition-colors ${
+                    errors.title ? 'text-primary' : 'text-[#222222]'
+                  }`}
+                >
+                  {config.titleLabel} <span className="text-primary ml-0.5" title="Required">*</span>
                 </label>
                 <span className={`text-xs font-normal font-inter ${title.length > 110 ? 'text-amber-600 font-medium' : 'text-[#717171]'}`}>
                   {title.length} / 120
@@ -363,14 +368,14 @@ export default function StepBasicDetails({
                 maxLength={120}
                 className={`w-full px-4 py-3 sm:py-3.5 rounded-xl bg-white border text-sm sm:text-base text-[#222222] placeholder:text-[#86868B] focus:outline-none transition-all ${
                   errors.title
-                    ? 'border-rose-500 focus:border-rose-500'
+                    ? 'border-primary focus:border-primary ring-1 ring-primary/20'
                     : 'border-[#DDDDDD] hover:border-[#222222] focus:border-[#222222]'
                 }`}
               />
 
               {errors.title && (
-                <p className="text-xs text-rose-600 font-medium flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <p className="text-xs text-primary font-medium flex items-center gap-1 mt-1 animate-fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
                   <span>{errors.title}</span>
                 </p>
               )}
@@ -379,8 +384,13 @@ export default function StepBasicDetails({
             {/* 2. DESCRIPTION */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="property-description" className="font-outfit text-sm sm:text-base font-semibold text-[#222222] tracking-tight">
-                  {config.descriptionLabel}
+                <label
+                  htmlFor="property-description"
+                  className={`font-outfit text-sm sm:text-base font-semibold tracking-tight transition-colors ${
+                    errors.description ? 'text-primary' : 'text-[#222222]'
+                  }`}
+                >
+                  {config.descriptionLabel} <span className="text-primary ml-0.5" title="Required">*</span>
                 </label>
                 <span className="text-xs font-normal font-inter text-[#717171]">
                   {description.length} chars
@@ -399,14 +409,14 @@ export default function StepBasicDetails({
                 placeholder={config.descriptionPlaceholder}
                 className={`w-full px-4 py-3 sm:py-3.5 rounded-xl bg-white border text-sm sm:text-base text-[#222222] placeholder:text-[#86868B] focus:outline-none transition-all resize-y min-h-[140px] ${
                   errors.description
-                    ? 'border-rose-500 focus:border-rose-500'
+                    ? 'border-primary focus:border-primary ring-1 ring-primary/20'
                     : 'border-[#DDDDDD] hover:border-[#222222] focus:border-[#222222]'
                 }`}
               />
 
               {errors.description && (
-                <p className="text-xs text-rose-600 font-medium flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <p className="text-xs text-primary font-medium flex items-center gap-1 mt-1 animate-fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
                   <span>{errors.description}</span>
                 </p>
               )}
