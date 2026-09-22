@@ -613,7 +613,13 @@ export default function AddPropertyWizard({
       if (res.success && res.data) {
         setBasicDetails(data);
         setBasicDetailsSubStep('basics');
-        syncDraftState(res.data, 5);
+        setCreatedProperty(res.data);
+        setCurrentStep(5);
+        setShowPhase2Intro(true);
+        if (typeof window !== 'undefined') {
+          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase2`;
+          window.history.replaceState(null, '', newUrl);
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save basic property details.');
@@ -626,13 +632,12 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
-  // Step 5: Accommodation Structure Back & Save Handlers (Substep 5)
+  // Step 5: Accommodation Structure Back & Save Handlers (Parent Step 2 Substep 1)
   // --------------------------------------------------------------------------
   const handleBackFromPropertyStructure = () => {
-    setCurrentStep(4);
-    setBasicDetailsSubStep('title_description');
+    setShowPhase2Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
+      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -655,7 +660,8 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setUnits(newUnits);
-        syncDraftState(res.data, 5);
+        syncDraftState(res.data, 6);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save accommodation structure.');
         throw new Error(res.error || 'Failed to save accommodation structure.');
@@ -669,15 +675,7 @@ export default function AddPropertyWizard({
   };
 
   const handleContinueToStep2 = () => {
-    if (onSaved && createdProperty) {
-      onSaved(createdProperty);
-    }
-    setShowPhase2Intro(true);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleJumpToStep(6);
   };
 
   // --------------------------------------------------------------------------
@@ -725,12 +723,7 @@ export default function AddPropertyWizard({
   const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
     setAmenities(currentAmenities);
     setCustomAmenities(currentCustom);
-    setShowPhase2Intro(true);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    handleJumpToStep(5);
   };
 
   const handleSaveAmenities = async (currentAmenities: string[], currentCustom: string[]) => {
@@ -1051,14 +1044,14 @@ export default function AddPropertyWizard({
         handleJumpToStep(3);
       }
     } else if (currentStep === 5) {
-      handleJumpToStep(4);
-    } else if (currentStep === 6) {
       setShowPhase2Intro(true);
       if (createdProperty && typeof window !== 'undefined') {
         const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
         window.history.replaceState(null, '', newUrl);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (currentStep === 6) {
+      handleJumpToStep(5);
     } else if (currentStep === 7) {
       handleJumpToStep(6);
     } else if (currentStep === 8) {
@@ -1233,11 +1226,11 @@ export default function AddPropertyWizard({
         phase={2}
         onStart={() => {
           setShowPhase2Intro(false);
-          handleJumpToStep(6);
+          handleJumpToStep(5);
         }}
         onBack={() => {
           setShowPhase2Intro(false);
-          handleJumpToStep(5);
+          handleJumpToStep(4);
         }}
         onExit={handleSaveAndExit}
       />
@@ -1678,39 +1671,45 @@ export default function AddPropertyWizard({
       <footer className="sticky bottom-0 bg-white z-50 shadow-lg border-t border-[#EDEDED]">
         {/* SEGMENTED PROGRESS TRACK (3 distinct portions with rounded ends) */}
         <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
-          {/* Phase 1: Steps 1-5 (Parent Step 1: Tell us about your property) */}
+          {/* Phase 1: Steps 1-4 (Parent Step 1: Tell us about your property - 4 substeps) */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 6
+                  currentStep >= 5
                     ? 100
-                    : currentStep === 5
-                    ? 85
                     : currentStep === 4
                     ? basicDetailsSubStep === 'title_description'
-                      ? 70
-                      : 55
+                      ? 95
+                      : 85
                     : currentStep === 3
-                    ? 40
+                    ? 65
                     : currentStep === 2
-                    ? 25
+                    ? 45
                     : currentStep === 1
-                    ? 10
+                    ? 20
                     : 0
                 }%`,
               }}
             />
           </div>
 
-          {/* Phase 2: Steps 6-7 (Parent Step 2: Make your place stand out) */}
+          {/* Phase 2: Steps 5-7 (Parent Step 2: Make your place stand out) */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 8 ? 100 : currentStep === 7 ? 66 : currentStep === 6 ? 33 : 0
+                  currentStep >= 8
+                    ? 100
+                    : currentStep === 7
+                    ? 90
+                    : currentStep === 6
+                    ? 66
+                    : currentStep === 5
+                    ? 33
+                    : 0
                 }%`,
               }}
             />

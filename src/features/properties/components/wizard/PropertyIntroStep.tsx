@@ -24,7 +24,7 @@ export default function PropertyIntroStep({
       stepLabel: 'Step 1',
       title: 'Tell us about your property',
       description:
-        'In this step, we’ll ask you what type of property you have, what you are offering, where it is located, and how your accommodation is structured.',
+        'In this step, we’ll ask you what type of property you have, what you are offering, where it is located, and basic details about your space.',
       modalTitle: 'Need Help Getting Started?',
       modalDesc:
         'Adding your property takes about 5 minutes. You can save your draft at any point and return later. Our automated KYC and lease engine handles the rest!',
@@ -38,7 +38,7 @@ export default function PropertyIntroStep({
       stepLabel: 'Step 2',
       title: 'Make your place stand out',
       description:
-        'In this step, you’ll add some of the amenities your property offers, details about units and rooms, and photos to make your accommodation stand out.',
+        'In this step, you’ll configure your accommodation structure, add some of the amenities your property offers, and set up units and rooms.',
       modalTitle: 'Step 2: Make Your Place Stand Out',
       modalDesc:
         'Highlight what makes your place unique. Rich amenities and clear room breakdowns help attract high-quality prospective tenants.',
