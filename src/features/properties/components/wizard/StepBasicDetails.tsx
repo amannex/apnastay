@@ -225,29 +225,6 @@ export default function StepBasicDetails({
             </h2>
 
             <div className="space-y-0 font-inter">
-              {/* Guests */}
-              <div className="flex items-center justify-between py-4 border-b border-[#EBEBEB]">
-                <span className="text-base text-[#222222] font-normal">Guests</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setGuests((g) => Math.max(1, g - 1))}
-                    disabled={guests <= 1}
-                    className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] disabled:opacity-30 disabled:hover:border-[#B0B0B0] transition-colors select-none"
-                  >
-                    –
-                  </button>
-                  <span className="text-base font-normal text-[#222222] w-6 text-center">{guests}</span>
-                  <button
-                    type="button"
-                    onClick={() => setGuests((g) => g + 1)}
-                    className="w-8 h-8 rounded-full border border-[#B0B0B0] flex items-center justify-center text-lg text-[#717171] hover:border-[#222222] hover:text-[#222222] transition-colors select-none"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
               {/* Bedrooms */}
               <div className="flex items-center justify-between py-4 border-b border-[#EBEBEB]">
                 <span className="text-base text-[#222222] font-normal">Bedrooms</span>
