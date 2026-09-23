@@ -102,7 +102,7 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
       {/* ==================================================================== */}
       <div className="flex flex-col sm:flex-row gap-3 w-full items-start">
         {/* Main Featured Photo */}
-        <div className="relative flex-1 min-w-0 aspect-video sm:aspect-[21/9] w-full bg-[#1D1D1F] rounded-2xl overflow-hidden shadow-apple-sm">
+        <div className="relative flex-1 min-w-0 aspect-video sm:aspect-[21/9] w-full bg-[#1D1D1F] rounded-2xl overflow-hidden border border-[#EBEBEB] shadow-apple-sm">
           {currentCover ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -140,7 +140,7 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
 
         {/* Vertical Side Thumbnails */}
         {photos.length > 1 && (
-          <div className="flex sm:flex-col gap-2 shrink-0 overflow-x-auto sm:overflow-y-auto max-h-[320px] py-1 sm:py-0">
+          <div className="flex sm:flex-col gap-2 shrink-0 overflow-x-auto sm:overflow-y-auto max-h-[320px] py-1 sm:py-0 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {photos.map((photo) => (
               <button
                 key={photo.id}

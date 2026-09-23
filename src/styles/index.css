@@ -53,6 +53,14 @@
     box-shadow: var(--shadow-apple-hover);
     transform: translateY(-4px);
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* Custom minimal scrollbar using globalized variables */
