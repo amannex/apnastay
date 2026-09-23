@@ -245,7 +245,7 @@ export default function StepWhoCanStay({
       {/* ==================================================================== */}
       {/* 2. GENDER PREFERENCE (NO DESCRIPTIONS)                               */}
       {/* ==================================================================== */}
-      <div className="pt-6 border-t border-[#EBEBEB] space-y-3.5">
+      <div className="space-y-3.5">
         <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
           Gender preference
         </h2>
@@ -280,7 +280,7 @@ export default function StepWhoCanStay({
       {/* ==================================================================== */}
       {/* 3. MAXIMUM OCCUPANTS (AIRBNB STEPPER)                                */}
       {/* ==================================================================== */}
-      <div className="pt-6 border-t border-[#EBEBEB] flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
             Maximum occupants
@@ -326,31 +326,27 @@ export default function StepWhoCanStay({
       </div>
 
       {/* ==================================================================== */}
-      {/* 4. AGE REQUIREMENTS (EXACT AIRBNB FORMAT)                            */}
+      {/* 4. AGE REQUIREMENTS (UNBOXED AIRBNB LIST FORMAT)                     */}
       {/* ==================================================================== */}
-      <div className="pt-6 border-t border-[#EBEBEB] space-y-4">
+      <div className="space-y-3">
         <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
           Age requirements
         </h2>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5 pt-1">
           {/* OPTION 1: NO SPECIFIC REQUIREMENT */}
-          <label
+          <div
             onClick={() => {
               setAgeRequirementType('none');
               setErrorMsg(null);
             }}
-            className={`w-full p-4 rounded-2xl border flex items-center gap-3.5 cursor-pointer transition-all ${
-              ageRequirementType === 'none'
-                ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
-                : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
-            }`}
+            className="flex items-center gap-3 cursor-pointer py-1.5 select-none group"
           >
             <div
               className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                 ageRequirementType === 'none'
                   ? 'border-[#222222]'
-                  : 'border-[#B0B0B0]'
+                  : 'border-[#B0B0B0] group-hover:border-[#222222]'
               }`}
             >
               {ageRequirementType === 'none' && (
@@ -358,10 +354,10 @@ export default function StepWhoCanStay({
               )}
             </div>
 
-            <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
+            <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
               No specific requirement
             </span>
-          </label>
+          </div>
 
           {/* OPTION 2: MINIMUM AGE */}
           <div
@@ -369,53 +365,42 @@ export default function StepWhoCanStay({
               setAgeRequirementType('min_age');
               setErrorMsg(null);
             }}
-            className={`w-full p-4 rounded-2xl border flex items-center justify-between gap-3.5 cursor-pointer transition-all ${
-              ageRequirementType === 'min_age'
-                ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
-                : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
-            }`}
+            className="flex items-center gap-3 cursor-pointer py-1.5 select-none group"
           >
-            <div className="flex items-center gap-3.5">
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                  ageRequirementType === 'min_age'
-                    ? 'border-[#222222]'
-                    : 'border-[#B0B0B0]'
-                }`}
-              >
-                {ageRequirementType === 'min_age' && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
-                )}
-              </div>
-
-              <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
-                Minimum age:
-              </span>
+            <div
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                ageRequirementType === 'min_age'
+                  ? 'border-[#222222]'
+                  : 'border-[#B0B0B0] group-hover:border-[#222222]'
+              }`}
+            >
+              {ageRequirementType === 'min_age' && (
+                <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={120}
-                value={minAge}
-                onChange={(e) => {
-                  setAgeRequirementType('min_age');
-                  setErrorMsg(null);
-                  const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
-                  setMinAge(isNaN(val as number) ? '' : val);
-                }}
-                onFocus={() => {
-                  setAgeRequirementType('min_age');
-                  setErrorMsg(null);
-                }}
-                placeholder="18"
-                className="w-20 px-3 py-1.5 rounded-xl border border-[#DDDDDD] bg-white text-sm font-semibold text-[#222222] text-center focus:border-[#222222] focus:ring-1 focus:ring-[#222222] outline-none"
-              />
-              <span className="font-inter text-xs sm:text-sm text-[#717171]">
-                years
-              </span>
-            </div>
+            <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+              Minimum age:
+            </span>
+
+            <input
+              type="number"
+              min={0}
+              max={120}
+              value={minAge}
+              onChange={(e) => {
+                setAgeRequirementType('min_age');
+                setErrorMsg(null);
+                const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                setMinAge(isNaN(val as number) ? '' : val);
+              }}
+              onFocus={() => {
+                setAgeRequirementType('min_age');
+                setErrorMsg(null);
+              }}
+              placeholder="18"
+              className="w-16 px-1.5 py-0.5 border-b-2 border-t-0 border-x-0 border-[#222222] bg-transparent text-sm sm:text-base font-semibold text-[#222222] text-center focus:border-black outline-none"
+            />
           </div>
 
           {/* OPTION 3: MAXIMUM AGE */}
@@ -424,53 +409,42 @@ export default function StepWhoCanStay({
               setAgeRequirementType('max_age');
               setErrorMsg(null);
             }}
-            className={`w-full p-4 rounded-2xl border flex items-center justify-between gap-3.5 cursor-pointer transition-all ${
-              ageRequirementType === 'max_age'
-                ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
-                : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
-            }`}
+            className="flex items-center gap-3 cursor-pointer py-1.5 select-none group"
           >
-            <div className="flex items-center gap-3.5">
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                  ageRequirementType === 'max_age'
-                    ? 'border-[#222222]'
-                    : 'border-[#B0B0B0]'
-                }`}
-              >
-                {ageRequirementType === 'max_age' && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
-                )}
-              </div>
-
-              <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
-                Maximum age:
-              </span>
+            <div
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                ageRequirementType === 'max_age'
+                  ? 'border-[#222222]'
+                  : 'border-[#B0B0B0] group-hover:border-[#222222]'
+              }`}
+            >
+              {ageRequirementType === 'max_age' && (
+                <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={120}
-                value={maxAge}
-                onChange={(e) => {
-                  setAgeRequirementType('max_age');
-                  setErrorMsg(null);
-                  const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
-                  setMaxAge(isNaN(val as number) ? '' : val);
-                }}
-                onFocus={() => {
-                  setAgeRequirementType('max_age');
-                  setErrorMsg(null);
-                }}
-                placeholder="35"
-                className="w-20 px-3 py-1.5 rounded-xl border border-[#DDDDDD] bg-white text-sm font-semibold text-[#222222] text-center focus:border-[#222222] focus:ring-1 focus:ring-[#222222] outline-none"
-              />
-              <span className="font-inter text-xs sm:text-sm text-[#717171]">
-                years
-              </span>
-            </div>
+            <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+              Maximum age:
+            </span>
+
+            <input
+              type="number"
+              min={0}
+              max={120}
+              value={maxAge}
+              onChange={(e) => {
+                setAgeRequirementType('max_age');
+                setErrorMsg(null);
+                const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                setMaxAge(isNaN(val as number) ? '' : val);
+              }}
+              onFocus={() => {
+                setAgeRequirementType('max_age');
+                setErrorMsg(null);
+              }}
+              placeholder="35"
+              className="w-16 px-1.5 py-0.5 border-b-2 border-t-0 border-x-0 border-[#222222] bg-transparent text-sm sm:text-base font-semibold text-[#222222] text-center focus:border-black outline-none"
+            />
           </div>
         </div>
       </div>
