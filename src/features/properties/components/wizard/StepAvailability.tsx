@@ -25,7 +25,8 @@ export default function StepAvailability({
   const todayStr = new Date().toISOString().split('T')[0];
 
   const [availType, setAvailType] = useState<PropertyAvailabilityType>(() => {
-    return property.availability?.type || 'immediate';
+    const raw = property.availability?.type;
+    return raw === 'specific_date' ? 'specific_date' : 'immediate';
   });
 
   const [availableFrom, setAvailableFrom] = useState<string>(() => {
@@ -112,8 +113,7 @@ export default function StepAvailability({
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-start sm:justify-end">
               {[
                 { id: 'immediate', label: 'Available now' },
-                { id: 'specific_date', label: 'From specific date' },
-                { id: 'currently_unavailable', label: 'Currently unavailable' }
+                { id: 'specific_date', label: 'From specific date' }
               ].map((opt) => {
                 const isSelected = availType === opt.id;
                 return (
