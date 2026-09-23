@@ -62,6 +62,14 @@ export default function OwnerDashboardPage() {
       setUser(profile);
     });
     loadProperties();
+    if (typeof window !== 'undefined') {
+      const flash = window.sessionStorage?.getItem('apnastay_flash_toast');
+      if (flash) {
+        setActionToast(flash);
+        window.sessionStorage?.removeItem('apnastay_flash_toast');
+        setTimeout(() => setActionToast(null), 5000);
+      }
+    }
   }, []);
 
   const loadProperties = async () => {

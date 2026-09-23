@@ -527,6 +527,12 @@ class PropertyBackendStore {
       }
       if (payload.rentalStructure !== undefined) property.rentalStructure = payload.rentalStructure;
       if (payload.propertyStructure !== undefined) property.propertyStructure = payload.propertyStructure;
+      if (payload.bedrooms !== undefined) property.bedrooms = payload.bedrooms;
+      if (payload.beds !== undefined) property.beds = payload.beds;
+      if (payload.bathrooms !== undefined) property.bathrooms = payload.bathrooms;
+      if (payload.hasLock !== undefined) property.hasLock = payload.hasLock;
+      if (payload.guests !== undefined) property.guests = payload.guests;
+      if (payload.videoUrl !== undefined) property.videoUrl = payload.videoUrl;
 
       if (payload.location !== undefined) {
         if (payload.location.pincode) {

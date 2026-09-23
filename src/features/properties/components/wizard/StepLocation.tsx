@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, MapPin, X, Check } from 'lucide-react';
+import { ChevronDown, MapPin, X, Check, AlertCircle } from 'lucide-react';
 import type { PropertyType, RentalStructure } from '../../types';
 import HybridMapPicker, { DetectedAddressComponents } from './HybridMapPicker';
 
@@ -23,15 +23,63 @@ export interface LocationFormData {
   publicLocation?: string; // Public approximate location e.g. "Sector 62, Noida"
 }
 
-interface StepLocationProps {
+export interface StepLocationProps {
   propertyType: PropertyType;
   customPropertyType?: string;
   rentalStructure: RentalStructure;
   initialValues?: Partial<LocationFormData>;
+  lastConfirmedLocation?: LocationFormData | null;
+  onLocationConfirmed?: (data: LocationFormData) => void;
   onBack: (currentValues: LocationFormData) => void;
   onSave: (data: LocationFormData) => Promise<void> | void;
   isSaving?: boolean;
 }
+
+/**
+ * Checks if current form data is identical to the last confirmed location data.
+ */
+export const isLocationUnchanged = (
+  current: LocationFormData,
+  confirmed: LocationFormData | null
+): boolean => {
+  if (!confirmed) return false;
+  const norm = (val?: string) => (val ?? '').trim().toLowerCase();
+
+  if (norm(current.addressLine1) !== norm(confirmed.addressLine1 || confirmed.address)) return false;
+  if (norm(current.locality) !== norm(confirmed.locality)) return false;
+  if (norm(current.city) !== norm(confirmed.city)) return false;
+  if (norm(current.state) !== norm(confirmed.state)) return false;
+  if (norm(current.pincode) !== norm(confirmed.pincode)) return false;
+
+  const currLat = current.latitude !== undefined ? Number(current.latitude) : undefined;
+  const currLng = current.longitude !== undefined ? Number(current.longitude) : undefined;
+  const confLat =
+    confirmed.latitude !== undefined
+      ? Number(confirmed.latitude)
+      : confirmed.coordinates?.latitude !== undefined
+      ? Number(confirmed.coordinates.latitude)
+      : undefined;
+  const confLng =
+    confirmed.longitude !== undefined
+      ? Number(confirmed.longitude)
+      : confirmed.coordinates?.longitude !== undefined
+      ? Number(confirmed.coordinates.longitude)
+      : undefined;
+
+  if (currLat !== undefined && confLat !== undefined) {
+    if (Math.abs(currLat - confLat) > 0.0001) return false;
+  } else if ((currLat !== undefined) !== (confLat !== undefined)) {
+    return false;
+  }
+
+  if (currLng !== undefined && confLng !== undefined) {
+    if (Math.abs(currLng - confLng) > 0.0001) return false;
+  } else if ((currLng !== undefined) !== (confLng !== undefined)) {
+    return false;
+  }
+
+  return true;
+};
 
 export const INDIAN_STATES_AND_CITIES: Record<string, string[]> = {
   'Andaman and Nicobar Islands': ['Port Blair'],
@@ -112,6 +160,8 @@ export const STATE_ALIASES: Record<string, string> = {
 
 export default function StepLocation({
   initialValues,
+  lastConfirmedLocation,
+  onLocationConfirmed,
   onBack,
   onSave,
   isSaving = false
@@ -149,6 +199,21 @@ export default function StepLocation({
   // Popup confirmation modal state
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [addressFilledBadge, setAddressFilledBadge] = useState<boolean>(false);
+
+  // Snapshot of the last confirmed location
+  const confirmedSnapshotRef = useRef<LocationFormData | null>(
+    lastConfirmedLocation ||
+      (initialValues?.addressLine1 && initialValues?.city && initialValues?.state && initialValues?.pincode
+        ? (initialValues as LocationFormData)
+        : null)
+  );
+
+  // Sync ref if lastConfirmedLocation arrives or updates
+  useEffect(() => {
+    if (lastConfirmedLocation) {
+      confirmedSnapshotRef.current = lastConfirmedLocation;
+    }
+  }, [lastConfirmedLocation]);
 
   // Validation Errors
   const [errors, setErrors] = useState<{
@@ -314,15 +379,31 @@ export default function StepLocation({
   // Called when form is submitted by clicking Next
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      setShowConfirmModal(true);
+    if (!validate()) {
+      return;
     }
+
+    const currentData = getCurrentFormData();
+
+    // If this location was already confirmed and hasn't changed, skip confirmation modal
+    if (confirmedSnapshotRef.current && isLocationUnchanged(currentData, confirmedSnapshotRef.current)) {
+      onSave(currentData);
+      return;
+    }
+
+    // Otherwise (first time or changes were made), prompt confirmation modal
+    setShowConfirmModal(true);
   };
 
   // Called when user confirms location in popup modal
   const handleConfirmLocationModal = () => {
+    const currentData = getCurrentFormData();
+    confirmedSnapshotRef.current = currentData;
+    if (onLocationConfirmed) {
+      onLocationConfirmed(currentData);
+    }
     setShowConfirmModal(false);
-    onSave(getCurrentFormData());
+    onSave(currentData);
   };
 
   const handleAddressDetected = (detected: DetectedAddressComponents) => {
@@ -451,8 +532,13 @@ export default function StepLocation({
         <div className="space-y-4">
           {/* Street Address */}
           <div>
-            <label htmlFor="address-line1" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
-              Street address
+            <label
+              htmlFor="address-line1"
+              className={`block text-xs font-semibold mb-1.5 font-inter transition-colors ${
+                errors.addressLine1 ? 'text-primary' : 'text-[#222222]'
+              }`}
+            >
+              Street address <span className="text-primary ml-0.5" title="Required">*</span>
             </label>
             <input
               id="address-line1"
@@ -463,17 +549,29 @@ export default function StepLocation({
                 if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: undefined }));
               }}
               placeholder="House / Flat No., Building, Street"
-              className="w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors bg-white font-inter"
+              className={`w-full px-4 py-3 rounded-xl border text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:outline-none transition-colors bg-white font-inter ${
+                errors.addressLine1
+                  ? 'border-primary focus:border-primary ring-1 ring-primary/20'
+                  : 'border-[#B0B0B0] focus:border-[#222222]'
+              }`}
             />
             {errors.addressLine1 && (
-              <p className="text-xs text-[#222222] mt-1 font-inter">{errors.addressLine1}</p>
+              <p className="text-xs text-primary font-medium mt-1.5 font-inter flex items-center gap-1.5 animate-fade-in">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
+                <span>{errors.addressLine1}</span>
+              </p>
             )}
           </div>
 
           {/* Locality / Sector */}
           <div>
-            <label htmlFor="property-locality" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
-              Locality / Sector
+            <label
+              htmlFor="property-locality"
+              className={`block text-xs font-semibold mb-1.5 font-inter transition-colors ${
+                errors.locality ? 'text-primary' : 'text-[#222222]'
+              }`}
+            >
+              Locality / Sector <span className="text-primary ml-0.5" title="Required">*</span>
             </label>
             <input
               id="property-locality"
@@ -484,10 +582,17 @@ export default function StepLocation({
                 if (errors.locality) setErrors((prev) => ({ ...prev, locality: undefined }));
               }}
               placeholder="e.g. Sector 62, Koramangala, Indirapuram"
-              className="w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors bg-white font-inter"
+              className={`w-full px-4 py-3 rounded-xl border text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:outline-none transition-colors bg-white font-inter ${
+                errors.locality
+                  ? 'border-primary focus:border-primary ring-1 ring-primary/20'
+                  : 'border-[#B0B0B0] focus:border-[#222222]'
+              }`}
             />
             {errors.locality && (
-              <p className="text-xs text-[#222222] mt-1 font-inter">{errors.locality}</p>
+              <p className="text-xs text-primary font-medium mt-1.5 font-inter flex items-center gap-1.5 animate-fade-in">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
+                <span>{errors.locality}</span>
+              </p>
             )}
           </div>
 
@@ -495,15 +600,24 @@ export default function StepLocation({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* State Dropdown */}
             <div>
-              <label htmlFor="property-state" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
-                State / UT
+              <label
+                htmlFor="property-state"
+                className={`block text-xs font-semibold mb-1.5 font-inter transition-colors ${
+                  errors.state ? 'text-primary' : 'text-[#222222]'
+                }`}
+              >
+                State / UT <span className="text-primary ml-0.5" title="Required">*</span>
               </label>
               <div className="relative">
                 <select
                   id="property-state"
                   value={state}
                   onChange={(e) => handleStateChange(e.target.value)}
-                  className={`w-full px-4 py-3 pr-10 rounded-xl border border-[#B0B0B0] bg-white focus:border-[#222222] focus:outline-none transition-colors appearance-none cursor-pointer font-inter ${
+                  className={`w-full px-4 py-3 pr-10 rounded-xl border bg-white focus:outline-none transition-colors appearance-none cursor-pointer font-inter ${
+                    errors.state
+                      ? 'border-primary focus:border-primary ring-1 ring-primary/20'
+                      : 'border-[#B0B0B0] focus:border-[#222222]'
+                  } ${
                     !state
                       ? 'text-xs sm:text-[13px] text-[#9E9E9E]'
                       : 'text-sm sm:text-base text-[#222222]'
@@ -524,14 +638,22 @@ export default function StepLocation({
                 <ChevronDown className="w-4 h-4 text-[#717171] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
               {errors.state && (
-                <p className="text-xs text-[#222222] mt-1 font-inter">{errors.state}</p>
+                <p className="text-xs text-primary font-medium mt-1.5 font-inter flex items-center gap-1.5 animate-fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
+                  <span>{errors.state}</span>
+                </p>
               )}
             </div>
 
             {/* City Dropdown */}
             <div>
-              <label htmlFor="property-city" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
-                City
+              <label
+                htmlFor="property-city"
+                className={`block text-xs font-semibold mb-1.5 font-inter transition-colors ${
+                  errors.city ? 'text-primary' : 'text-[#222222]'
+                }`}
+              >
+                City <span className="text-primary ml-0.5" title="Required">*</span>
               </label>
               <div className="relative">
                 <select
@@ -539,7 +661,11 @@ export default function StepLocation({
                   value={isCustomCity ? '__other__' : city}
                   disabled={!state}
                   onChange={(e) => handleCitySelectChange(e.target.value)}
-                  className={`w-full px-4 py-3 pr-10 rounded-xl border border-[#B0B0B0] bg-white disabled:bg-[#F7F7F7] disabled:text-[#9E9E9E] disabled:cursor-not-allowed focus:border-[#222222] focus:outline-none transition-colors appearance-none cursor-pointer font-inter ${
+                  className={`w-full px-4 py-3 pr-10 rounded-xl border bg-white disabled:bg-[#F7F7F7] disabled:text-[#9E9E9E] disabled:cursor-not-allowed focus:outline-none transition-colors appearance-none cursor-pointer font-inter ${
+                    errors.city
+                      ? 'border-primary focus:border-primary ring-1 ring-primary/20'
+                      : 'border-[#B0B0B0] focus:border-[#222222]'
+                  } ${
                     !city && !isCustomCity
                       ? 'text-xs sm:text-[13px] text-[#9E9E9E]'
                       : 'text-sm sm:text-base text-[#222222]'
@@ -565,20 +691,32 @@ export default function StepLocation({
                   value={customCity}
                   onChange={(e) => handleCustomCityChange(e.target.value)}
                   placeholder="Enter city name"
-                  className="mt-2 w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors bg-white font-inter"
+                  className={`mt-2 w-full px-4 py-3 rounded-xl border text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:outline-none transition-colors bg-white font-inter ${
+                    errors.city
+                      ? 'border-primary focus:border-primary ring-1 ring-primary/20'
+                      : 'border-[#B0B0B0] focus:border-[#222222]'
+                  }`}
                 />
               )}
 
               {errors.city && (
-                <p className="text-xs text-[#222222] mt-1 font-inter">{errors.city}</p>
+                <p className="text-xs text-primary font-medium mt-1.5 font-inter flex items-center gap-1.5 animate-fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
+                  <span>{errors.city}</span>
+                </p>
               )}
             </div>
           </div>
 
           {/* PIN code */}
           <div>
-            <label htmlFor="property-pincode" className="block text-xs font-semibold text-[#222222] mb-1.5 font-inter">
-              PIN code
+            <label
+              htmlFor="property-pincode"
+              className={`block text-xs font-semibold mb-1.5 font-inter transition-colors ${
+                errors.pincode ? 'text-primary' : 'text-[#222222]'
+              }`}
+            >
+              PIN code <span className="text-primary ml-0.5" title="Required">*</span>
             </label>
             <input
               id="property-pincode"
@@ -591,10 +729,17 @@ export default function StepLocation({
                 if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: undefined }));
               }}
               placeholder="6-digit PIN"
-              className="w-full px-4 py-3 rounded-xl border border-[#B0B0B0] text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:border-[#222222] focus:outline-none transition-colors font-mono bg-white"
+              className={`w-full px-4 py-3 rounded-xl border text-sm sm:text-base text-[#222222] placeholder:font-inter placeholder:text-xs sm:placeholder:text-[13px] placeholder:text-[#9E9E9E] focus:outline-none transition-colors font-mono bg-white ${
+                errors.pincode
+                  ? 'border-primary focus:border-primary ring-1 ring-primary/20'
+                  : 'border-[#B0B0B0] focus:border-[#222222]'
+              }`}
             />
             {errors.pincode && (
-              <p className="text-xs text-[#222222] mt-1 font-inter">{errors.pincode}</p>
+              <p className="text-xs text-primary font-medium mt-1.5 font-inter flex items-center gap-1.5 animate-fade-in">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 text-primary" />
+                <span>{errors.pincode}</span>
+              </p>
             )}
           </div>
         </div>

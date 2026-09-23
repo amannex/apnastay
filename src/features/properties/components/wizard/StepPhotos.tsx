@@ -6,49 +6,26 @@ import {
   Upload,
   Trash2,
   Star,
-  ChevronLeft,
-  ChevronRight,
   Plus,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
   X,
-  Clock,
-  ArrowLeft,
-  ArrowRight,
-  Tag,
+  Video,
+  Check,
+  AlertCircle,
   Loader2,
-  Eye
+  Sparkles
 } from 'lucide-react';
-import type { PropertyPhoto, PhotoCategory, UploadPhotoPayload } from '../../types';
+import type { PropertyPhoto } from '../../types';
 import { uploadPropertyPhoto } from '../../api';
 
-export const PHOTO_CATEGORIES: { id: PhotoCategory; label: string }[] = [
-  { id: 'exterior', label: 'Exterior' },
-  { id: 'bedroom', label: 'Bedroom' },
-  { id: 'bathroom', label: 'Bathroom' },
-  { id: 'kitchen', label: 'Kitchen' },
-  { id: 'living_room', label: 'Living Room' },
-  { id: 'room', label: 'Room' },
-  { id: 'common_area', label: 'Common Area' },
-  { id: 'parking', label: 'Parking' },
-  { id: 'other', label: 'Other' }
-];
+export interface StepPhotosProps {
+  propertyId: string;
+  initialPhotos?: PropertyPhoto[];
+  initialVideoUrl?: string;
+  onBack: (currentPhotos: PropertyPhoto[], videoUrl?: string) => void;
+  onSave: (photos: PropertyPhoto[], videoUrl?: string) => Promise<void> | void;
+  isSaving?: boolean;
+}
 
-export const MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-export const SUPPORTED_MIME_TYPES = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-  'image/heic',
-  'image/heif'
-];
-
-/**
- * Safely resolve photo URLs in local development if pointing to production CMS uploads.
- */
 export function getSafeImageUrl(url?: string): string {
   if (!url) return '';
   if (
@@ -62,9 +39,6 @@ export function getSafeImageUrl(url?: string): string {
   return url;
 }
 
-/**
- * Ensures that strictly one photo is marked as the primary cover photo.
- */
 export function ensureSingleCover(list: PropertyPhoto[]): PropertyPhoto[] {
   if (!list || list.length === 0) return [];
   const coverIdx = list.findIndex((p) => Boolean(p.isCover));
@@ -76,848 +50,447 @@ export function ensureSingleCover(list: PropertyPhoto[]): PropertyPhoto[] {
   }));
 }
 
-interface UploadQueueItem {
-  clientId: string;
-  file: File;
-  previewUrl: string;
-  status: 'uploading' | 'uploaded' | 'failed';
-  error?: string;
-  progress: number;
-}
-
-export interface StepPhotosProps {
-  propertyId: string;
-  initialPhotos?: PropertyPhoto[];
-  onBack: (currentPhotos: PropertyPhoto[]) => void;
-  onSave: (photos: PropertyPhoto[]) => Promise<void> | void;
-  isSaving?: boolean;
-}
-
 export default function StepPhotos({
   propertyId,
   initialPhotos = [],
+  initialVideoUrl = '',
   onBack,
   onSave,
   isSaving = false
 }: StepPhotosProps) {
-  // Main photos list — strictly one cover photo
-  const [photos, setPhotos] = useState<PropertyPhoto[]>(() => {
-    return ensureSingleCover(initialPhotos);
-  });
+  const [photos, setPhotos] = useState<PropertyPhoto[]>(() => ensureSingleCover(initialPhotos));
+  const [videoUrl, setVideoUrl] = useState<string>(initialVideoUrl);
+  const [videoName, setVideoName] = useState<string>('');
+  const [isDragOverPhoto, setIsDragOverPhoto] = useState<boolean>(false);
+  const [isDragOverVideo, setIsDragOverVideo] = useState<boolean>(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Upload queue for tracking in-flight and failed uploads
-  const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
-  const [isDragOver, setIsDragOver] = useState<boolean>(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const createdBlobUrls = useRef<Set<string>>(new Set());
 
-  // Drag and drop reordering state
-  const [draggedPhotoIndex, setDraggedPhotoIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-
-  // Full-screen Preview Modal
-  const [previewPhoto, setPreviewPhoto] = useState<PropertyPhoto | null>(null);
-
-  // Hidden file input ref
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const blobUrlsRef = useRef<Set<string>>(new Set());
-
-  // Clean up object URLs on component unmount
   useEffect(() => {
-    const urls = blobUrlsRef.current;
+    const urlsToCleanup = createdBlobUrls.current;
     return () => {
-      urls.forEach((url) => {
+      urlsToCleanup.forEach((url) => {
         try {
           URL.revokeObjectURL(url);
         } catch {
           // ignore
         }
       });
-      urls.clear();
+      urlsToCleanup.clear();
     };
   }, []);
 
-  const revokeBlobUrl = (url?: string) => {
-    if (url && url.startsWith('blob:')) {
-      try {
-        URL.revokeObjectURL(url);
-      } catch {
-        // ignore
+  const handlePhotoFiles = async (files: FileList | File[]) => {
+    const validFiles: File[] = [];
+    setErrorMsg(null);
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('image/')) {
+        setErrorMsg('Please select only image files (JPEG, PNG, WebP).');
+        continue;
       }
-      blobUrlsRef.current.delete(url);
-    }
-  };
-
-  // Keep photos synchronized with initialPhotos if refreshed
-  useEffect(() => {
-    if (initialPhotos && initialPhotos.length > 0 && photos.length === 0) {
-      setPhotos(ensureSingleCover(initialPhotos));
-    }
-  }, [initialPhotos, photos.length]);
-
-  // --------------------------------------------------------------------------
-  // File Validation
-  // --------------------------------------------------------------------------
-  const validateFile = (file: File): { valid: boolean; error?: string } => {
-    const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    const mime = file.type.toLowerCase();
-    const validMimes = SUPPORTED_MIME_TYPES;
-    const validExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif'];
-
-    const matchesMime = validMimes.includes(mime);
-    const matchesExt = validExts.includes(ext);
-
-    if (!matchesMime && !matchesExt) {
-      return {
-        valid: false,
-        error: `"${file.name}" is not a supported format. Please upload JPG, PNG, WebP, GIF, or HEIC images.`
-      };
-    }
-
-    if (file.size <= 0) {
-      return {
-        valid: false,
-        error: `"${file.name}" is empty or corrupted (0 bytes).`
-      };
-    }
-
-    if (file.size > MAX_PHOTO_SIZE_BYTES) {
-      return {
-        valid: false,
-        error: `"${file.name}" exceeds the 10MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please choose a smaller image.`
-      };
-    }
-
-    return { valid: true };
-  };
-
-  // --------------------------------------------------------------------------
-  // Upload Processing
-  // --------------------------------------------------------------------------
-  const processUpload = async (file: File, clientId: string) => {
-    // Generate data URL for offline instant preview & persistence
-    let dataUrl = '';
-    try {
-      dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read image file'));
-        reader.readAsDataURL(file);
-      });
-    } catch {
-      dataUrl = URL.createObjectURL(file);
-    }
-
-    // Call API (WordPress REST or propertyBackend simulation)
-    const payload: UploadPhotoPayload = {
-      file,
-      dataUrl,
-      fileName: file.name,
-      fileSize: file.size,
-      mimeType: file.type || 'image/jpeg',
-      isCover: photos.length === 0 // default first to cover
-    };
-
-    const res = await uploadPropertyPhoto(propertyId, payload);
-
-    if (res.success && res.data) {
-      const uploaded = res.data;
-
-      // Update photos state
-      setPhotos((prev) => {
-        const next = [...prev];
-        // If this photo was set as cover, unset other covers
-        if (uploaded.isCover) {
-          next.forEach((p) => {
-            p.isCover = false;
-          });
-        }
-        // Check if cover needs to be assigned
-        if (next.length === 0) {
-          uploaded.isCover = true;
-        }
-        uploaded.order = next.length;
-        next.push(uploaded);
-        return next;
-      });
-
-      // Remove from upload queue and revoke preview blob
-      setUploadQueue((prev) => {
-        const item = prev.find((i) => i.clientId === clientId);
-        revokeBlobUrl(item?.previewUrl);
-        return prev.filter((i) => i.clientId !== clientId);
-      });
-    } else {
-      // Mark as failed in queue
-      setUploadQueue((prev) =>
-        prev.map((item) =>
-          item.clientId === clientId
-            ? { ...item, status: 'failed', error: res.error || 'Upload failed. Please retry.' }
-            : item
-        )
-      );
-    }
-  };
-
-  // Handle selected files (from input or dropzone)
-  const handleFiles = (files: FileList | File[]) => {
-    setValidationError(null);
-    const fileArray = Array.from(files);
-
-    if (fileArray.length === 0) return;
-
-    const validFiles: { file: File; clientId: string; previewUrl: string }[] = [];
-    const errors: string[] = [];
-
-    fileArray.forEach((file) => {
-      const check = validateFile(file);
-      if (!check.valid) {
-        errors.push(check.error || `Invalid file "${file.name}"`);
-      } else {
-        const clientId = `queue_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-        const previewUrl = URL.createObjectURL(file);
-        blobUrlsRef.current.add(previewUrl);
-        validFiles.push({ file, clientId, previewUrl });
+      if (file.size > 15 * 1024 * 1024) {
+        setErrorMsg('Images must be smaller than 15MB.');
+        continue;
       }
-    });
-
-    if (errors.length > 0) {
-      setValidationError(errors.join(' '));
+      validFiles.push(file);
     }
 
     if (validFiles.length === 0) return;
 
-    // Add valid files to queue
-    const queueItems: UploadQueueItem[] = validFiles.map(({ file, clientId, previewUrl }) => ({
-      clientId,
-      file,
-      previewUrl,
-      status: 'uploading',
-      progress: 50
-    }));
+    setIsUploadingPhoto(true);
 
-    setUploadQueue((prev) => [...prev, ...queueItems]);
+    const newPhotosToAdd: PropertyPhoto[] = [];
 
-    // Kick off uploads
-    validFiles.forEach(({ file, clientId }) => {
-      processUpload(file, clientId);
-    });
-  };
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      const localUrl = URL.createObjectURL(file);
+      createdBlobUrls.current.add(localUrl);
 
-  // Retry a failed upload item
-  const handleRetryUpload = (item: UploadQueueItem) => {
-    setUploadQueue((prev) =>
-      prev.map((q) => (q.clientId === item.clientId ? { ...q, status: 'uploading', error: undefined } : q))
-    );
-    processUpload(item.file, item.clientId);
-  };
+      const isFirst = photos.length === 0 && i === 0;
+      const photoItem: PropertyPhoto = {
+        id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        url: localUrl,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        isCover: isFirst,
+        order: photos.length + i
+      };
 
-  // Remove a failed item from the upload queue
-  const handleDismissFailedQueue = (clientId: string) => {
-    setUploadQueue((prev) => {
-      const item = prev.find((i) => i.clientId === clientId);
-      revokeBlobUrl(item?.previewUrl);
-      return prev.filter((i) => i.clientId !== clientId);
-    });
-  };
+      newPhotosToAdd.push(photoItem);
 
-  // --------------------------------------------------------------------------
-  // Drag & Drop File Handlers
-  // --------------------------------------------------------------------------
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  };
-
-  // --------------------------------------------------------------------------
-  // Photo Operations: Cover, Delete, Category, Reorder
-  // --------------------------------------------------------------------------
-  const handleSetCover = (photoId: string | number) => {
-    setPhotos((prev) => {
-      const next = prev.map((p) => ({
-        ...p,
-        isCover: String(p.id) === String(photoId)
-      }));
-      return ensureSingleCover(next);
-    });
-    if (previewPhoto) {
-      setPreviewPhoto((prev) =>
-        prev ? { ...prev, isCover: String(prev.id) === String(photoId) } : null
-      );
-    }
-  };
-
-  const handleDeletePhoto = (photoId: string | number) => {
-    setPhotos((prev) => {
-      const remaining = prev.filter((p) => String(p.id) !== String(photoId));
-      return ensureSingleCover(remaining);
-    });
-
-    if (previewPhoto && String(previewPhoto.id) === String(photoId)) {
-      setPreviewPhoto(null);
-    }
-  };
-
-  const handleCategoryChange = (photoId: string | number, category: PhotoCategory | '') => {
-    const catValue = category === '' ? undefined : category;
-    setPhotos((prev) =>
-      prev.map((p) => (String(p.id) === String(photoId) ? { ...p, category: catValue } : p))
-    );
-    if (previewPhoto && String(previewPhoto.id) === String(photoId)) {
-      setPreviewPhoto((prev) => (prev ? { ...prev, category: catValue } : null));
-    }
-  };
-
-  // Accessible / Touch-friendly Shift Reordering
-  const handleMovePhoto = (currentIndex: number, direction: 'left' | 'right') => {
-    const targetIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
-    if (targetIndex < 0 || targetIndex >= photos.length) return;
-
-    setPhotos((prev) => {
-      const next = [...prev];
-      const temp = next[currentIndex];
-      next[currentIndex] = next[targetIndex];
-      next[targetIndex] = temp;
-      next.forEach((p, idx) => {
-        p.order = idx;
+      // Async background server upload
+      uploadPropertyPhoto(propertyId, {
+        file,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        isCover: isFirst
+      }).then((res) => {
+        if (res.success && res.data && res.data.url) {
+          setPhotos((curr) =>
+            curr.map((p) => (p.id === photoItem.id ? { ...p, url: res.data!.url } : p))
+          );
+        }
+      }).catch(() => {
+        // Safe offline fallback - local blob remains valid
       });
-      return next;
+    }
+
+    setPhotos((prev) => ensureSingleCover([...prev, ...newPhotosToAdd]));
+    setIsUploadingPhoto(false);
+  };
+
+  const handleSetCover = (id: string | number) => {
+    setPhotos((prev) =>
+      prev.map((p) => ({
+        ...p,
+        isCover: String(p.id) === String(id)
+      }))
+    );
+  };
+
+  const handleDeletePhoto = (id: string | number) => {
+    setPhotos((prev) => {
+      const filtered = prev.filter((p) => String(p.id) !== String(id));
+      return ensureSingleCover(filtered);
     });
   };
 
-  // HTML5 Drag and Drop Reordering
-  const handlePhotoDragStart = (index: number) => {
-    setDraggedPhotoIndex(index);
-  };
-
-  const handlePhotoDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (draggedPhotoIndex === null || draggedPhotoIndex === index) return;
-    setDragOverIndex(index);
-  };
-
-  const handlePhotoDrop = (targetIndex: number) => {
-    if (draggedPhotoIndex === null || draggedPhotoIndex === targetIndex) {
-      setDraggedPhotoIndex(null);
-      setDragOverIndex(null);
+  const handleVideoFile = (file: File) => {
+    setErrorMsg(null);
+    if (!file.type.startsWith('video/')) {
+      setErrorMsg('Please select a valid video file (MP4, WebM, MOV).');
+      return;
+    }
+    if (file.size > 80 * 1024 * 1024) {
+      setErrorMsg('Video must be smaller than 80MB.');
       return;
     }
 
-    setPhotos((prev) => {
-      const next = [...prev];
-      const [moved] = next.splice(draggedPhotoIndex, 1);
-      next.splice(targetIndex, 0, moved);
-      next.forEach((p, idx) => {
-        p.order = idx;
-      });
-      return next;
-    });
-
-    setDraggedPhotoIndex(null);
-    setDragOverIndex(null);
+    const localUrl = URL.createObjectURL(file);
+    createdBlobUrls.current.add(localUrl);
+    setVideoUrl(localUrl);
+    setVideoName(file.name);
   };
 
-  // --------------------------------------------------------------------------
-  // Save & Navigation
-  // --------------------------------------------------------------------------
-  const handleContinue = async () => {
-    await onSave(photos);
+  const handleRemoveVideo = () => {
+    setVideoUrl('');
+    setVideoName('');
   };
 
-  const isUploadingActive = uploadQueue.some((item) => item.status === 'uploading');
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (photos.length === 0) {
+      setErrorMsg('Please upload at least 1 photo of your property to continue.');
+      return;
+    }
+    setErrorMsg(null);
+    onSave(photos, videoUrl);
+  };
+
+  const coverPhoto = photos.find((p) => p.isCover) || photos[0];
+  const regularPhotos = photos.filter((p) => String(p.id) !== String(coverPhoto?.id));
 
   return (
     <form
       id="photos-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleContinue();
-      }}
-      className="space-y-8 animate-fade-in max-w-2xl sm:max-w-3xl mx-auto py-2 sm:py-6"
+      onSubmit={handleSubmit}
+      className="w-full max-w-2xl mx-auto py-2 space-y-8 animate-fade-in"
       noValidate
     >
-      {/* SECTION HEADER */}
-      <div className="space-y-2">
-        <h2 className="text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight leading-tight">
+      {/* SECTION HEADING (Airbnb Style) */}
+      <div className="space-y-1">
+        <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
           Add some photos of your place
-        </h2>
-        <p className="text-sm sm:text-base text-[#717171]">
+        </h1>
+        <p className="font-inter text-sm sm:text-base text-[#717171]">
           You&apos;ll need at least 5 photos to get started. You can add more or make changes later.
         </p>
       </div>
 
-      {/* VALIDATION OR GLOBAL ERROR ALERT */}
-      {validationError && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start justify-between gap-3 animate-shake">
-          <div className="flex items-start gap-2.5">
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold">Upload Error</p>
-              <p className="mt-0.5">{validationError}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setValidationError(null)}
-            className="text-rose-500 hover:text-rose-700 p-1"
-            title="Dismiss error"
-          >
-            <X className="w-4 h-4" />
-          </button>
+      {errorMsg && (
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-primary flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-primary" />
+          <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* LARGE UPLOAD AREA / DROPZONE (EXACT SPECIFICATION) */}
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`relative cursor-pointer rounded-3xl border-2 border-dashed transition-all p-8 sm:p-14 text-center select-none ${
-          isDragOver
-            ? 'border-emerald-500 bg-emerald-50/50 scale-[0.99] shadow-md'
-            : 'border-[#D1D1D6] hover:border-[#1D1D1F] bg-[#FAFAFA] hover:bg-white shadow-apple-sm'
-        }`}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
-          onChange={(e) => {
-            if (e.target.files) handleFiles(e.target.files);
-            e.target.value = ''; // Reset input so same file can be chosen again
+      {/* HIDDEN INPUTS */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handlePhotoFiles(e.target.files);
+          }
+        }}
+      />
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/mp4,video/webm,video/quicktime"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleVideoFile(e.target.files[0]);
+          }
+        }}
+      />
+
+      {/* ==================================================================== */}
+      {/* 1. PHOTOS SECTION                                                    */}
+      {/* ==================================================================== */}
+      {photos.length === 0 ? (
+        /* EMPTY STATE: AIRBNB DRAG & DROP HERO */
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragOverPhoto(true);
           }}
-          className="hidden"
-          id="property-photo-file-input"
-        />
-
-        <div className="max-w-md mx-auto space-y-4">
-          {/* CAMERA ICON */}
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-white border border-[#EDEDED] shadow-apple-sm flex items-center justify-center text-[#1D1D1F] transition-transform hover:scale-105">
-            <Camera className="w-8 h-8 sm:w-10 sm:h-10 text-[#1D1D1F]" strokeWidth={1.8} />
+          onDragLeave={() => setIsDragOverPhoto(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragOverPhoto(false);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              handlePhotoFiles(e.dataTransfer.files);
+            }
+          }}
+          className={`border-2 border-dashed rounded-3xl p-8 sm:p-14 text-center flex flex-col items-center justify-center transition-all duration-150 ${
+            isDragOverPhoto
+              ? 'border-[#222222] bg-[#F7F7F7]'
+              : 'border-[#DDDDDD] bg-white hover:border-[#222222]'
+          }`}
+        >
+          <div className="w-16 h-16 rounded-2xl bg-[#F7F7F7] flex items-center justify-center mb-4 text-[#222222]">
+            <Camera className="w-8 h-8 stroke-[1.5]" />
           </div>
 
-          <div className="space-y-1.5">
-            <h3 className="text-lg sm:text-xl font-extrabold text-[#1D1D1F] tracking-tight">
-              Add property photos
-            </h3>
-            <p className="text-xs sm:text-sm text-[#86868B]">
-              Drag and drop high-quality images here, or tap below to browse
-            </p>
-          </div>
+          <h2 className="font-outfit text-lg sm:text-xl font-semibold text-[#222222] mb-1">
+            Drag your photos here
+          </h2>
+          <p className="font-inter text-xs sm:text-sm text-[#717171] mb-6">
+            Choose at least 5 photos (JPEG, PNG, WebP)
+          </p>
 
-          {/* CHOOSE PHOTOS BUTTON */}
-          <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => photoInputRef.current?.click()}
+            disabled={isUploadingPhoto}
+            className="px-6 py-3 rounded-xl border border-[#222222] font-semibold text-sm sm:text-base text-[#222222] hover:bg-[#F7F7F7] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+          >
+            {isUploadingPhoto ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Uploading...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                <span>Upload from your device</span>
+              </>
+            )}
+          </button>
+        </div>
+      ) : (
+        /* POPULATED PHOTOS STATE */
+        <div className="space-y-4">
+          {/* PHOTO STATUS BADGE & ADD MORE BUTTON */}
+          <div className="flex items-center justify-between">
+            <span
+              className={`text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 ${
+                photos.length >= 5 ? 'text-emerald-700' : 'text-[#717171]'
+              }`}
+            >
+              {photos.length >= 5 ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                  <span>{photos.length} photos added</span>
+                </>
+              ) : (
+                <span>
+                  {photos.length} of 5 photos added (add {5 - photos.length} more)
+                </span>
+              )}
+            </span>
+
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-[#1D1D1F] hover:bg-black text-white text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95"
+              onClick={() => photoInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black"
             >
-              <Upload className="w-4 h-4" />
-              <span>Choose photos from device</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add more photos</span>
             </button>
           </div>
 
-          <div className="pt-2 flex items-center justify-center gap-4 text-[11px] text-[#86868B] font-medium flex-wrap">
-            <span>Supports JPG, PNG, WebP, GIF, HEIC</span>
-            <span>•</span>
-            <span>Up to 10MB each</span>
-            <span>•</span>
-            <span>Multiple selection supported</span>
-          </div>
-        </div>
-      </div>
+          {/* 1. COVER PHOTO (HERO CARD) */}
+          {coverPhoto && (
+            <div className="relative rounded-2xl overflow-hidden border border-[#DDDDDD] bg-[#F7F7F7] aspect-[16/10] sm:aspect-[16/9] group">
+              <img
+                src={coverPhoto.url}
+                alt="Cover photo"
+                className="w-full h-full object-cover"
+              />
 
-      {/* ACTIVE UPLOAD QUEUE & PROGRESS */}
-      {uploadQueue.length > 0 && (
-        <div className="bg-white rounded-3xl p-5 border border-[#EDEDED] shadow-apple-sm space-y-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-[#1D1D1F] flex items-center gap-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-              <span>Processing {uploadQueue.length} photo{uploadQueue.length > 1 ? 's' : ''}...</span>
-            </span>
-            <span className="text-[#86868B]">Do not close this page</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {uploadQueue.map((item) => (
-              <div
-                key={item.clientId}
-                className={`p-3 rounded-2xl border flex items-center gap-3 ${
-                  item.status === 'failed'
-                    ? 'border-rose-200 bg-rose-50/50'
-                    : 'border-[#EDEDED] bg-[#FAFAFA]'
-                }`}
-              >
-                <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0 border border-[#EDEDED]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.previewUrl}
-                    alt={item.file.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-[#1D1D1F] truncate">{item.file.name}</p>
-                  <p className="text-[11px] text-[#86868B]">
-                    {(item.file.size / (1024 * 1024)).toFixed(1)} MB
-                  </p>
-
-                  {item.status === 'uploading' && (
-                    <div className="mt-1.5 w-full bg-[#EDEDED] h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-emerald-500 h-full w-2/3 animate-pulse rounded-full" />
-                    </div>
-                  )}
-
-                  {item.status === 'failed' && (
-                    <p className="text-[11px] font-medium text-rose-600 truncate mt-0.5">
-                      {item.error || 'Upload failed'}
-                    </p>
-                  )}
-                </div>
-
-                {item.status === 'failed' && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleRetryUpload(item)}
-                      className="p-1.5 rounded-lg bg-white border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold flex items-center gap-1"
-                      title="Retry upload"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span className="text-[11px]">Retry</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDismissFailedQueue(item.clientId)}
-                      className="p-1.5 rounded-lg text-[#86868B] hover:text-[#1D1D1F]"
-                      title="Dismiss"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* PHOTO GALLERY SECTION (EXACT SPECIFICATION) */}
-      {photos.length > 0 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm space-y-6">
-          {/* GALLERY HEADER & STATS */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EDEDED] pb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl font-extrabold text-[#1D1D1F] tracking-tight">Photos</h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#F5F5F7] text-[#1D1D1F] text-xs font-bold">
-                  {photos.length} photo{photos.length > 1 ? 's' : ''}
-                </span>
-              </div>
-              <p className="text-xs text-[#86868B] mt-0.5">Drag to reorder</p>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-[#86868B]">
-              <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 px-2.5 py-1 rounded-full font-semibold">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
-                <span>Cover photo will be shown first</span>
-              </span>
-            </div>
-          </div>
-
-          {/* THUMBNAILS GRID: [ photo ] [ photo ] ... [ + Add ] */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map((photo, index) => {
-              const isCover = Boolean(photo.isCover);
-              const isBeingDragged = draggedPhotoIndex === index;
-              const isTargetDrop = dragOverIndex === index;
-
-              return (
-                <div
-                  key={String(photo.id)}
-                  draggable
-                  onDragStart={() => handlePhotoDragStart(index)}
-                  onDragOver={(e) => handlePhotoDragOver(e, index)}
-                  onDrop={() => handlePhotoDrop(index)}
-                  className={`group relative rounded-2xl overflow-hidden border transition-all duration-200 bg-[#FAFAFA] flex flex-col ${
-                    isCover
-                      ? 'border-amber-400 shadow-apple-md ring-2 ring-amber-400/20'
-                      : 'border-[#EDEDED] hover:border-[#1D1D1F]'
-                  } ${isBeingDragged ? 'opacity-40 scale-95' : 'opacity-100'} ${
-                    isTargetDrop ? 'border-dashed border-emerald-500 bg-emerald-50/20' : ''
-                  }`}
-                >
-                  {/* PHOTO IMAGE THUMBNAIL */}
-                  <div
-                    onClick={() => setPreviewPhoto(photo)}
-                    className="relative aspect-[4/3] w-full bg-[#EDEDED] cursor-pointer overflow-hidden"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={getSafeImageUrl(photo.thumbnailUrl || photo.url)}
-                      alt={photo.fileName || `Property Photo ${index + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        const fallback = getSafeImageUrl(photo.url);
-                        if (fallback && target.src !== fallback) {
-                          target.src = fallback;
-                        }
-                      }}
-                    />
-
-                    {/* HOVER OVERLAY WITH PREVIEW ICON */}
-                    <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                      <div className="p-2 rounded-full bg-black/50 backdrop-blur-md">
-                        <Eye className="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    {/* COVER BADGE */}
-                    {isCover && (
-                      <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[11px] font-extrabold shadow-sm">
-                        <Star className="w-3 h-3 fill-white" />
-                        <span>Cover Photo</span>
-                      </div>
-                    )}
-
-                    {/* ORDER NUMBER BADGE */}
-                    <div className="absolute bottom-2.5 left-2.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-md text-white text-[11px] font-bold flex items-center justify-center">
-                      {index + 1}
-                    </div>
-
-                    {/* TOP RIGHT DELETE BUTTON */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeletePhoto(photo.id);
-                      }}
-                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/60 hover:bg-rose-600 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
-                      title="Delete photo"
-                      aria-label={`Delete photo ${index + 1}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* THUMBNAIL FOOTER & ACTIONS */}
-                  <div className="p-3 bg-white space-y-2.5 text-xs flex-1 flex flex-col justify-between border-t border-[#EDEDED]">
-                    {/* OPTIONAL CATEGORY SELECTOR */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#86868B] flex items-center gap-1">
-                        <Tag className="w-3 h-3" />
-                        <span>Category</span>
-                      </label>
-                      <select
-                        value={photo.category || ''}
-                        onChange={(e) =>
-                          handleCategoryChange(photo.id, e.target.value as PhotoCategory | '')
-                        }
-                        className="w-full text-xs font-semibold bg-[#F5F5F7] hover:bg-[#EDEDED] border-none rounded-xl py-1.5 px-2 text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] transition-colors"
-                      >
-                        <option value="">General / None</option>
-                        {PHOTO_CATEGORIES.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* ACTIONS ROW: SET COVER + MOVE LEFT/RIGHT */}
-                    <div className="flex items-center justify-between pt-1 border-t border-[#F5F5F7]">
-                      {!isCover ? (
-                        <button
-                          type="button"
-                          onClick={() => handleSetCover(photo.id)}
-                          className="text-[11px] font-bold text-[#86868B] hover:text-amber-600 inline-flex items-center gap-1 transition-colors rounded-lg focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
-                          aria-label={`Set photo ${index + 1} as cover photo`}
-                        >
-                          <Star className="w-3 h-3" />
-                          <span>Make Cover</span>
-                        </button>
-                      ) : (
-                        <span className="text-[11px] font-bold text-amber-700 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Primary</span>
-                        </span>
-                      )}
-
-                      {/* MOBILE & ACCESSIBLE REORDER BUTTONS */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          disabled={index === 0}
-                          onClick={() => handleMovePhoto(index, 'left')}
-                          className="w-7 h-7 rounded-lg border border-[#EDEDED] hover:bg-[#F5F5F7] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[#1D1D1F] transition-all focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
-                          title="Move earlier"
-                          aria-label={`Move photo ${index + 1} earlier`}
-                        >
-                          <ChevronLeft className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={index === photos.length - 1}
-                          onClick={() => handleMovePhoto(index, 'right')}
-                          className="w-7 h-7 rounded-lg border border-[#EDEDED] hover:bg-[#F5F5F7] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[#1D1D1F] transition-all focus-visible:ring-2 focus-visible:ring-[#FF385C] focus-visible:outline-none"
-                          title="Move later"
-                          aria-label={`Move photo ${index + 1} later`}
-                        >
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* [ + ADD ] CARD IN GALLERY GRID */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="group cursor-pointer rounded-2xl border-2 border-dashed border-[#D1D1D6] hover:border-[#1D1D1F] bg-[#FAFAFA] hover:bg-white transition-all flex flex-col items-center justify-center p-6 text-center min-h-[220px]"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-white border border-[#EDEDED] shadow-sm flex items-center justify-center text-[#1D1D1F] group-hover:scale-110 transition-transform mb-3">
-                <Plus className="w-6 h-6" />
-              </div>
-              <p className="text-xs sm:text-sm font-bold text-[#1D1D1F]">+ Add Photos</p>
-              <p className="text-[11px] text-[#86868B] mt-1">Upload more photos</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* FULL PREVIEW LIGHTBOX MODAL */}
-      {previewPhoto && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setPreviewPhoto(null)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl overflow-hidden max-w-3xl w-full border border-[#EDEDED] shadow-apple-lg flex flex-col max-h-[90vh]"
-          >
-            {/* MODAL HEADER */}
-            <div className="p-4 sm:p-5 border-b border-[#EDEDED] flex items-center justify-between">
-              <div>
-                <h4 className="text-sm sm:text-base font-bold text-[#1D1D1F] truncate max-w-sm">
-                  {previewPhoto.fileName || 'Property Photo Preview'}
-                </h4>
-                <div className="flex items-center gap-2 text-xs text-[#86868B] mt-0.5">
-                  <span>Photo #{previewPhoto.order + 1}</span>
-                  {previewPhoto.category && (
-                    <>
-                      <span>•</span>
-                      <span className="capitalize">{previewPhoto.category.replace('_', ' ')}</span>
-                    </>
-                  )}
-                  {previewPhoto.isCover && (
-                    <>
-                      <span>•</span>
-                      <span className="text-amber-600 font-bold">Cover Photo</span>
-                    </>
-                  )}
-                </div>
+              {/* COVER BADGE */}
+              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-[#222222] shadow-sm">
+                Cover photo
               </div>
 
+              {/* DELETE BUTTON */}
               <button
                 type="button"
-                onClick={() => setPreviewPhoto(null)}
-                className="w-8 h-8 rounded-full bg-[#F5F5F7] hover:bg-[#EDEDED] flex items-center justify-center text-[#1D1D1F] transition-colors"
-                title="Close"
+                onClick={() => handleDeletePhoto(coverPhoto.id)}
+                className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white text-[#222222] hover:text-primary shadow-sm opacity-90 sm:opacity-0 group-hover:opacity-100 transition-all"
+                title="Delete photo"
               >
-                <X className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
+          )}
 
-            {/* MODAL IMAGE */}
-            <div className="relative bg-black/90 flex-1 flex items-center justify-center p-4 min-h-[300px] max-h-[60vh] overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={getSafeImageUrl(previewPhoto.url)}
-                alt={previewPhoto.fileName || 'Full preview'}
-                className="max-h-full max-w-full object-contain rounded-xl shadow-lg"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  const fallback = getSafeImageUrl(previewPhoto.thumbnailUrl);
-                  if (fallback && target.src !== fallback) {
-                    target.src = fallback;
-                  }
-                }}
-              />
-            </div>
+          {/* 2. SECONDARY PHOTOS GRID */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 pt-1">
+            {regularPhotos.map((photo) => (
+              <div
+                key={photo.id}
+                className="relative rounded-xl overflow-hidden border border-[#DDDDDD] bg-[#F7F7F7] aspect-square group select-none"
+              >
+                <img
+                  src={photo.url}
+                  alt="Property"
+                  className="w-full h-full object-cover"
+                />
 
-            {/* MODAL FOOTER ACTIONS */}
-            <div className="p-4 sm:p-5 bg-white border-t border-[#EDEDED] flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <label className="text-xs font-semibold text-[#86868B]">Category:</label>
-                <select
-                  value={previewPhoto.category || ''}
-                  onChange={(e) =>
-                    handleCategoryChange(previewPhoto.id, e.target.value as PhotoCategory | '')
-                  }
-                  className="text-xs font-semibold bg-[#F5F5F7] border border-[#EDEDED] rounded-xl py-1.5 px-2.5 text-[#1D1D1F] focus:outline-none"
-                >
-                  <option value="">General / None</option>
-                  {PHOTO_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                {!previewPhoto.isCover && (
+                {/* HOVER ACTIONS */}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button
                     type="button"
-                    onClick={() => handleSetCover(previewPhoto.id)}
-                    className="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                    onClick={() => handleSetCover(photo.id)}
+                    className="px-2.5 py-1 rounded-full bg-white text-xs font-semibold text-[#222222] hover:bg-[#F7F7F7] shadow-sm flex items-center gap-1"
+                    title="Make cover photo"
                   >
-                    <Star className="w-3.5 h-3.5" />
-                    <span>Set as Cover</span>
+                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                    <span>Make cover</span>
                   </button>
-                )}
 
-                <button
-                  type="button"
-                  onClick={() => handleDeletePhoto(previewPhoto.id)}
-                  className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete Photo</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePhoto(photo.id)}
+                    className="p-1.5 rounded-full bg-white text-[#222222] hover:text-primary shadow-sm"
+                    title="Delete photo"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
+
+            {/* ADD MORE CARD BUTTON */}
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="rounded-xl border-2 border-dashed border-[#DDDDDD] hover:border-[#222222] bg-white aspect-square flex flex-col items-center justify-center text-[#717171] hover:text-[#222222] transition-colors"
+            >
+              <Plus className="w-6 h-6 mb-1" />
+              <span className="text-xs sm:text-sm font-medium">Add more</span>
+            </button>
           </div>
         </div>
       )}
 
+      {/* ==================================================================== */}
+      {/* 2. VIDEO WALKTHROUGH SECTION (OPTIONAL)                              */}
+      {/* ==================================================================== */}
+      <div className="pt-6 border-t border-[#EBEBEB] space-y-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
+              Video walkthrough
+            </h2>
+            <span className="text-xs font-normal text-[#717171] bg-[#F7F7F7] px-2 py-0.5 rounded-md border border-[#EBEBEB]">
+              Optional
+            </span>
+          </div>
+          <p className="font-inter text-xs sm:text-sm text-[#717171] mt-0.5">
+            Add a short video walkthrough so tenants can take a virtual tour of your place.
+          </p>
+        </div>
+
+        {videoUrl ? (
+          /* VIDEO PREVIEW */
+          <div className="rounded-2xl overflow-hidden border border-[#DDDDDD] bg-black/5 p-3 space-y-3">
+            <video
+              src={videoUrl}
+              controls
+              className="w-full max-h-[300px] rounded-xl object-contain bg-black"
+            />
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs text-[#717171] truncate max-w-[260px]">
+                {videoName || 'video_walkthrough.mp4'}
+              </span>
+              <button
+                type="button"
+                onClick={handleRemoveVideo}
+                className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Remove video</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* VIDEO DROPZONE */
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOverVideo(true);
+            }}
+            onDragLeave={() => setIsDragOverVideo(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOverVideo(false);
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleVideoFile(e.dataTransfer.files[0]);
+              }
+            }}
+            className={`border border-dashed rounded-2xl p-6 sm:p-8 text-center flex flex-col items-center justify-center transition-all ${
+              isDragOverVideo
+                ? 'border-[#222222] bg-[#F7F7F7]'
+                : 'border-[#DDDDDD] bg-white hover:border-[#222222]'
+            }`}
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#F7F7F7] flex items-center justify-center mb-2.5 text-[#222222]">
+              <Video className="w-5 h-5 stroke-[1.5]" />
+            </div>
+
+            <h3 className="font-inter text-sm font-semibold text-[#222222] mb-0.5">
+              Upload a video tour
+            </h3>
+            <p className="font-inter text-xs text-[#717171] mb-4">
+              MP4, WebM or MOV up to 80MB
+            </p>
+
+            <button
+              type="button"
+              onClick={() => videoInputRef.current?.click()}
+              className="px-4 py-2 rounded-xl border border-[#DDDDDD] hover:border-[#222222] text-xs sm:text-sm font-semibold text-[#222222] bg-white hover:bg-[#F7F7F7] transition-all"
+            >
+              Browse video
+            </button>
+          </div>
+        )}
+      </div>
     </form>
   );
 }

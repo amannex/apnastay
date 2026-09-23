@@ -52,6 +52,18 @@ export function validatePropertyRules(rules: Partial<PropertyRules>): { valid: b
     }
   }
 
+  if (rules.minAge !== undefined && rules.minAge !== null) {
+    if (rules.minAge < 0 || rules.minAge > 120) {
+      errors.push('Minimum age must be between 0 and 120.');
+    }
+  }
+
+  if (rules.maxAge !== undefined && rules.maxAge !== null) {
+    if (rules.maxAge < 0 || rules.maxAge > 120) {
+      errors.push('Maximum age must be between 0 and 120.');
+    }
+  }
+
   if (rules.customRules && Array.isArray(rules.customRules)) {
     if (rules.customRules.length > 30) {
       errors.push('Maximum of 30 custom rules allowed.');
@@ -101,32 +113,60 @@ export function sanitizePropertyRules(rules: Partial<PropertyRules>): PropertyRu
     clean.suitableFor = Array.from(new Set(clean.suitableFor));
   }
 
-  // Synchronize Smoking Policy <-> Legacy Boolean
-  if (clean.smokingPolicy) {
+  // Synchronize Specific Rules
+  if (clean.smokingRule) {
+    clean.smokingPolicy = clean.smokingRule === 'allowed' ? 'allowed' : clean.smokingRule === 'designated_area' ? 'with_restrictions' : 'not_allowed';
+    clean.smokingAllowed = clean.smokingRule === 'allowed' || clean.smokingRule === 'designated_area';
+  } else if (clean.smokingPolicy) {
     clean.smokingAllowed = clean.smokingPolicy === 'allowed';
   } else if (clean.smokingAllowed !== undefined) {
     clean.smokingPolicy = clean.smokingAllowed ? 'allowed' : 'not_allowed';
   }
 
   // Synchronize Alcohol Policy <-> Legacy Boolean
-  if (clean.alcoholPolicy) {
+  if (clean.alcoholRule) {
+    clean.alcoholPolicy = clean.alcoholRule === 'allowed' ? 'allowed' : clean.alcoholRule === 'designated_area' ? 'with_restrictions' : 'not_allowed';
+    clean.alcoholAllowed = clean.alcoholRule === 'allowed' || clean.alcoholRule === 'designated_area';
+  } else if (clean.alcoholPolicy) {
     clean.alcoholAllowed = clean.alcoholPolicy === 'allowed';
   } else if (clean.alcoholAllowed !== undefined) {
     clean.alcoholPolicy = clean.alcoholAllowed ? 'allowed' : 'not_allowed';
   }
 
   // Synchronize Pet Policy <-> Legacy Boolean
-  if (clean.petPolicy) {
+  if (clean.petsRule) {
+    clean.petPolicy = clean.petsRule === 'allowed' ? 'allowed' : clean.petsRule === 'with_approval' ? 'with_restrictions' : 'not_allowed';
+    clean.petsAllowed = clean.petsRule !== 'not_allowed';
+  } else if (clean.petPolicy) {
     clean.petsAllowed = clean.petPolicy === 'allowed';
   } else if (clean.petsAllowed !== undefined) {
     clean.petPolicy = clean.petsAllowed ? 'allowed' : 'not_allowed';
   }
 
-  // Synchronize Guest Policy <-> Legacy Visitors Boolean
-  if (clean.guestPolicy) {
-    clean.visitorsAllowed = clean.guestPolicy === 'allowed' || clean.guestPolicy === 'with_restrictions';
-  } else if (clean.visitorsAllowed !== undefined) {
-    clean.guestPolicy = clean.visitorsAllowed ? 'allowed' : 'not_allowed';
+  // Synchronize Stay Terms
+  if (clean.minimumStayRule) {
+    clean.lockInPeriodMonths = clean.minimumStayRule === '6+' ? 6 : parseInt(clean.minimumStayRule, 10);
+  } else if (clean.lockInPeriodMonths !== undefined) {
+    if (clean.lockInPeriodMonths >= 6) clean.minimumStayRule = '6+';
+    else if (clean.lockInPeriodMonths >= 3) clean.minimumStayRule = '3';
+    else clean.minimumStayRule = '1';
+  }
+
+  if (clean.noticePeriodRule) {
+    clean.noticePeriodDays = clean.noticePeriodRule === '60+' ? 60 : parseInt(clean.noticePeriodRule, 10);
+  } else if (clean.noticePeriodDays !== undefined) {
+    if (clean.noticePeriodDays >= 60) clean.noticePeriodRule = '60+';
+    else if (clean.noticePeriodDays >= 30) clean.noticePeriodRule = '30';
+    else if (clean.noticePeriodDays >= 15) clean.noticePeriodRule = '15';
+    else clean.noticePeriodRule = '7';
+  }
+
+  if (clean.tenantVerificationRule !== undefined) {
+    clean.requiresPoliceVerification = clean.tenantVerificationRule === 'yes';
+  }
+
+  if (clean.otherTerms !== undefined) {
+    clean.additionalNotes = clean.otherTerms;
   }
 
   return clean;

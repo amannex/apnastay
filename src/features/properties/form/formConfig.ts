@@ -64,15 +64,6 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
   },
   {
     stepNumber: 5,
-    key: 'property_structure',
-    title: 'Rooms or Units',
-    shortLabel: 'Structure',
-    description: 'Tell us about the rooms or units and accommodation structure.',
-    isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.units && p.units.length > 0)
-  },
-  {
-    stepNumber: 6,
     key: 'amenities',
     title: 'Amenities & Features',
     shortLabel: 'Amenities',
@@ -81,24 +72,34 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
     isCompleted: (p) => Boolean((p.amenities && p.amenities.length > 0) || (p.customAmenities && p.customAmenities.length > 0))
   },
   {
+    stepNumber: 6,
+    key: 'photos',
+    title: 'Photos & Optional Video',
+    shortLabel: 'Photos',
+    description: 'Upload high quality photos and an optional video tour of your space.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.photos && p.photos.length >= 5)
+  },
+  {
     stepNumber: 7,
-    key: 'units',
-    title: 'Units, Rooms & Beds',
-    shortLabel: 'Units',
-    description: 'Configure individual flats, private rooms, or dorm beds for multi-unit properties.',
-    isApplicable: (type, structure) => {
-      if (!type || !structure) return false;
-      if (structure === 'entire_property') return false;
-      const template = getPropertyTemplate(type);
-      return template.hasUnits || structure === 'multiple_units' || structure === 'individual_room' || structure === 'individual_bed';
-    },
-    isCompleted: (p) => {
-      if (p.rentalStructure === 'entire_property') return true;
-      return Boolean(p.units && p.units.length > 0);
-    }
+    key: 'who_can_stay',
+    title: 'Who Can Stay Here',
+    shortLabel: 'Residents',
+    description: 'Set who is welcome to stay and specify your key resident preferences and age requirements.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.rules?.suitableFor && p.rules.suitableFor.length > 0)
   },
   {
     stepNumber: 8,
+    key: 'rules_stay_terms',
+    title: 'Rules & Stay Terms',
+    shortLabel: 'Rules',
+    description: 'Set house rules on smoking, alcohol, visitors, pets, and parties.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.rules?.smokingRule || p.rules?.alcoholRule || p.rules?.visitorsRule)
+  },
+  {
+    stepNumber: 9,
     key: 'pricing',
     title: 'Pricing & Move-in Availability',
     shortLabel: 'Pricing',
@@ -109,19 +110,6 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
       const hasAvail = Boolean(p.availability?.type);
       return hasRent && hasAvail;
     }
-  },
-  {
-    stepNumber: 9,
-    key: 'rules',
-    title: 'House Rules & Preferences',
-    shortLabel: 'Rules',
-    description: 'Set resident suitability, guest policies, pet rules, and entry timing preferences.',
-    isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.rules && (
-      (p.rules.suitableFor && p.rules.suitableFor.length > 0) ||
-      (p.rules.guestPolicy && p.rules.guestPolicy !== 'not_specified') ||
-      p.rules.customRules && p.rules.customRules.length > 0
-    ))
   },
   {
     stepNumber: 10,

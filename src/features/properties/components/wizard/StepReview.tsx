@@ -2,503 +2,351 @@
 
 import React, { useState, useMemo } from 'react';
 import {
-  CheckCircle2,
-  Check,
   AlertCircle,
-  Sparkles,
-  ArrowLeft,
-  ArrowRight,
-  Edit3,
-  Eye,
-  ListChecks,
-  Building2,
-  FileText,
-  MapPin,
   Camera,
-  Layers,
-  IndianRupee,
-  Calendar,
-  ShieldAlert,
-  ShieldCheck,
-  ChevronRight,
-  Info,
-  ExternalLink,
-  Lock,
-  Globe
+  Eye,
+  ListChecks
 } from 'lucide-react';
 import type { Property } from '../../types';
 import {
   evaluateListingCompleteness,
-  CompletenessSectionKey,
   ListingCompletenessResult
 } from '../../completeness';
 import PropertyTenantPreview from '../preview/PropertyTenantPreview';
-import { formatCurrency } from '../../pricing';
+import { formatCurrency, getPropertyAvailabilityLabel, formatPricingDisplay } from '../../pricing';
 
-interface StepReviewProps {
+export interface StepReviewProps {
   property: Property;
-  onBack: () => void;
+  onBack?: () => void;
   onEditSection: (stepNumber: number) => void;
-  onSaveDraft: () => Promise<void> | void;
-  onPublish: () => Promise<void> | void;
+  onSaveDraft?: () => Promise<void> | void;
+  onPublish?: () => Promise<void> | void;
   isSaving?: boolean;
   isPublishing?: boolean;
 }
 
 export default function StepReview({
   property,
-  onBack,
-  onEditSection,
-  onSaveDraft,
-  onPublish,
-  isSaving = false,
-  isPublishing = false
+  onEditSection
 }: StepReviewProps) {
-  const [viewMode, setViewMode] = useState<'audit' | 'preview'>('audit');
+  const [viewMode, setViewMode] = useState<'overview' | 'preview'>('overview');
 
   const evaluation: ListingCompletenessResult = useMemo(
     () => evaluateListingCompleteness(property),
     [property]
   );
 
-  const getSectionIcon = (key: CompletenessSectionKey) => {
-    switch (key) {
-      case 'property_type':
-      case 'rental_structure':
-        return <Building2 className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'basic_details':
-        return <FileText className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'location':
-        return <MapPin className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'photos':
-        return <Camera className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'amenities':
-        return <Sparkles className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'units':
-        return <Layers className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'pricing':
-        return <IndianRupee className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'availability':
-        return <Calendar className="w-4 h-4 text-[#1D1D1F]" />;
-      case 'rules':
-        return <ShieldAlert className="w-4 h-4 text-[#1D1D1F]" />;
+  // Cover photo resolution
+  const photos = property.photos || [];
+  const coverPhoto = photos.find((p) => p.isCover) || photos[0];
+
+  // Helper summaries for the 11 steps
+  const getSectionData = () => {
+    // 1. Property Type
+    const formatValue = property.customPropertyType || property.propertyType
+      ? (property.customPropertyType || property.propertyType.replace(/_/g, ' '))
+      : 'Not selected';
+
+    // 2. Rental Structure
+    const structureValue = property.rentalStructure
+      ? property.rentalStructure.replace(/_/g, ' ')
+      : 'Not selected';
+
+    // 3. Location
+    const loc = property.location;
+    const addressParts = [
+      loc?.addressLine1 || loc?.address,
+      loc?.locality,
+      loc?.city,
+      loc?.pincode
+    ].filter(Boolean);
+    const locationValue = addressParts.length > 0 ? addressParts.join(', ') : 'Address not specified';
+
+    // 4. Floor plan & capacity
+    const guests = property.guests ?? 1;
+    const bedrooms = property.bedrooms ?? 1;
+    const beds = property.beds ?? 1;
+    const bathrooms = property.bathrooms ?? 1;
+    const capacityValue = `${guests} guest${guests !== 1 ? 's' : ''} • ${bedrooms} bedroom${bedrooms !== 1 ? 's' : ''} • ${beds} bed${beds !== 1 ? 's' : ''} • ${bathrooms} bath${bathrooms !== 1 ? 's' : ''}`;
+
+    // 5. Amenities
+    const amenitiesTotal = (property.amenities?.length || 0) + (property.customAmenities?.length || 0);
+    const amenitiesValue = amenitiesTotal > 0
+      ? `${amenitiesTotal} amenit${amenitiesTotal !== 1 ? 'ies' : 'y'} selected`
+      : 'No amenities selected';
+
+    // 6. Photos
+    const photosCount = photos.length;
+    const photosValue = photosCount > 0
+      ? `${photosCount} photo${photosCount !== 1 ? 's' : ''} uploaded`
+      : 'No photos uploaded';
+
+    // 7. Who can stay
+    const suitableFor = property.rules?.suitableFor || [];
+    const whoCanStayValue = suitableFor.length > 0
+      ? suitableFor.map((s) => s.replace(/_/g, ' ')).join(', ')
+      : 'All welcome (standard)';
+
+    // 8. Rules & terms
+    const rulesList: string[] = [];
+    if (property.rules?.smokingRule) rulesList.push(`Smoking: ${property.rules.smokingRule.replace(/_/g, ' ')}`);
+    if (property.rules?.alcoholRule) rulesList.push(`Alcohol: ${property.rules.alcoholRule.replace(/_/g, ' ')}`);
+    if (property.rules?.visitorsRule) rulesList.push(`Visitors: ${property.rules.visitorsRule.replace(/_/g, ' ')}`);
+    const rulesValue = rulesList.length > 0 ? rulesList.join(' • ') : 'Standard house terms';
+
+    // 9. Rent & charges
+    let pricingValue = 'Rent not set';
+    if (property.pricing?.pricingMode === 'on_request') {
+      pricingValue = 'Price on request';
+    } else if (property.pricing?.monthlyRent) {
+      pricingValue = `${formatCurrency(property.pricing.monthlyRent)} / month`;
     }
+
+    // 10. Availability
+    const availabilityValue = getPropertyAvailabilityLabel(property.availability);
+
+    // 11. Title & description
+    const titleValue = property.title || 'Untitled listing';
+    const descriptionValue = property.description || 'No description added yet';
+
+    return [
+      {
+        step: 1,
+        title: 'Property format & type',
+        value: formatValue,
+        isMissing: !property.propertyType
+      },
+      {
+        step: 2,
+        title: 'Rental model & structure',
+        value: structureValue,
+        isMissing: !property.rentalStructure
+      },
+      {
+        step: 3,
+        title: 'Location & address',
+        value: locationValue,
+        isMissing: !loc?.city || !(loc?.addressLine1 || loc?.address)
+      },
+      {
+        step: 4,
+        title: 'Floor plan & capacity',
+        value: capacityValue,
+        isMissing: false
+      },
+      {
+        step: 5,
+        title: 'Amenities & features',
+        value: amenitiesValue,
+        isMissing: amenitiesTotal === 0
+      },
+      {
+        step: 6,
+        title: 'Photos & media',
+        value: photosValue,
+        isMissing: photosCount === 0
+      },
+      {
+        step: 7,
+        title: 'Who can stay',
+        value: whoCanStayValue,
+        isMissing: false
+      },
+      {
+        step: 8,
+        title: 'Rules & stay terms',
+        value: rulesValue,
+        isMissing: false
+      },
+      {
+        step: 9,
+        title: 'Rent & charges',
+        value: pricingValue,
+        isMissing: !property.pricing?.monthlyRent && property.pricing?.pricingMode !== 'on_request'
+      },
+      {
+        step: 10,
+        title: 'Move-in availability',
+        value: availabilityValue,
+        isMissing: !property.availability?.type
+      },
+      {
+        step: 11,
+        title: 'Title & description',
+        value: titleValue,
+        secondaryValue: descriptionValue,
+        isMissing: !property.title || property.title.trim().length < 3 || !property.description || property.description.trim().length < 10
+      }
+    ];
   };
 
-  const renderSectionSummary = (key: CompletenessSectionKey) => {
-    switch (key) {
-      case 'property_type':
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {property.customPropertyType || property.propertyType}
-          </span>
-        );
-      case 'rental_structure':
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {property.rentalStructure.replace('_', ' ')}
-          </span>
-        );
-      case 'basic_details':
-        return (
-          <div className="space-y-0.5">
-            <p className="font-bold text-xs text-[#1D1D1F] truncate">{property.title || 'Untitled Listing'}</p>
-            <p className="text-[11px] text-[#86868B] truncate max-w-md">
-              {property.description || 'No description provided'}
-            </p>
-          </div>
-        );
-      case 'location':
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {[property.location?.locality, property.location?.city, property.location?.pincode]
-              .filter(Boolean)
-              .join(', ') || 'No address specified'}
-          </span>
-        );
-      case 'photos':
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {property.photos?.length || 0} photo{property.photos?.length !== 1 ? 's' : ''} uploaded
-          </span>
-        );
-      case 'amenities':
-        const total = (property.amenities?.length || 0) + (property.customAmenities?.length || 0);
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {total} amenit{total !== 1 ? 'ies' : 'y'} selected
-          </span>
-        );
-      case 'units':
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {property.units?.length || 0} unit{property.units?.length !== 1 ? 's' : ''} configured
-          </span>
-        );
-      case 'pricing':
-        return (
-          <span className="font-bold text-xs text-primary">
-            {property.pricing?.pricingMode === 'on_request'
-              ? 'Price on Request'
-              : property.pricing?.monthlyRent
-              ? `${formatCurrency(property.pricing.monthlyRent)} /month`
-              : 'Rent not configured'}
-          </span>
-        );
-      case 'availability':
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {property.availability?.type === 'immediate'
-              ? 'Available Immediately'
-              : property.availability?.availableFrom
-              ? `Available from ${property.availability.availableFrom}`
-              : 'Move-in date not set'}
-          </span>
-        );
-      case 'rules':
-        const customCount = property.rules?.customRules?.length || 0;
-        const suitability = property.rules?.suitableFor?.length || 0;
-        return (
-          <span className="font-semibold text-xs text-[#1D1D1F]">
-            {suitability > 0 ? `${suitability} profile preferences` : 'Rules configured'}{' '}
-            {customCount > 0 ? `(${customCount} custom rules)` : ''}
-          </span>
-        );
-    }
-  };
+  const sections = getSectionData();
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* ==================================================================== */}
-      {/* HEADER & VIEW MODE SWITCHER */}
-      {/* ==================================================================== */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-[#1D1D1F] tracking-tight">
-                Review Your Property Listing
-              </h2>
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-[#86868B] mt-1.5 leading-relaxed max-w-2xl">
-            Audit listing completeness, view what tenants see, and publish when ready.
+    <div className="w-full max-w-2xl mx-auto py-2 space-y-8 animate-fade-in font-inter text-[#222222]">
+      {/* HEADER WITH SEGMENTED TOGGLE (Minimalist Airbnb style) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2">
+        <div className="space-y-0.5 flex-1 min-w-0">
+          <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
+            {property.status === 'published' ? 'Manage your listing' : 'Review your listing'}
+          </h1>
+          <p className="text-xs sm:text-sm text-[#717171] leading-relaxed max-w-lg">
+            {property.status === 'published'
+              ? 'Update details, pricing, photos, or house rules across any section below.'
+              : "Here's what guests and tenants will see. Make sure everything looks right before publishing."}
           </p>
         </div>
 
-        {/* View Switcher Segmented Control */}
-        <div className="flex items-center p-1 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] self-start sm:self-auto">
+        {/* View Switcher Toggle (Compact size) */}
+        <div className="flex items-center p-0.5 rounded-full bg-[#F7F7F7] border border-[#EBEBEB] self-start sm:self-center shrink-0">
           <button
             type="button"
-            onClick={() => setViewMode('audit')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              viewMode === 'audit'
-                ? 'bg-white text-[#1D1D1F] shadow-apple-sm'
-                : 'text-[#86868B] hover:text-[#1D1D1F]'
+            onClick={() => setViewMode('overview')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
+              viewMode === 'overview'
+                ? 'bg-white text-[#222222] font-semibold shadow-apple-sm'
+                : 'text-[#717171] hover:text-[#222222]'
             }`}
           >
-            <ListChecks className="w-3.5 h-3.5 text-[#1D1D1F]" />
-            <span>Owner Audit</span>
+            <ListChecks className="w-3 h-3" />
+            <span>Overview</span>
           </button>
 
           <button
             type="button"
             onClick={() => setViewMode('preview')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
               viewMode === 'preview'
-                ? 'bg-white text-[#1D1D1F] shadow-apple-sm'
-                : 'text-[#86868B] hover:text-[#1D1D1F]'
+                ? 'bg-white text-[#222222] font-semibold shadow-apple-sm'
+                : 'text-[#717171] hover:text-[#222222]'
             }`}
           >
-            <Eye className="w-3.5 h-3.5 text-[#1D1D1F]" />
-            <span>Tenant Preview</span>
+            <Eye className="w-3 h-3" />
+            <span>Tenant preview</span>
           </button>
         </div>
       </div>
 
-      {/* ==================================================================== */}
-      {/* 1. TENANT PREVIEW VIEW */}
-      {/* ==================================================================== */}
+      {/* 1. TENANT PREVIEW MODE */}
       {viewMode === 'preview' && (
-        <div className="space-y-4 animate-fade-in">
-          <div className="p-3.5 rounded-2xl bg-primary/[0.04] border border-primary/20 flex items-center justify-between text-xs text-[#1D1D1F]">
-            <span className="font-semibold flex items-center gap-2">
-              <Eye className="w-4 h-4 text-primary" />
-              <span>This is how your live listing appears to prospective tenants on ApnaStay.</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setViewMode('audit')}
-              className="font-bold underline hover:text-primary"
-            >
-              Back to Checklist
-            </button>
-          </div>
-
+        <div className="space-y-4">
           <PropertyTenantPreview property={property} />
         </div>
       )}
 
-      {/* ==================================================================== */}
-      {/* 2. OWNER AUDIT & COMPLETENESS CHECKLIST */}
-      {/* ==================================================================== */}
-      {viewMode === 'audit' && (
-        <div className="space-y-6 animate-fade-in">
-          {/* COMPLETENESS PROGRESS BAR & PUBLISH STATUS BANNER */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#F5F5F7] to-white border border-[#EDEDED] shadow-apple-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F]">
-                    {evaluation.score}% Complete
-                  </span>
-                  {evaluation.isPublishable ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Ready to Publish</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-50 text-rose-800 text-xs font-bold border border-rose-200">
-                      <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                      <span>Action Required to Publish</span>
-                    </span>
-                  )}
+      {/* 2. OVERVIEW CHECKLIST MODE (UNBOXED AIRBNB LAYOUT) */}
+      {viewMode === 'overview' && (
+        <div className="space-y-6">
+          {/* HERO SUMMARY */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#F7F7F7] border border-[#EBEBEB] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+            {/* Cover photo thumbnail */}
+            <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-white border border-[#EBEBEB] shrink-0 flex items-center justify-center">
+              {coverPhoto?.url ? (
+                <img
+                  src={coverPhoto.url}
+                  alt={property.title || 'Property cover'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-[#717171] gap-1 text-xs">
+                  <Camera className="w-4 h-4 stroke-[1.5]" />
+                  <span>No photo</span>
                 </div>
-                <p className="text-xs text-[#86868B] mt-1">
-                  {evaluation.isPublishable
-                    ? 'All required publishing requirements are satisfied. Recommended details can still be added to boost tenant inquiries.'
-                    : `${evaluation.missingRequired.length} essential item${evaluation.missingRequired.length > 1 ? 's' : ''} must be completed before publishing.`}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-4 text-xs font-bold">
-                <div className="text-center px-3 py-1.5 rounded-xl bg-white border border-[#EDEDED]">
-                  <span className="text-rose-600 block text-base font-extrabold">
-                    {evaluation.missingRequired.length}
-                  </span>
-                  <span className="text-[#86868B] text-[10px]">Required</span>
-                </div>
-                <div className="text-center px-3 py-1.5 rounded-xl bg-white border border-[#EDEDED]">
-                  <span className="text-amber-600 block text-base font-extrabold">
-                    {evaluation.recommendedImprovements.length}
-                  </span>
-                  <span className="text-[#86868B] text-[10px]">Suggestions</span>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Visual Progress Bar */}
-            <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all duration-500 rounded-full ${
-                  evaluation.score >= 90
-                    ? 'bg-primary'
-                    : evaluation.score >= 60
-                    ? 'bg-[#1D1D1F]'
-                    : 'bg-[#86868B]'
-                }`}
-                style={{ width: `${evaluation.score}%` }}
-              />
+            {/* Info */}
+            <div className="space-y-1 flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap text-xs text-[#717171]">
+                <span className="uppercase tracking-wider font-semibold">
+                  {property.customPropertyType || property.propertyType?.replace(/_/g, ' ') || 'Property'} • {property.rentalStructure?.replace(/_/g, ' ') || 'Entire space'}
+                </span>
+                <span>•</span>
+                <span>
+                  {getPropertyAvailabilityLabel(property.availability)}
+                </span>
+              </div>
+
+              <h2 className="font-outfit text-base sm:text-lg font-semibold text-[#222222] truncate">
+                {property.title || 'Untitled Property'}
+              </h2>
+
+              <p className="text-xs sm:text-sm text-[#717171] truncate">
+                {[property.location?.locality, property.location?.city].filter(Boolean).join(', ') || 'No location set'}
+              </p>
+
+              <div>
+                <span className="font-semibold text-sm text-[#222222]">
+                  {formatPricingDisplay(property.pricing, property.pricing?.monthlyRent || 0)}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* MISSING REQUIRED ITEMS CALLOUT ALERT */}
-          {!evaluation.isPublishable && (
-            <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 space-y-3">
-              <div className="flex items-center gap-2 font-bold text-sm">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>Required Items Missing Before Publishing</span>
+          {/* ACTION REQUIRED NOTICE (UNBOXED, MINIMALIST) */}
+          {!evaluation.isPublishable && evaluation.missingRequired.length > 0 && (
+            <div className="py-2 text-xs sm:text-sm text-[#222222] space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-[#222222]">
+                <AlertCircle className="w-4 h-4 text-[#717171] shrink-0" />
+                <span>Complete the following items before publishing:</span>
               </div>
-              <p className="text-xs text-rose-800 leading-relaxed">
-                You can still save this listing as an in-progress draft at any time. However, to publish and make it visible to prospective tenants, please complete the following:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                {evaluation.missingRequired.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => onEditSection(item.stepNumber)}
-                    className="p-3 rounded-xl bg-white border border-rose-200 hover:border-rose-400 hover:shadow-sm cursor-pointer transition-all flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div>
-                      <span className="font-bold text-rose-900 block">{item.label}</span>
-                      <span className="text-[11px] text-rose-700 block mt-0.5">{item.message}</span>
-                    </div>
-                    <span className="px-2 py-1 rounded-lg bg-rose-100 text-rose-800 font-extrabold text-[10px] shrink-0">
-                      Step {item.stepNumber} →
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* RECOMMENDED IMPROVEMENTS (IF ANY) */}
-          {evaluation.recommendedImprovements.length > 0 && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-amber-900">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>Recommended Improvements ({evaluation.recommendedImprovements.length})</span>
-                </div>
-                <span className="text-[11px] font-semibold text-amber-700">Optional for publishing</span>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {evaluation.recommendedImprovements.slice(0, 4).map((rec) => (
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {evaluation.missingRequired.map((req) => (
                   <button
-                    key={rec.id}
+                    key={req.id}
                     type="button"
-                    onClick={() => onEditSection(rec.stepNumber)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-amber-200 hover:border-amber-400 text-xs font-medium text-amber-950 transition-all text-left"
+                    onClick={() => onEditSection(req.stepNumber)}
+                    className="px-3 py-1 rounded-full bg-[#F7F7F7] border border-[#EBEBEB] text-xs text-[#222222] font-medium hover:border-[#717171] transition-colors cursor-pointer"
                   >
-                    <span>{rec.label}</span>
-                    <span className="text-[10px] font-bold text-amber-600 underline">Step {rec.stepNumber}</span>
+                    {req.label} &rarr;
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* ==================================================================== */}
-          {/* SECTION-BY-SECTION AUDIT CARDS (10 SECTIONS) */}
-          {/* ==================================================================== */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-[#86868B] uppercase tracking-wider">
-              Listing Sections Audit
-            </h3>
-
-            <div className="grid grid-cols-1 gap-3">
-              {(Object.keys(evaluation.sections) as CompletenessSectionKey[]).map((key) => {
-                const sec = evaluation.sections[key];
-                return (
-                  <div
-                    key={key}
-                    className="p-4 sm:p-5 rounded-2xl bg-white border border-[#EDEDED] hover:border-gray-300 transition-all shadow-apple-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                  >
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2.5 rounded-xl bg-[#F5F5F7] border border-[#EDEDED] shrink-0 mt-0.5">
-                        {getSectionIcon(key)}
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-[#F5F5F7] text-[#86868B]">
-                            Step {sec.stepNumber}
-                          </span>
-                          <h4 className="text-xs sm:text-sm font-bold text-[#1D1D1F]">
-                            {sec.title}
-                          </h4>
-                          {sec.isComplete ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                              <Check className="w-3 h-3 text-emerald-600" />
-                              <span>Completed</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100">
-                              <AlertCircle className="w-3 h-3 text-rose-600" />
-                              <span>Required info missing</span>
-                            </span>
-                          )}
-                        </div>
-
-                        <div>{renderSectionSummary(key)}</div>
-
-                        {sec.missingRecommendedCount > 0 && (
-                          <div className="text-[11px] text-amber-700 font-medium">
-                            💡 {sec.missingRecommendedCount} suggestion available
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Section Edit Action */}
-                    <button
-                      type="button"
-                      onClick={() => onEditSection(sec.stepNumber)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-xs font-bold text-[#1D1D1F] transition-all self-end sm:self-center shrink-0"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-[#86868B]" />
-                      <span>Edit</span>
-                    </button>
+          {/* SECTIONS LIST (CLEAN, NO NUMBERS, NO DIVIDER BORDERS) */}
+          <div className="space-y-5 pt-1">
+            {sections.map((sec) => (
+              <div
+                key={sec.step}
+                className="flex items-start justify-between gap-4 transition-colors"
+              >
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-outfit text-sm sm:text-base font-semibold text-[#222222]">
+                      {sec.title}
+                    </h3>
+                    {sec.isMissing && (
+                      <span className="text-[11px] font-medium text-[#717171] bg-[#F7F7F7] px-2 py-0.5 rounded-full border border-[#EBEBEB]">
+                        Required
+                      </span>
+                    )}
                   </div>
-                );
-              })}
-            </div>
+
+                  <p className="text-xs sm:text-sm text-[#717171] truncate max-w-xl">
+                    {sec.value}
+                  </p>
+
+                  {sec.secondaryValue && (
+                    <p className="text-xs text-[#717171]/80 truncate max-w-xl line-clamp-1">
+                      {sec.secondaryValue}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onEditSection(sec.step)}
+                  className="text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black shrink-0 pt-0.5 cursor-pointer"
+                >
+                  Edit
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
-
-      {/* ==================================================================== */}
-      {/* BOTTOM NAVIGATION & ACTIONS */}
-      {/* ==================================================================== */}
-      <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#EDEDED]">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isSaving || isPublishing}
-          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          {/* Save as Draft / Save Changes */}
-          <button
-            type="button"
-            onClick={onSaveDraft}
-            disabled={isSaving || isPublishing}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-[#EDEDED] hover:bg-[#F5F5F7] text-[#1D1D1F] text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-all"
-          >
-            {isSaving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-[#1D1D1F] border-t-transparent rounded-full animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <span>
-                {property.status === 'published'
-                  ? 'Save & Exit'
-                  : 'Save Incomplete Draft'}
-              </span>
-            )}
-          </button>
-
-          {/* Publish / Update Listing Button */}
-          <button
-            type="button"
-            onClick={onPublish}
-            disabled={!evaluation.isPublishable || isPublishing || isSaving}
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-extrabold inline-flex items-center justify-center gap-2 transition-all shadow-apple-sm ${
-              evaluation.isPublishable
-                ? 'bg-primary hover:bg-primary-hover text-white'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-            }`}
-          >
-            {isPublishing ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>
-                  {property.status === 'published'
-                    ? 'Updating Live Listing...'
-                    : 'Publishing Listing...'}
-                </span>
-              </>
-            ) : (
-              <>
-                <Globe className="w-4 h-4" />
-                <span>
-                  {property.status === 'published'
-                    ? 'Save & Update Live Listing'
-                    : 'Publish Listing Live'}
-                </span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

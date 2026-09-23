@@ -144,6 +144,14 @@ export default function OwnerPropertiesView() {
 
   useEffect(() => {
     fetchProperties();
+    if (typeof window !== 'undefined') {
+      const flash = window.sessionStorage?.getItem('apnastay_flash_toast');
+      if (flash) {
+        setSuccessToast(flash);
+        window.sessionStorage?.removeItem('apnastay_flash_toast');
+        setTimeout(() => setSuccessToast(null), 5000);
+      }
+    }
   }, []);
 
   // Reset pagination when filter criteria change

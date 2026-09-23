@@ -5,11 +5,35 @@ import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 export interface AnimatedIsometricHouseProps {
   className?: string;
+  phase?: 1 | 2 | 3;
+  imageSrc?: string;
+  imageAlt?: string;
 }
+
+const PHASE_IMAGES: Record<1 | 2 | 3, { src: string; alt: string }> = {
+  1: {
+    src: '/images/isometric-house.png',
+    alt: 'Isometric 3D Property Structure & Architecture'
+  },
+  2: {
+    src: '/images/isometric-step2.png',
+    alt: 'Isometric 3D Living Space & Amenities'
+  },
+  3: {
+    src: '/images/isometric-step3.png',
+    alt: 'Isometric 3D Property Management & Final Handover'
+  }
+};
 
 export default function AnimatedIsometricHouse({
   className = '',
+  phase = 1,
+  imageSrc,
+  imageAlt
 }: AnimatedIsometricHouseProps) {
+  const activeImage = imageSrc
+    ? { src: imageSrc, alt: imageAlt || 'Isometric 3D View' }
+    : PHASE_IMAGES[phase] || PHASE_IMAGES[1];
   // Interactive 3D Parallax Tilt Effect on Mouse Move
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
@@ -87,8 +111,9 @@ export default function AnimatedIsometricHouse({
             className="relative w-full h-full max-w-[740px] flex items-center justify-center"
           >
             <img
-              src="/images/isometric-house.png"
-              alt="Isometric 3D Duplex Model"
+              key={activeImage.src}
+              src={activeImage.src}
+              alt={activeImage.alt}
               className="w-full h-full object-contain drop-shadow-[0_24px_45px_rgba(0,0,0,0.12)] transition-transform duration-300"
               draggable={false}
             />

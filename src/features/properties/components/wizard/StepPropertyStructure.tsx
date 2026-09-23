@@ -3,18 +3,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   Home,
-  Layers,
   Plus,
   Minus,
   Trash2,
   Edit2,
   Check,
-  CheckCircle2,
-  Sparkles,
-  ArrowRight,
-  Info,
-  MapPin,
-  Users
+  Info
 } from 'lucide-react';
 import type { PropertyType, RentalStructure, PropertyUnit } from '../../types';
 import { getPropertyTemplate } from '../../templates';
@@ -161,8 +155,7 @@ export default function StepPropertyStructure({
   const [formType, setFormType] = useState<string>(defaultOption.value);
   const [formCapacity, setFormCapacity] = useState<number>(defaultOption.defaultCapacity);
 
-  // Milestone transition state
-  const [isCompletedMilestone, setIsCompletedMilestone] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'rules'>('details');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   // Sync capacity when user switches accommodation type
@@ -304,135 +297,13 @@ export default function StepPropertyStructure({
 
     try {
       await onSave(validation.sanitizedUnits || unitsToSave, propertyStructure);
-      setIsCompletedMilestone(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (onContinueToStep2) {
+        onContinueToStep2();
+      }
     } catch (err: any) {
       setValidationError(err.message || 'Failed to save accommodation structure.');
     }
   };
-
-  // --------------------------------------------------------------------------
-  // MILESTONE COMPLETION VIEW (Celebration screen for Parent Step 1)
-  // --------------------------------------------------------------------------
-  if (isCompletedMilestone) {
-    const finalUnits = resolveUnitsToSave();
-    const totalCapacity = finalUnits.reduce((acc, u) => acc + (u.capacity || 0), 0);
-
-    return (
-      <div className="w-full max-w-2xl mx-auto py-6 sm:py-12 px-4 animate-fade-in text-center">
-        {/* CELEBRATION ICON */}
-        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 rounded-3xl bg-[#222222] text-white flex items-center justify-center shadow-apple-md">
-          <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-400 animate-pulse" />
-        </div>
-
-        {/* STEP 1 BADGE */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-800 text-xs font-semibold mb-4">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Parent Step 1 Complete</span>
-        </div>
-
-        {/* CELEBRATORY TITLE */}
-        <h1 className="text-2xl sm:text-4xl font-semibold text-[#1D1D1F] tracking-tight mb-3">
-          Great! We have the basics of your property.
-        </h1>
-
-        <p className="text-sm sm:text-base text-[#717171] max-w-lg mx-auto leading-relaxed mb-8 sm:mb-10">
-          You’ve set up the foundation for your listing on ApnaStay. Next, you’ll be able to add photographs, amenities, and rental policies to make your accommodation shine.
-        </p>
-
-        {/* SUMMARY CARD OF STEP 1 */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#E5E5EA] p-5 sm:p-7 text-left shadow-apple-sm space-y-4 mb-8">
-          <div className="text-xs uppercase tracking-wider font-semibold text-[#86868B] border-b border-[#F2F2F7] pb-3">
-            Step 1 Summary
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] flex items-center justify-center shrink-0 text-[#1D1D1F]">
-                <Home className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs text-[#86868B]">Property Type</div>
-                <div className="font-semibold text-[#1D1D1F] capitalize">
-                  {customPropertyType || template.label}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] flex items-center justify-center shrink-0 text-[#1D1D1F]">
-                <Layers className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs text-[#86868B]">Rental Model</div>
-                <div className="font-semibold text-[#1D1D1F]">
-                  {rentalStructure.replace(/_/g, ' ')}
-                </div>
-              </div>
-            </div>
-
-            {locationSummary && (
-              <div className="flex items-start gap-3 sm:col-span-2">
-                <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] flex items-center justify-center shrink-0 text-[#1D1D1F]">
-                  <MapPin className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs text-[#86868B]">Location</div>
-                  <div className="font-semibold text-[#1D1D1F] line-clamp-1">
-                    {locationSummary}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-start gap-3 sm:col-span-2">
-              <div className="w-9 h-9 rounded-xl bg-[#F5F5F7] flex items-center justify-center shrink-0 text-[#1D1D1F]">
-                <Users className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs text-[#86868B]">Accommodation Structure</div>
-                <div className="font-semibold text-[#1D1D1F]">
-                  {finalUnits.length === 1 ? (
-                    <span>
-                      1 Unit ({finalUnits[0].unitType}) &bull; Up to {finalUnits[0].capacity} guests/tenants
-                    </span>
-                  ) : (
-                    <span>
-                      {finalUnits.length} {terminology.plural} &bull; Total capacity for {totalCapacity} tenants
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ACTIONS */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-          <button
-            type="button"
-            onClick={() => setIsCompletedMilestone(false)}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[#E5E5EA] hover:border-[#D1D1D6] text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98]"
-          >
-            Review Step 1 Structure
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (onContinueToStep2) {
-                onContinueToStep2();
-              }
-            }}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#222222] hover:bg-black text-white text-sm font-semibold transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-apple-md"
-          >
-            <span>Continue to Step 2</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // --------------------------------------------------------------------------
   // MAIN SUBSTEP 5 FORM VIEW

@@ -141,6 +141,7 @@ export interface MaintenanceChargesConfig {
 export interface ElectricityChargesConfig {
   type: ElectricityChargesType;
   amount?: number;
+  ratePerUnit?: number;
 }
 
 export interface GenericRentablePricing {
@@ -271,20 +272,34 @@ export interface PropertyRules {
   maxOccupants?: number;
   suitableFor?: ResidentSuitability[];
   genderPreference?: 'any' | 'male_only' | 'female_only';
+  ageRequirementType?: 'none' | 'min_age' | 'max_age' | 'range';
+  minAge?: number;
+  maxAge?: number;
 
   // Guest Policy
   guestPolicy?: PolicyStatus;
   guestRestrictions?: string;
+  visitorsRule?: 'allowed' | 'not_allowed' | 'restricted';
 
   // Pet Policy
   petPolicy?: PolicyStatus;
   petRestrictions?: string;
+  petsRule?: 'allowed' | 'not_allowed' | 'with_approval';
 
   // Smoking & Alcohol
   smokingPolicy?: PolicyStatus;
   smokingRestrictions?: string;
+  smokingRule?: 'allowed' | 'not_allowed' | 'designated_area';
   alcoholPolicy?: PolicyStatus;
   alcoholRestrictions?: string;
+  alcoholRule?: 'allowed' | 'not_allowed' | 'designated_area';
+
+  // Quiet Hours & Parties
+  quietHoursRule?: 'yes' | 'no';
+  partiesRule?: 'allowed' | 'not_allowed' | 'with_permission';
+
+  // Cooking
+  cookingRule?: 'allowed' | 'not_allowed' | 'restricted';
 
   // Timing & Access
   timingType?: TimingRestrictionType;
@@ -304,6 +319,14 @@ export interface PropertyRules {
   requiresPoliceVerification?: boolean;
   requiresEmploymentOrCollegeProof?: boolean;
   verificationNotes?: string;
+
+  // Stay Terms
+  minimumStayRule?: '1' | '3' | '6+';
+  noticePeriodRule?: '7' | '15' | '30' | '60+';
+  agreementRule?: 'yes' | 'no';
+  tenantVerificationRule?: 'yes' | 'no';
+  moveInRequirements?: string[];
+  otherTerms?: string;
 
   // Custom Rules & Notes
   customRules?: string[];
@@ -376,6 +399,12 @@ export interface Property {
   photos?: PropertyPhoto[];
   completenessScore: number; // 0 - 100
   units: PropertyUnit[];
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  hasLock?: boolean;
+  guests?: number;
+  videoUrl?: string;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -429,8 +458,14 @@ export interface UpdatePropertyPayload {
   amenities?: string[];
   customAmenities?: string[];
   units?: PropertyUnit[];
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  hasLock?: boolean;
+  guests?: number;
   rules?: Partial<PropertyRules>;
   photos?: PropertyPhoto[];
+  videoUrl?: string;
   status?: PropertyStatus;
 }
 
