@@ -145,11 +145,9 @@ export function sanitizePropertyRules(rules: Partial<PropertyRules>): PropertyRu
 
   // Synchronize Stay Terms
   if (clean.minimumStayRule) {
-    clean.lockInPeriodMonths = clean.minimumStayRule === '12+' ? 12 : parseInt(clean.minimumStayRule, 10);
+    clean.lockInPeriodMonths = clean.minimumStayRule === '6+' ? 6 : parseInt(clean.minimumStayRule, 10);
   } else if (clean.lockInPeriodMonths !== undefined) {
-    if (clean.lockInPeriodMonths >= 12) clean.minimumStayRule = '12+';
-    else if (clean.lockInPeriodMonths >= 11) clean.minimumStayRule = '11';
-    else if (clean.lockInPeriodMonths >= 6) clean.minimumStayRule = '6';
+    if (clean.lockInPeriodMonths >= 6) clean.minimumStayRule = '6+';
     else if (clean.lockInPeriodMonths >= 3) clean.minimumStayRule = '3';
     else clean.minimumStayRule = '1';
   }

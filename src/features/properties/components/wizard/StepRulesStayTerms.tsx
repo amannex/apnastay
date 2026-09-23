@@ -69,16 +69,16 @@ export default function StepRulesStayTerms({
   });
 
   // Stay Terms States
-  const [minimumStayRule, setMinimumStayRule] = useState<'1' | '3' | '6' | '11' | '12+'>(() => {
-    if (initialRules?.minimumStayRule) return initialRules.minimumStayRule;
+  const [minimumStayRule, setMinimumStayRule] = useState<'1' | '3' | '6+'>(() => {
+    if (initialRules?.minimumStayRule && ['1', '3', '6+'].includes(initialRules.minimumStayRule)) {
+      return initialRules.minimumStayRule as '1' | '3' | '6+';
+    }
     if (initialRules?.lockInPeriodMonths) {
-      if (initialRules.lockInPeriodMonths >= 12) return '12+';
-      if (initialRules.lockInPeriodMonths >= 11) return '11';
-      if (initialRules.lockInPeriodMonths >= 6) return '6';
+      if (initialRules.lockInPeriodMonths >= 6) return '6+';
       if (initialRules.lockInPeriodMonths >= 3) return '3';
       return '1';
     }
-    return '11';
+    return '6+';
   });
 
   const [noticePeriodRule, setNoticePeriodRule] = useState<'7' | '15' | '30' | '60+'>(() => {
@@ -301,9 +301,7 @@ export default function StepRulesStayTerms({
               {[
                 { id: '1', label: '1 month' },
                 { id: '3', label: '3 months' },
-                { id: '6', label: '6 months' },
-                { id: '11', label: '11 months' },
-                { id: '12+', label: '12+ months' }
+                { id: '6+', label: '6+ months' }
               ].map((option) => {
                 const isSelected = minimumStayRule === option.id;
                 return (

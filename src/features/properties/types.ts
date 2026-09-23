@@ -320,7 +320,7 @@ export interface PropertyRules {
   verificationNotes?: string;
 
   // Stay Terms
-  minimumStayRule?: '1' | '3' | '6' | '11' | '12+';
+  minimumStayRule?: '1' | '3' | '6+';
   noticePeriodRule?: '7' | '15' | '30' | '60+';
   agreementRule?: 'yes' | 'no';
   tenantVerificationRule?: 'yes' | 'no';
