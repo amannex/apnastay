@@ -922,7 +922,6 @@ export default function AddPropertyWizard({
 
   const handleSaveAvailability = async (data: {
     availability: PropertyAvailability;
-    units?: PropertyUnit[];
   }) => {
     if (!createdProperty || isSubmitting) return;
 
@@ -930,11 +929,6 @@ export default function AddPropertyWizard({
     clearError();
 
     try {
-      if (data.units && data.units.length > 0) {
-        setUnits(data.units);
-        await updatePropertyUnits(createdProperty.id, data.units);
-      }
-
       const res = await updateProperty(createdProperty.id, {
         availability: data.availability
       });
