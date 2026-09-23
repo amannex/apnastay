@@ -1501,7 +1501,7 @@ export default function AddPropertyWizard({
       {/* ==================================================================== */}
       {/* 2. MAIN CONTENT WRAPPER                                              */}
       {/* ==================================================================== */}
-      <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-6 sm:py-10 flex flex-col justify-center">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-5 sm:px-8 py-6 sm:py-10 flex flex-col">
 
       {/* DRAFT LOADING INDICATOR */}
       {isLoadingDraft && (
