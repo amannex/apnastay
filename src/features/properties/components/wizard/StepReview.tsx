@@ -245,10 +245,10 @@ export default function StepReview({
       {/* 2. OVERVIEW CHECKLIST MODE (UNBOXED AIRBNB LAYOUT) */}
       {viewMode === 'overview' && (
         <div className="space-y-6">
-          {/* HERO SUMMARY (UNBOXED FLOW) */}
-          <div className="pb-6 border-b border-[#EBEBEB] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+          {/* HERO SUMMARY */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#F7F7F7] border border-[#EBEBEB] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
             {/* Cover photo thumbnail */}
-            <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-[#F7F7F7] border border-[#EBEBEB] shrink-0 flex items-center justify-center">
+            <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-white border border-[#EBEBEB] shrink-0 flex items-center justify-center">
               {coverPhoto?.url ? (
                 <img
                   src={coverPhoto.url}
@@ -289,14 +289,6 @@ export default function StepReview({
                 </span>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => onEditSection(11)}
-              className="text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black self-end sm:self-center shrink-0 cursor-pointer"
-            >
-              Edit title
-            </button>
           </div>
 
           {/* ACTION REQUIRED NOTICE (UNBOXED, MINIMALIST) */}
