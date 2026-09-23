@@ -5,12 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Building2,
-  CheckCircle2,
   Check,
   ArrowRight,
   ArrowLeft,
   AlertCircle,
-  Sparkles,
   ShieldCheck,
   Clock,
   Layers,
@@ -21,8 +19,6 @@ import {
   Edit3,
   Compass,
   Navigation,
-  Eye,
-  EyeOff,
   Camera,
   Star,
   Image as ImageIcon,
@@ -63,21 +59,6 @@ import {
   updatePropertyRules,
   publishProperty
 } from '../../api';
-import { AMENITY_REGISTRY } from '../../amenities';
-import { getUnitTerminology, calculateUnitAvailability } from '../../units';
-import {
-  formatCurrency,
-  calculateEffectiveDeposit,
-  getPropertyAvailabilityLabel,
-  formatPricingDisplay
-} from '../../pricing';
-import {
-  getPolicyBadgeInfo,
-  formatFoodPolicy,
-  formatKitchenPolicy,
-  formatTimingPolicy,
-  formatResidentSuitability
-} from '../../rules';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
@@ -162,7 +143,6 @@ export default function AddPropertyWizard({
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);
-  const [isPublishedSuccess, setIsPublishedSuccess] = useState<boolean>(false);
   const [errorState, setErrorState] = useState<NormalizedPropertyError | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const errorBannerRef = useRef<HTMLDivElement>(null);
@@ -1032,11 +1012,17 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setCreatedProperty(res.data);
-        setIsPublishedSuccess(true);
+        onSaved?.(res.data);
         if (typeof window !== 'undefined') {
           window.sessionStorage?.removeItem('apnastay_active_draft_id');
+          window.sessionStorage?.setItem(
+            'apnastay_flash_toast',
+            isEditMode
+              ? `"${res.data.title || 'Listing'}" changes saved successfully.`
+              : `"${res.data.title || 'Listing'}" has been published successfully!`
+          );
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        router.push('/owner/dashboard/properties');
       } else {
         setAppError(res, 'Failed to publish listing. Please check required fields.');
       }
@@ -1071,57 +1057,6 @@ export default function AddPropertyWizard({
 
   const handleSaveIncompleteDraft = async () => {
     await handleSaveAndExit();
-  };
-
-  // Reset wizard to create another property
-  const handleReset = () => {
-    if (typeof window !== 'undefined') {
-      window.sessionStorage?.removeItem('apnastay_active_draft_id');
-      window.sessionStorage?.removeItem('apnastay_wizard_substep_draft');
-      window.sessionStorage?.removeItem('apnastay_wizard_substep1_draft');
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-    setCurrentStep(1);
-    setSelectedType(null);
-    setCustomPropertyType('');
-    setSelectedStructure(null);
-    setBasicDetails({});
-    setLocationData({});
-    setPhotos([]);
-    setVideoUrl('');
-    setAmenities([]);
-    setCustomAmenities([]);
-    setUnits([]);
-    setRules(null);
-    setCreatedProperty(null);
-    setIsPublishedSuccess(false);
-    clearError();
-  };
-
-  const getFormatLabel = () => {
-    if (selectedType === 'other' && customPropertyType) {
-      return customPropertyType;
-    }
-    return selectedType ? getPropertyTemplate(selectedType).label : '';
-  };
-
-  const getRentalLabel = () => {
-    switch (selectedStructure) {
-      case 'entire_property':
-        return 'Entire Property';
-      case 'individual_unit':
-        return 'Individual Unit (Flat)';
-      case 'individual_room':
-        return 'Individual Room';
-      case 'shared_room':
-        return 'Shared Room';
-      case 'individual_bed':
-        return 'Individual Bed / Bed Space';
-      case 'multiple_units':
-        return 'Multiple Rooms / Units';
-      default:
-        return '';
-    }
   };
 
   const handleGlobalBack = () => {
@@ -1845,107 +1780,17 @@ export default function AddPropertyWizard({
 
       {/* STEP 12: LISTING REVIEW & PUBLISHING (PARENT STEP 3 SUBSTEP 4) */}
       {currentStep === 12 && createdProperty && !isLoadingDraft && (
-        <>
-          {isPublishedSuccess ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
-              <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-
-              <div className="max-w-md mx-auto">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{isEditMode ? 'Listing Updated!' : 'Listing is Live!'}</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1D1D1F] tracking-tight">
-                  {isEditMode
-                    ? 'Listing Updated Successfully'
-                    : 'Congratulations! Your Property is Published'}
-                </h2>
-                <p className="text-xs sm:text-sm text-[#86868B] mt-2 leading-relaxed">
-                  &ldquo;{createdProperty.title}&rdquo; changes have been saved live on ApnaStay.
-                </p>
-              </div>
-
-              {/* PUBLISHED SUMMARY CARD */}
-              <div className="max-w-md mx-auto p-5 rounded-2xl bg-[#F5F5F7] border border-[#EDEDED] text-left space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold">Status</span>
-                  <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-100/60 px-2.5 py-0.5 rounded-full text-[11px]">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="capitalize">{createdProperty.status}</span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold">Property Format</span>
-                  <span className="font-bold text-[#1D1D1F]">{getFormatLabel()}</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold">Rental Offering</span>
-                  <span className="font-bold text-[#1D1D1F]">{getRentalLabel()}</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold">Monthly Rent</span>
-                  <span className="font-extrabold text-emerald-600">
-                    {formatPricingDisplay(createdProperty.pricing, createdProperty.pricing?.monthlyRent || 0)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#86868B] font-semibold">Location</span>
-                  <span className="font-semibold text-[#1D1D1F]">
-                    {[createdProperty.location?.locality, createdProperty.location?.city].filter(Boolean).join(', ') || '—'}
-                  </span>
-                </div>
-              </div>
-
-              {/* ACTION BUTTONS */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => router.push(`/properties/${createdProperty.id}`)}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-black hover:bg-neutral-800 text-white text-xs sm:text-sm font-semibold transition-all shadow-apple-sm flex items-center justify-center gap-2"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>View Public Listing</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => router.push('/dashboard/owner/properties')}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-neutral-50 text-[#1D1D1F] border border-[#EDEDED] text-xs sm:text-sm font-semibold transition-all shadow-apple-sm"
-                >
-                  Go to Properties Dashboard
-                </button>
-
-                {!isEditMode && (
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="w-full sm:w-auto px-5 py-3.5 rounded-2xl text-[#86868B] hover:text-[#1D1D1F] text-xs sm:text-sm font-semibold transition-all"
-                  >
-                    List Another Property
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="w-full">
-              <StepReview
-                property={createdProperty}
-                onBack={() => handleJumpToStep(11)}
-                onEditSection={(step) => handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12)}
-                onSaveDraft={handleSaveIncompleteDraft}
-                onPublish={handlePublishListing}
-                isSaving={isSubmitting}
-                isPublishing={isPublishing}
-              />
-            </div>
-          )}
-        </>
+        <div className="w-full">
+          <StepReview
+            property={createdProperty}
+            onBack={() => handleJumpToStep(11)}
+            onEditSection={(step) => handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12)}
+            onSaveDraft={handleSaveIncompleteDraft}
+            onPublish={handlePublishListing}
+            isSaving={isSubmitting}
+            isPublishing={isPublishing}
+          />
+        </div>
       )}
       </main>
 
