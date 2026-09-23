@@ -152,16 +152,16 @@ export default function PropertyIntroStep({
         <div className="w-full grid grid-cols-3 gap-1 h-[4px] sm:h-[5px] bg-white">
           {/* Portion 1: Step 1 (Completed for phase >= 1) */}
           <div className="h-full bg-[#222222] rounded-full transition-all duration-500" />
-          {/* Portion 2: Step 2 (Completed if phase >= 3) */}
+          {/* Portion 2: Step 2 (Fully black for phase >= 2) */}
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              phase >= 2 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
+            }`}
+          />
+          {/* Portion 3: Step 3 (Fully black for phase >= 3) */}
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               phase >= 3 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
-            }`}
-          />
-          {/* Portion 3: Step 3 (Grey when starting phase 3, solid black if > 3) */}
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              phase > 3 ? 'bg-[#222222]' : 'bg-[#E5E5EA]'
             }`}
           />
         </div>
