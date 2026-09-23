@@ -11,9 +11,7 @@ import {
   Clock,
   Bell,
   FileText,
-  ShieldCheck,
-  ClipboardCheck,
-  ScrollText
+  ShieldCheck
 } from 'lucide-react';
 import type { PropertyRules } from '../../types';
 import { sanitizePropertyRules } from '../../rules';
@@ -105,20 +103,6 @@ export default function StepRulesStayTerms({
     return 'yes';
   });
 
-  const [moveInRequirements, setMoveInRequirements] = useState<string[]>(() => {
-    if (initialRules?.moveInRequirements) return initialRules.moveInRequirements;
-    const reqs: string[] = [];
-    if (initialRules?.requiresIdProof !== false) reqs.push('government_id');
-    if (initialRules?.requiresPoliceVerification) reqs.push('police_verification');
-    if (initialRules?.requiresEmploymentOrCollegeProof) reqs.push('employment_proof');
-    if (reqs.length === 0) return ['government_id', 'security_deposit'];
-    return reqs;
-  });
-
-  const [otherTerms, setOtherTerms] = useState<string>(() => {
-    return initialRules?.otherTerms || initialRules?.additionalNotes || '';
-  });
-
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -134,9 +118,7 @@ export default function StepRulesStayTerms({
       minimumStayRule,
       noticePeriodRule,
       agreementRule,
-      tenantVerificationRule,
-      moveInRequirements,
-      otherTerms: otherTerms.trim() || undefined
+      tenantVerificationRule
     });
 
     onSave(payload);
@@ -427,75 +409,6 @@ export default function StepRulesStayTerms({
                 );
               })}
             </div>
-          </div>
-
-          {/* Move-in requirements */}
-          <div className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 sm:pt-1">
-              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
-                <ClipboardCheck className="w-4 h-4 stroke-[1.75]" />
-              </div>
-              <div>
-                <span className="font-inter text-sm sm:text-base font-medium text-[#222222] block">
-                  Move-in requirements
-                </span>
-                <span className="font-inter text-xs text-[#717171]">
-                  Select requirements
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-start sm:justify-end max-w-md">
-              {[
-                { id: 'government_id', label: 'Government ID' },
-                { id: 'police_verification', label: 'Police verification' },
-                { id: 'employment_proof', label: 'Job / Student ID' },
-                { id: 'security_deposit', label: 'Security deposit' },
-                { id: 'rent_agreement', label: 'Rent agreement' }
-              ].map((option) => {
-                const isSelected = moveInRequirements.includes(option.id);
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => {
-                      setMoveInRequirements((prev) =>
-                        prev.includes(option.id)
-                          ? prev.filter((item) => item !== option.id)
-                          : [...prev, option.id]
-                      );
-                    }}
-                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
-                      isSelected
-                        ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
-                        : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Other terms */}
-          <div className="py-2 sm:py-2.5 flex flex-col gap-2.5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
-                <ScrollText className="w-4 h-4 stroke-[1.75]" />
-              </div>
-              <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
-                Other terms <span className="text-xs font-normal text-[#717171]">(Optional)</span>
-              </span>
-            </div>
-
-            <textarea
-              rows={2}
-              value={otherTerms}
-              onChange={(e) => setOtherTerms(e.target.value)}
-              placeholder="e.g., Gate closes at 11 PM, no shoes inside premises, quiet hours after 10 PM..."
-              className="w-full px-4 py-2.5 rounded-xl border border-[#E0E0E0] focus:border-[#717171] focus:outline-none text-xs sm:text-sm text-[#222222] placeholder:text-[#9E9E9E] transition-colors resize-none"
-            />
           </div>
         </div>
       </div>
