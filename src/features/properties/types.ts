@@ -278,16 +278,27 @@ export interface PropertyRules {
   // Guest Policy
   guestPolicy?: PolicyStatus;
   guestRestrictions?: string;
+  visitorsRule?: 'allowed' | 'not_allowed' | 'restricted';
 
   // Pet Policy
   petPolicy?: PolicyStatus;
   petRestrictions?: string;
+  petsRule?: 'allowed' | 'not_allowed' | 'with_approval';
 
   // Smoking & Alcohol
   smokingPolicy?: PolicyStatus;
   smokingRestrictions?: string;
+  smokingRule?: 'allowed' | 'not_allowed' | 'designated_area';
   alcoholPolicy?: PolicyStatus;
   alcoholRestrictions?: string;
+  alcoholRule?: 'allowed' | 'not_allowed' | 'designated_area';
+
+  // Quiet Hours & Parties
+  quietHoursRule?: 'yes' | 'no';
+  partiesRule?: 'allowed' | 'not_allowed' | 'with_permission';
+
+  // Cooking
+  cookingRule?: 'allowed' | 'not_allowed' | 'restricted';
 
   // Timing & Access
   timingType?: TimingRestrictionType;

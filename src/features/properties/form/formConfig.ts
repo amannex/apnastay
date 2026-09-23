@@ -85,12 +85,21 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
     key: 'who_can_stay',
     title: 'Who Can Stay Here',
     shortLabel: 'Residents',
-    description: 'Set who is welcome to stay and specify your key house rules.',
+    description: 'Set who is welcome to stay and specify your key resident preferences and age requirements.',
     isApplicable: () => true,
     isCompleted: (p) => Boolean(p.rules?.suitableFor && p.rules.suitableFor.length > 0)
   },
   {
     stepNumber: 8,
+    key: 'rules_stay_terms',
+    title: 'Rules & Stay Terms',
+    shortLabel: 'Rules',
+    description: 'Set house rules on smoking, alcohol, visitors, pets, quiet hours, parties, and cooking.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.rules?.smokingRule || p.rules?.alcoholRule || p.rules?.visitorsRule)
+  },
+  {
+    stepNumber: 9,
     key: 'pricing',
     title: 'Pricing & Move-in Availability',
     shortLabel: 'Pricing',
@@ -101,19 +110,6 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
       const hasAvail = Boolean(p.availability?.type);
       return hasRent && hasAvail;
     }
-  },
-  {
-    stepNumber: 9,
-    key: 'rules',
-    title: 'House Rules & Preferences',
-    shortLabel: 'Rules',
-    description: 'Set resident suitability, guest policies, pet rules, and entry timing preferences.',
-    isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.rules && (
-      (p.rules.suitableFor && p.rules.suitableFor.length > 0) ||
-      (p.rules.guestPolicy && p.rules.guestPolicy !== 'not_specified') ||
-      p.rules.customRules && p.rules.customRules.length > 0
-    ))
   },
   {
     stepNumber: 10,

@@ -85,6 +85,7 @@ import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
 import StepAmenities from './StepAmenities';
 import StepWhoCanStay from './StepWhoCanStay';
+import StepRulesStayTerms from './StepRulesStayTerms';
 import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRules from './StepRules';
@@ -742,6 +743,41 @@ export default function AddPropertyWizard({
         setRules(res.data);
         const updated = { ...createdProperty, rules: res.data };
         syncDraftState(updated, 8);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setAppError(res, 'Failed to save resident preferences.');
+      }
+    } catch (err: any) {
+      setAppError(err, 'Network error while saving resident preferences.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Step 8: Rules & Stay Terms Handlers (Parent Step 2 Substep 4)
+  // --------------------------------------------------------------------------
+  const handleBackFromRulesStayTerms = () => {
+    handleJumpToStep(7);
+  };
+
+  const handleSaveRulesStayTerms = async (rulesPayload: PropertyRules) => {
+    if (!createdProperty || isSubmitting) return;
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      const mergedRules: PropertyRules = {
+        ...(createdProperty.rules || {}),
+        ...rulesPayload
+      };
+      const res = await updatePropertyRules(createdProperty.id, mergedRules);
+
+      if (res.success && res.data) {
+        setRules(res.data);
+        const updated = { ...createdProperty, rules: res.data };
+        syncDraftState(updated, 9);
         setShowPhase3Intro(true);
         if (typeof window !== 'undefined') {
           const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(updated.id)}&step=phase3`;
@@ -749,10 +785,10 @@ export default function AddPropertyWizard({
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setAppError(res, 'Failed to save resident preferences.');
+        setAppError(res, 'Failed to save property rules & stay terms.');
       }
     } catch (err: any) {
-      setAppError(err, 'Network error while saving resident preferences.');
+      setAppError(err, 'Network error while saving property rules & stay terms.');
     } finally {
       setIsSubmitting(false);
     }
@@ -863,7 +899,7 @@ export default function AddPropertyWizard({
       );
 
       if (res.success && res.data) {
-        syncDraftState(res.data, 9);
+        syncDraftState(res.data, 10);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save property pricing.');
@@ -1045,14 +1081,14 @@ export default function AddPropertyWizard({
     } else if (currentStep === 7) {
       handleJumpToStep(6);
     } else if (currentStep === 8) {
+      handleJumpToStep(7);
+    } else if (currentStep === 9) {
       setShowPhase3Intro(true);
       if (createdProperty && typeof window !== 'undefined') {
         const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
         window.history.replaceState(null, '', newUrl);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (currentStep === 9) {
-      handleJumpToStep(8);
     } else if (currentStep === 10) {
       handleJumpToStep(9);
     }
@@ -1224,6 +1260,30 @@ export default function AddPropertyWizard({
       );
     }
 
+    if (currentStep === 8) {
+      return (
+        <button
+          type="submit"
+          form="rules-terms-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -1281,11 +1341,11 @@ export default function AddPropertyWizard({
         phase={3}
         onStart={() => {
           setShowPhase3Intro(false);
-          handleJumpToStep(8);
+          handleJumpToStep(9);
         }}
         onBack={() => {
           setShowPhase3Intro(false);
-          handleJumpToStep(7);
+          handleJumpToStep(8);
         }}
         onExit={handleSaveAndExit}
       />
@@ -1559,25 +1619,26 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 8: PRICING & AVAILABILITY (PHASE 8) */}
+      {/* STEP 8: RULES & STAY TERMS (PARENT STEP 2 SUBSTEP 4) */}
       {currentStep === 8 && createdProperty && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
-          <StepPricing
-            property={createdProperty}
-            onBack={handleBackFromPricing}
-            onSave={handleSavePricing}
+        <div className="w-full">
+          <StepRulesStayTerms
+            propertyId={createdProperty.id}
+            initialRules={createdProperty.rules || rules}
+            onBack={handleBackFromRulesStayTerms}
+            onSave={handleSaveRulesStayTerms}
             isSaving={isSubmitting}
           />
         </div>
       )}
 
-      {/* STEP 9: RULES & TENANT PREFERENCES (PHASE 9) */}
+      {/* STEP 9: PRICING & AVAILABILITY (PARENT STEP 3 SUBSTEP 1) */}
       {currentStep === 9 && createdProperty && !isLoadingDraft && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
-          <StepRules
+          <StepPricing
             property={createdProperty}
-            onBack={handleBackFromRules}
-            onSave={handleSaveRules}
+            onBack={handleBackFromPricing}
+            onSave={handleSavePricing}
             isSaving={isSubmitting}
           />
         </div>
@@ -1717,33 +1778,35 @@ export default function AddPropertyWizard({
             />
           </div>
 
-          {/* Phase 2: Steps 5-7 (Parent Step 2: Make your place stand out) */}
+          {/* Phase 2: Steps 5-8 (Parent Step 2: Make your place stand out - 4 substeps) */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 8
+                  currentStep >= 9
+                    ? 100
+                    : currentStep === 8
                     ? 100
                     : currentStep === 7
-                    ? 100
+                    ? 75
                     : currentStep === 6
-                    ? 66
+                    ? 50
                     : currentStep === 5
-                    ? 33
+                    ? 25
                     : 0
                 }%`,
               }}
             />
           </div>
 
-          {/* Phase 3: Steps 8-10 */}
+          {/* Phase 3: Steps 9-10 (Parent Step 3: Finish up and publish - 2 substeps) */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 10 ? 100 : currentStep === 9 ? 66 : currentStep === 8 ? 33 : 0
+                  currentStep >= 10 ? 100 : currentStep === 9 ? 50 : 0
                 }%`,
               }}
             />

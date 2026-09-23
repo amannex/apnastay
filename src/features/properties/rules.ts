@@ -113,29 +113,41 @@ export function sanitizePropertyRules(rules: Partial<PropertyRules>): PropertyRu
     clean.suitableFor = Array.from(new Set(clean.suitableFor));
   }
 
-  // Synchronize Smoking Policy <-> Legacy Boolean
-  if (clean.smokingPolicy) {
+  // Synchronize Specific Rules
+  if (clean.smokingRule) {
+    clean.smokingPolicy = clean.smokingRule === 'allowed' ? 'allowed' : clean.smokingRule === 'designated_area' ? 'with_restrictions' : 'not_allowed';
+    clean.smokingAllowed = clean.smokingRule === 'allowed' || clean.smokingRule === 'designated_area';
+  } else if (clean.smokingPolicy) {
     clean.smokingAllowed = clean.smokingPolicy === 'allowed';
   } else if (clean.smokingAllowed !== undefined) {
     clean.smokingPolicy = clean.smokingAllowed ? 'allowed' : 'not_allowed';
   }
 
   // Synchronize Alcohol Policy <-> Legacy Boolean
-  if (clean.alcoholPolicy) {
+  if (clean.alcoholRule) {
+    clean.alcoholPolicy = clean.alcoholRule === 'allowed' ? 'allowed' : clean.alcoholRule === 'designated_area' ? 'with_restrictions' : 'not_allowed';
+    clean.alcoholAllowed = clean.alcoholRule === 'allowed' || clean.alcoholRule === 'designated_area';
+  } else if (clean.alcoholPolicy) {
     clean.alcoholAllowed = clean.alcoholPolicy === 'allowed';
   } else if (clean.alcoholAllowed !== undefined) {
     clean.alcoholPolicy = clean.alcoholAllowed ? 'allowed' : 'not_allowed';
   }
 
   // Synchronize Pet Policy <-> Legacy Boolean
-  if (clean.petPolicy) {
+  if (clean.petsRule) {
+    clean.petPolicy = clean.petsRule === 'allowed' ? 'allowed' : clean.petsRule === 'with_approval' ? 'with_restrictions' : 'not_allowed';
+    clean.petsAllowed = clean.petsRule !== 'not_allowed';
+  } else if (clean.petPolicy) {
     clean.petsAllowed = clean.petPolicy === 'allowed';
   } else if (clean.petsAllowed !== undefined) {
     clean.petPolicy = clean.petsAllowed ? 'allowed' : 'not_allowed';
   }
 
   // Synchronize Guest Policy <-> Legacy Visitors Boolean
-  if (clean.guestPolicy) {
+  if (clean.visitorsRule) {
+    clean.guestPolicy = clean.visitorsRule === 'allowed' ? 'allowed' : clean.visitorsRule === 'restricted' ? 'with_restrictions' : 'not_allowed';
+    clean.visitorsAllowed = clean.visitorsRule !== 'not_allowed';
+  } else if (clean.guestPolicy) {
     clean.visitorsAllowed = clean.guestPolicy === 'allowed' || clean.guestPolicy === 'with_restrictions';
   } else if (clean.visitorsAllowed !== undefined) {
     clean.guestPolicy = clean.visitorsAllowed ? 'allowed' : 'not_allowed';

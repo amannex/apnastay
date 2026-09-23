@@ -38,28 +38,28 @@ export default function PropertyIntroStep({
       stepLabel: 'Step 2',
       title: 'Make your place stand out',
       description:
-        'In this step, you’ll add the amenities your property offers, upload photos and an optional video, and set who can stay at your place.',
+        'In this step, you’ll add the amenities your property offers, upload photos and an optional video, set who can stay at your place, and configure property rules & stay terms.',
       modalTitle: 'Step 2: Make Your Place Stand Out',
       modalDesc:
-        'Highlight what makes your place unique. High-quality photos, rich amenities, and clear resident preferences help attract high-quality prospective tenants.',
+        'Highlight what makes your place unique. High-quality photos, rich amenities, clear resident preferences, and house rules help attract high-quality prospective tenants.',
       modalTips: [
         'Select all true amenities and utilities included.',
         'Upload at least 5 clear photos showing different angles.',
-        'Specify who can stay (families, bachelors, students) and house guidelines.',
-        'Detailed listings receive up to 3x more viewing requests.'
+        'Specify who can stay and age requirements.',
+        'Set clear rules on smoking, alcohol, visitors, pets, quiet hours, parties, and cooking.'
       ]
     },
     3: {
       stepLabel: 'Step 3',
       title: 'Finish up and publish',
       description:
-        'In this final step, you’ll set up your pricing, security deposit, choose tenant preferences and house rules, and publish your property live on ApnaStay.',
-      modalTitle: 'Step 3: Pricing, Rules & Publishing',
+        'In this final step, you’ll set up your pricing, security deposit, move-in availability, and review & publish your property live on ApnaStay.',
+      modalTitle: 'Step 3: Pricing & Publishing',
       modalDesc:
-        'You are on the final step! Setting clear monthly rent, deposit terms, and house rules ensures smooth tenant onboarding and automated agreements.',
+        'You are on the final step! Setting clear monthly rent, deposit terms, and move-in availability ensures smooth tenant onboarding and automated agreements.',
       modalTips: [
         'Review your monthly rent, security deposit, and maintenance charges.',
-        'Set tenant preferences (families, bachelors, professionals) and house rules.',
+        'Set move-in availability status and date.',
         'Preview your listing and publish live instantly on ApnaStay.'
       ]
     }

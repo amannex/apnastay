@@ -64,17 +64,17 @@ export function getSectionStepNumber(section: CompletenessSectionKey): number {
       return 3;
     case 'basic_details':
       return 4;
-    case 'photos':
-      return 5;
     case 'amenities':
+      return 5;
+    case 'photos':
       return 6;
     case 'units':
       return 7;
-    case 'pricing':
-      return 8;
-    case 'availability':
-      return 8;
     case 'rules':
+      return 8;
+    case 'pricing':
+      return 9;
+    case 'availability':
       return 9;
     default:
       return 1;
@@ -268,7 +268,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'photos_min_one',
     section: 'photos',
-    stepNumber: 5,
+    stepNumber: 6,
     label: 'At least 1 photo uploaded',
     severity: 'required',
     isSatisfied: photosCount >= 1,
@@ -278,7 +278,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'photos_recommended_three',
     section: 'photos',
-    stepNumber: 5,
+    stepNumber: 6,
     label: 'At least 3 photos uploaded',
     severity: 'recommended',
     isSatisfied: photosCount >= 3,
@@ -288,7 +288,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'photos_cover_designated',
     section: 'photos',
-    stepNumber: 5,
+    stepNumber: 6,
     label: 'Cover photo designated',
     severity: 'recommended',
     isSatisfied: hasCoverPhoto,
@@ -296,14 +296,14 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   });
 
   // --------------------------------------------------------------------------
-  // 6. Amenities & Features (Step 6)
+  // 6. Amenities & Features (Step 5)
   // --------------------------------------------------------------------------
   const totalAmenities = (property.amenities?.length || 0) + (property.customAmenities?.length || 0);
 
   items.push({
     id: 'amenities_selected',
     section: 'amenities',
-    stepNumber: 6,
+    stepNumber: 5,
     label: 'Key amenities selected (3+ features)',
     severity: 'recommended',
     isSatisfied: totalAmenities >= 3,
@@ -347,7 +347,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   }
 
   // --------------------------------------------------------------------------
-  // 8. Pricing & Rent (Step 8)
+  // 8. Pricing & Rent (Step 9)
   // --------------------------------------------------------------------------
   const pricing = property.pricing;
   const hasValidRent = Boolean(
@@ -358,7 +358,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'pricing_rent_set',
     section: 'pricing',
-    stepNumber: 8,
+    stepNumber: 9,
     label: 'Monthly rent or price-on-request configured',
     severity: 'required',
     isSatisfied: hasValidRent,
@@ -371,7 +371,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'pricing_deposit',
     section: 'pricing',
-    stepNumber: 8,
+    stepNumber: 9,
     label: 'Security deposit terms configured',
     severity: 'recommended',
     isSatisfied: hasDepositConfig,
@@ -382,7 +382,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'pricing_utilities',
     section: 'pricing',
-    stepNumber: 8,
+    stepNumber: 9,
     label: 'Maintenance / electricity terms specified',
     severity: 'recommended',
     isSatisfied: hasChargesConfig,
@@ -390,7 +390,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   });
 
   // --------------------------------------------------------------------------
-  // 9. Move-In Availability (Step 8)
+  // 9. Move-In Availability (Step 9)
   // --------------------------------------------------------------------------
   const avail = property.availability;
   const hasAvailabilityType = Boolean(avail && avail.type);
@@ -399,7 +399,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'avail_type_set',
     section: 'availability',
-    stepNumber: 8,
+    stepNumber: 9,
     label: 'Move-in availability status specified',
     severity: 'required',
     isSatisfied: hasAvailabilityType && hasValidDateIfSpecific,
@@ -407,7 +407,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   });
 
   // --------------------------------------------------------------------------
-  // 10. Rules & Preferences (Step 9)
+  // 10. Rules & Preferences (Step 8)
   // --------------------------------------------------------------------------
   const rules = property.rules;
   const hasSuitability = Boolean(rules?.suitableFor && rules.suitableFor.length > 0);
@@ -423,7 +423,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'rules_suitability',
     section: 'rules',
-    stepNumber: 9,
+    stepNumber: 8,
     label: 'Preferred resident profiles specified',
     severity: 'recommended',
     isSatisfied: hasSuitability,
@@ -433,7 +433,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'rules_guest_policy',
     section: 'rules',
-    stepNumber: 9,
+    stepNumber: 8,
     label: 'Visitor & guest policy defined',
     severity: 'recommended',
     isSatisfied: hasGuestPolicy,
@@ -443,7 +443,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'rules_substance_policy',
     section: 'rules',
-    stepNumber: 9,
+    stepNumber: 8,
     label: 'Smoking / substance guidelines set',
     severity: 'recommended',
     isSatisfied: hasSubstancePolicy,
@@ -453,7 +453,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'rules_documents',
     section: 'rules',
-    stepNumber: 9,
+    stepNumber: 8,
     label: 'Move-in documentation checklist specified',
     severity: 'recommended',
     isSatisfied: hasDocRequirements,
