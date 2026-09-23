@@ -77,7 +77,6 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
   };
 
   const currentCover = activePhoto || initialPhoto;
-  const sidePhotos = photos.filter((p) => p.id !== currentCover?.id);
 
   return (
     <div className={`w-full text-left space-y-4 sm:space-y-5 text-[#222222] font-inter ${className}`}>
@@ -99,112 +98,70 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
       </div>
 
       {/* ==================================================================== */}
-      {/* 2. MEDIA HERO & GALLERY PREVIEW (Side-by-Side Photo Layout) */}
+      {/* 2. MEDIA HERO & GALLERY PREVIEW (Main Hero with Vertical Side Thumbnails) */}
       {/* ==================================================================== */}
-      <div className="w-full">
-        {photos.length === 0 ? (
-          <div className="aspect-video sm:aspect-[21/9] w-full bg-[#1D1D1F] rounded-2xl flex flex-col items-center justify-center text-gray-400 p-6 text-center">
-            <Camera className="w-12 h-12 stroke-[1.5] mb-2 opacity-50" />
-            <p className="text-sm font-semibold">No photographs uploaded yet</p>
-            <p className="text-xs text-gray-500">Upload at least one photo to preview your hero display.</p>
-          </div>
-        ) : photos.length === 1 ? (
-          <div className="relative aspect-video sm:aspect-[21/9] w-full bg-[#1D1D1F] rounded-2xl overflow-hidden shadow-apple-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={currentCover?.url}
-              alt={property.title || 'Property view'}
-              className="w-full h-full object-cover transition-all duration-300"
-            />
-
-            {/* Badges Over Image */}
-            <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20 shadow-sm">
-                <Building2 className="w-3.5 h-3.5 text-white/90" />
-                <span>{property.customPropertyType || template.label}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary backdrop-blur-md text-white text-xs font-semibold shadow-sm">
-                <Check className="w-3.5 h-3.5" />
-                <span>Verified Listing</span>
-              </span>
-            </div>
-
-            <div className="absolute top-3 sm:top-4 right-3 sm:right-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20">
-              <Camera className="w-3.5 h-3.5" />
-              <span>1 Photo</span>
-            </div>
-          </div>
-        ) : (
-          /* Multi-photo side-by-side gallery */
-          <div className="grid grid-cols-3 sm:grid-cols-12 gap-1.5 sm:gap-2 aspect-[4/3] sm:aspect-[21/9] w-full rounded-2xl overflow-hidden shadow-apple-sm bg-[#1D1D1F]">
-            {/* Main Featured Photo (Left) */}
-            <div className="relative col-span-2 sm:col-span-8 h-full bg-[#1D1D1F] overflow-hidden">
+      <div className="flex flex-col sm:flex-row gap-3 w-full items-start">
+        {/* Main Featured Photo */}
+        <div className="relative flex-1 min-w-0 aspect-video sm:aspect-[21/9] w-full bg-[#1D1D1F] rounded-2xl overflow-hidden shadow-apple-sm">
+          {currentCover ? (
+            <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={currentCover?.url}
+                src={currentCover.url}
                 alt={property.title || 'Property view'}
                 className="w-full h-full object-cover transition-all duration-300"
               />
 
               {/* Badges Over Image */}
-              <div className="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] sm:text-xs font-semibold border border-white/20 shadow-sm">
+              <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20 shadow-sm">
                   <Building2 className="w-3.5 h-3.5 text-white/90" />
-                  <span className="truncate max-w-[100px] sm:max-w-none">{property.customPropertyType || template.label}</span>
+                  <span>{property.customPropertyType || template.label}</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-primary backdrop-blur-md text-white text-[11px] sm:text-xs font-semibold shadow-sm">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary backdrop-blur-md text-white text-xs font-semibold shadow-sm">
                   <Check className="w-3.5 h-3.5" />
-                  <span>Verified</span>
+                  <span>Verified Listing</span>
                 </span>
               </div>
 
-              <div className="absolute top-2.5 sm:top-4 right-2.5 sm:right-4 inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] sm:text-xs font-semibold border border-white/20">
+              <div className="absolute top-3 sm:top-4 right-3 sm:right-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20">
                 <Camera className="w-3.5 h-3.5" />
-                <span>{photos.length} Photos</span>
+                <span>{photos.length} Photo{photos.length !== 1 ? 's' : ''}</span>
               </div>
+            </>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 p-6 text-center">
+              <Camera className="w-12 h-12 stroke-[1.5] mb-2 opacity-50" />
+              <p className="text-sm font-semibold">No photographs uploaded yet</p>
+              <p className="text-xs text-gray-500">Upload at least one photo to preview your hero display.</p>
             </div>
+          )}
+        </div>
 
-            {/* Side Photos (Right) */}
-            <div className={`col-span-1 sm:col-span-4 h-full grid ${sidePhotos.length === 1 ? 'grid-rows-1' : 'grid-rows-2'} gap-1.5 sm:gap-2 overflow-hidden`}>
-              {sidePhotos.slice(0, 2).map((photo, index) => {
-                const isLastAndMore = index === 1 && sidePhotos.length > 2;
-                const moreCount = sidePhotos.length - 2;
-
-                return (
-                  <button
-                    key={photo.id}
-                    type="button"
-                    onClick={() => setActivePhoto(photo)}
-                    className="relative w-full h-full overflow-hidden group cursor-pointer text-left focus:outline-none"
-                    title="Click to view photo"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={photo.thumbnailUrl || photo.url}
-                      alt="Property thumbnail"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-
-                    {photo.isCover && (
-                      <div className="absolute top-2 left-2 bg-amber-500 rounded-full p-1 shadow-sm">
-                        <Star className="w-2.5 h-2.5 fill-white text-white" />
-                      </div>
-                    )}
-
-                    {/* Subtle hover overlay */}
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-
-                    {/* +N More Overlay */}
-                    {isLastAndMore && (
-                      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-white p-2 group-hover:bg-black/70 transition-colors">
-                        <span className="text-sm sm:text-base font-bold">+{moreCount + 1}</span>
-                        <span className="text-[10px] sm:text-xs font-medium text-white/90">View all</span>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Vertical Side Thumbnails */}
+        {photos.length > 1 && (
+          <div className="flex sm:flex-col gap-2 shrink-0 overflow-x-auto sm:overflow-y-auto max-h-[320px] py-1 sm:py-0">
+            {photos.map((photo) => (
+              <button
+                key={photo.id}
+                type="button"
+                onClick={() => setActivePhoto(photo)}
+                className={`relative rounded-xl overflow-hidden shrink-0 w-16 h-12 border-2 transition-all cursor-pointer ${
+                  (activePhoto?.id || initialPhoto?.id) === photo.id
+                    ? 'border-[#222222] ring-2 ring-[#222222]/20 scale-105'
+                    : 'border-transparent opacity-75 hover:opacity-100'
+                }`}
+                title="Click to view photo"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.thumbnailUrl || photo.url} alt="Thumbnail" className="w-full h-full object-cover" />
+                {photo.isCover && (
+                  <div className="absolute top-1 left-1 bg-amber-500 rounded-full p-0.5 shadow-sm">
+                    <Star className="w-2.5 h-2.5 fill-white text-white" />
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         )}
       </div>
