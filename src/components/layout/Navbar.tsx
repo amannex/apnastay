@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, Scale, UserCheck, Shield, BarChart3, ChevronDown, Sparkles, LogIn, User, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
@@ -18,7 +18,17 @@ export default function Navbar({
 }: any) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const userDisplayName = currentUser
     ? (currentUser.name || [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || currentUser.email?.split('@')[0] || 'User')
@@ -33,10 +43,15 @@ export default function Navbar({
   const isActiveRoute = (path) => pathname === path;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-      {/* EXPANDED CONTAINER WIDTH FOR CLEAN, UNCLUTTERED SINGLE-LINE SPARE ROOM */}
-      <div className="max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-        <nav className="glass-panel rounded-full px-3.5 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 shadow-apple border border-white/90">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-white/90 backdrop-blur-md border-b border-[#EDEDED] shadow-xs py-3 sm:py-3.5'
+          : 'bg-transparent py-4 sm:py-6'
+      }`}
+    >
+      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="flex items-center justify-between gap-2 sm:gap-4">
 
           {/* BRAND LOGO (NEVER WRAPS) */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0 whitespace-nowrap">
@@ -51,38 +66,38 @@ export default function Navbar({
           </Link>
 
           {/* MAIN MULTI-PAGE DESKTOP NAVIGATION (SINGLE LINE, CLEAN SPACING, NEVER WRAPS) */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 text-xs xl:text-sm font-medium text-[#6B7280]">
+          <div className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 text-xs xl:text-sm font-medium text-[#374151]">
             <Link
               href="/"
-              className={`whitespace-nowrap transition-colors ${isActiveRoute('/') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
               Home
             </Link>
             <Link
               href="/properties"
-              className={`whitespace-nowrap transition-colors ${isActiveRoute('/properties') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/properties') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
               Verified Rooms
             </Link>
             <Link
               href="/cities"
-              className={`whitespace-nowrap transition-colors ${isActiveRoute('/cities') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/cities') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
               Tier-2 Cities
             </Link>
             <Link
               href="/why-apnastay"
-              className={`whitespace-nowrap transition-colors ${isActiveRoute('/why-apnastay') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/why-apnastay') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
               Why ₹0 Brokerage
             </Link>
             <Link
               href="/journal"
-              className={`whitespace-nowrap transition-colors ${isActiveRoute('/journal') ? 'text-[#E1224D] font-semibold' : 'hover:text-[#1A1A1A]'
+              className={`whitespace-nowrap transition-colors ${isActiveRoute('/journal') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
                 }`}
             >
               ApnaStay Journal
@@ -94,7 +109,7 @@ export default function Navbar({
             {/* AI Matchmaker Trigger (Single-line pill) */}
             <button
               onClick={onOpenAiMatchmaker}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50 text-[#E1224D] text-xs font-semibold hover:bg-rose-100 transition-colors border border-rose-100 whitespace-nowrap shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50/90 text-[#E1224D] text-xs font-semibold hover:bg-rose-100 transition-colors border border-rose-200/80 whitespace-nowrap shrink-0 shadow-xs"
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <span>AI Matchmaker</span>
@@ -106,7 +121,7 @@ export default function Navbar({
                 setMobileMenuOpen(false);
                 onOpenCompare?.();
               }}
-              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
+              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-black/5 text-[#374151] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
               title="Compare Properties"
               aria-label="Compare Properties"
             >
@@ -121,7 +136,7 @@ export default function Navbar({
             {/* Wishlist Counter Button */}
             <button
               onClick={onOpenWishlist}
-              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-[#FAFAFA] text-[#6B7280] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
+              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-black/5 text-[#374151] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
               title="Saved Residences"
               aria-label="View Saved Residences"
             >
@@ -138,7 +153,7 @@ export default function Navbar({
               <div className="relative hidden md:block shrink-0">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap shadow-xs"
                 >
                   <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
                   <span>{userFirstName}</span>
@@ -252,7 +267,7 @@ export default function Navbar({
         {/* MOBILE NAVIGATION MENU DRAWER (md:hidden) */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-2 animate-slide-up">
-            <div className="glass-panel rounded-3xl p-4 shadow-apple-lg border border-white/90 flex flex-col gap-1.5">
+            <div className="bg-white rounded-3xl p-4 shadow-2xl border border-[#EDEDED] flex flex-col gap-1.5">
               <div className="flex items-center justify-between pb-2 border-b border-[#EDEDED] px-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
                   ApnaStay Navigation
