@@ -271,6 +271,9 @@ export interface PropertyRules {
   maxOccupants?: number;
   suitableFor?: ResidentSuitability[];
   genderPreference?: 'any' | 'male_only' | 'female_only';
+  ageRequirementType?: 'none' | 'min_age' | 'max_age' | 'range';
+  minAge?: number;
+  maxAge?: number;
 
   // Guest Policy
   guestPolicy?: PolicyStatus;

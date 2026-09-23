@@ -4,20 +4,16 @@ import React, { useState } from 'react';
 import {
   Users,
   Briefcase,
+  User,
   GraduationCap,
   Heart,
-  User,
-  Sparkles,
-  PawPrint,
-  Cigarette,
-  Wine,
   UserCheck,
   Plus,
   Minus,
   Check,
   AlertCircle
 } from 'lucide-react';
-import type { PropertyRules, ResidentSuitability, PolicyStatus } from '../../types';
+import type { PropertyRules, ResidentSuitability } from '../../types';
 import { sanitizePropertyRules } from '../../rules';
 
 export interface StepWhoCanStayProps {
@@ -31,47 +27,16 @@ export interface StepWhoCanStayProps {
 interface SuitabilityOption {
   id: ResidentSuitability;
   title: string;
-  description: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const SUITABILITY_OPTIONS: SuitabilityOption[] = [
-  {
-    id: 'families',
-    title: 'Families',
-    description: 'Parents with children or elderly members',
-    icon: Users
-  },
-  {
-    id: 'working_professionals',
-    title: 'Working Professionals',
-    description: 'Corporate, salaried, or remote employees',
-    icon: Briefcase
-  },
-  {
-    id: 'bachelors',
-    title: 'Bachelors',
-    description: 'Single individuals or friends sharing space',
-    icon: User
-  },
-  {
-    id: 'students',
-    title: 'Students',
-    description: 'College, university, or coaching students',
-    icon: GraduationCap
-  },
-  {
-    id: 'couples',
-    title: 'Couples',
-    description: 'Married or working partners',
-    icon: Heart
-  },
-  {
-    id: 'individuals',
-    title: 'Individuals',
-    description: 'Solo renters seeking private accommodation',
-    icon: UserCheck
-  }
+  { id: 'families', title: 'Families', icon: Users },
+  { id: 'working_professionals', title: 'Working Professionals', icon: Briefcase },
+  { id: 'bachelors', title: 'Bachelors', icon: User },
+  { id: 'students', title: 'Students', icon: GraduationCap },
+  { id: 'couples', title: 'Couples', icon: Heart },
+  { id: 'individuals', title: 'Individuals', icon: UserCheck }
 ];
 
 export default function StepWhoCanStay({
@@ -89,31 +54,36 @@ export default function StepWhoCanStay({
     initialRules?.genderPreference || 'any'
   );
 
-  const [petsAllowed, setPetsAllowed] = useState<boolean>(
-    initialRules?.petsAllowed ?? initialRules?.petPolicy === 'allowed' ? true : false
-  );
-
-  const [smokingAllowed, setSmokingAllowed] = useState<boolean>(
-    initialRules?.smokingAllowed ?? initialRules?.smokingPolicy === 'allowed' ? true : false
-  );
-
-  const [alcoholAllowed, setAlcoholAllowed] = useState<boolean>(
-    initialRules?.alcoholAllowed ?? initialRules?.alcoholPolicy === 'allowed' ? true : false
-  );
-
-  const [guestPolicy, setGuestPolicy] = useState<PolicyStatus>(() => {
-    if (initialRules?.guestPolicy) return initialRules.guestPolicy;
-    if (initialRules?.visitorsAllowed !== undefined) {
-      return initialRules.visitorsAllowed ? 'allowed' : 'not_allowed';
-    }
-    return 'allowed';
-  });
-
   const [maxOccupants, setMaxOccupants] = useState<number>(() => {
     if (initialRules?.maxOccupants && initialRules.maxOccupants > 0) {
       return initialRules.maxOccupants;
     }
     return 4;
+  });
+
+  // Age requirements state
+  const [ageRequirementType, setAgeRequirementType] = useState<'none' | 'min_age' | 'max_age'>(() => {
+    if (initialRules?.ageRequirementType) {
+      if (initialRules.ageRequirementType === 'range') return 'min_age';
+      return initialRules.ageRequirementType;
+    }
+    if (initialRules?.minAge && initialRules.minAge > 0) return 'min_age';
+    if (initialRules?.maxAge && initialRules.maxAge > 0) return 'max_age';
+    return 'none';
+  });
+
+  const [minAge, setMinAge] = useState<number | ''>(() => {
+    if (initialRules?.minAge && initialRules.minAge > 0) {
+      return initialRules.minAge;
+    }
+    return 18;
+  });
+
+  const [maxAge, setMaxAge] = useState<number | ''>(() => {
+    if (initialRules?.maxAge && initialRules.maxAge > 0) {
+      return initialRules.maxAge;
+    }
+    return 35;
   });
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -125,7 +95,7 @@ export default function StepWhoCanStay({
     setSuitableFor((prev) => {
       if (prev.includes(id)) {
         if (prev.length === 1) {
-          setErrorMsg('Please select at least one tenant type.');
+          setErrorMsg('Please select at least one tenant category.');
           return prev;
         }
         return prev.filter((item) => item !== id);
@@ -147,8 +117,22 @@ export default function StepWhoCanStay({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (suitableFor.length === 0) {
-      setErrorMsg('Please choose who can stay at your property.');
+      setErrorMsg('Please select who can stay at your property.');
       return;
+    }
+
+    if (ageRequirementType === 'min_age') {
+      if (typeof minAge !== 'number' || minAge < 0 || minAge > 120) {
+        setErrorMsg('Please enter a valid minimum age.');
+        return;
+      }
+    }
+
+    if (ageRequirementType === 'max_age') {
+      if (typeof maxAge !== 'number' || maxAge < 0 || maxAge > 120) {
+        setErrorMsg('Please enter a valid maximum age.');
+        return;
+      }
     }
 
     const payload: PropertyRules = sanitizePropertyRules({
@@ -156,14 +140,9 @@ export default function StepWhoCanStay({
       suitableFor,
       genderPreference,
       maxOccupants,
-      petsAllowed,
-      petPolicy: petsAllowed ? 'allowed' : 'not_allowed',
-      smokingAllowed,
-      smokingPolicy: smokingAllowed ? 'allowed' : 'not_allowed',
-      alcoholAllowed,
-      alcoholPolicy: alcoholAllowed ? 'allowed' : 'not_allowed',
-      visitorsAllowed: guestPolicy === 'allowed' || guestPolicy === 'with_restrictions',
-      guestPolicy,
+      ageRequirementType,
+      minAge: ageRequirementType === 'min_age' && typeof minAge === 'number' ? minAge : undefined,
+      maxAge: ageRequirementType === 'max_age' && typeof maxAge === 'number' ? maxAge : undefined,
       tenantPreference: isAllSelected
         ? 'all'
         : genderPreference === 'female_only'
@@ -184,16 +163,16 @@ export default function StepWhoCanStay({
     <form
       id="who-can-stay-form"
       onSubmit={handleSubmit}
-      className="w-full max-w-2xl mx-auto py-2 space-y-10 animate-fade-in"
+      className="w-full max-w-2xl mx-auto py-2 space-y-9 animate-fade-in"
       noValidate
     >
       {/* SECTION HEADING (Airbnb Style) */}
-      <div className="space-y-1.5">
-        <h1 className="font-outfit text-2xl sm:text-[32px] font-semibold text-[#222222] tracking-tight">
+      <div className="space-y-1">
+        <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
           Who can stay here?
         </h1>
         <p className="font-inter text-sm sm:text-base text-[#717171]">
-          Set tenant preferences and basic house guidelines so guests know if your place is right for them.
+          Set resident preferences and age requirements for your property.
         </p>
       </div>
 
@@ -205,29 +184,24 @@ export default function StepWhoCanStay({
       )}
 
       {/* ==================================================================== */}
-      {/* 1. WHO IS WELCOME (TENANT SUITABILITY)                                */}
+      {/* 1. WHO IS WELCOME (TENANT SUITABILITY - NO DESCRIPTIONS)              */}
       {/* ==================================================================== */}
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
-              Who is welcome?
-            </h2>
-            <p className="font-inter text-xs sm:text-sm text-[#717171] mt-0.5">
-              Select all tenant categories you are open to hosting.
-            </p>
-          </div>
+          <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
+            Who is welcome
+          </h2>
 
           <button
             type="button"
             onClick={handleSelectAllSuitability}
-            className="text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black shrink-0 ml-2"
+            className="text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black shrink-0"
           >
             {isAllSelected ? 'Reset' : 'Select all'}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SUITABILITY_OPTIONS.map((option) => {
             const isSelected = suitableFor.includes(option.id);
             const Icon = option.icon;
@@ -237,35 +211,31 @@ export default function StepWhoCanStay({
                 key={option.id}
                 type="button"
                 onClick={() => handleToggleSuitability(option.id)}
-                className={`w-full p-4 rounded-2xl border text-left transition-all duration-150 flex items-start gap-3.5 group cursor-pointer ${
+                className={`p-4 rounded-2xl border text-left transition-all duration-150 flex flex-col items-start justify-between min-h-[96px] group cursor-pointer ${
                   isSelected
                     ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
-                    : 'border-[#E5E5EA] bg-white hover:border-[#B0B0B0]'
+                    : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
                 }`}
               >
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                    isSelected
-                      ? 'bg-[#222222] text-white'
-                      : 'bg-[#F7F7F7] text-[#222222] group-hover:bg-[#EBEBEB]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 stroke-[1.75]" />
+                <div className="w-full flex items-center justify-between">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? 'bg-[#222222] text-white'
+                        : 'bg-[#F7F7F7] text-[#222222] group-hover:bg-[#EBEBEB]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 stroke-[1.75]" />
+                  </div>
+
+                  {isSelected && (
+                    <Check className="w-4 h-4 text-[#222222] stroke-[2.5]" />
+                  )}
                 </div>
 
-                <div className="flex-1 min-w-0 pr-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
-                      {option.title}
-                    </span>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-[#222222] stroke-[2.5]" />
-                    )}
-                  </div>
-                  <p className="font-inter text-xs text-[#717171] mt-0.5 leading-relaxed">
-                    {option.description}
-                  </p>
-                </div>
+                <span className="font-inter text-sm sm:text-base font-semibold text-[#222222] mt-3">
+                  {option.title}
+                </span>
               </button>
             );
           })}
@@ -273,23 +243,18 @@ export default function StepWhoCanStay({
       </div>
 
       {/* ==================================================================== */}
-      {/* 2. GENDER PREFERENCE                                                 */}
+      {/* 2. GENDER PREFERENCE (NO DESCRIPTIONS)                               */}
       {/* ==================================================================== */}
-      <div className="pt-6 border-t border-[#EBEBEB] space-y-4">
-        <div>
-          <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
-            Gender preference
-          </h2>
-          <p className="font-inter text-xs sm:text-sm text-[#717171] mt-0.5">
-            Specify if this property is reserved for a specific gender.
-          </p>
-        </div>
+      <div className="pt-6 border-t border-[#EBEBEB] space-y-3.5">
+        <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
+          Gender preference
+        </h2>
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { id: 'any', label: 'Any gender', sub: 'No restriction' },
-            { id: 'female_only', label: 'Female only', sub: 'Women only' },
-            { id: 'male_only', label: 'Male only', sub: 'Men only' }
+            { id: 'any', label: 'Any gender' },
+            { id: 'female_only', label: 'Female only' },
+            { id: 'male_only', label: 'Male only' }
           ].map((item) => {
             const isSelected = genderPreference === item.id;
             return (
@@ -297,18 +262,15 @@ export default function StepWhoCanStay({
                 key={item.id}
                 type="button"
                 onClick={() => setGenderPreference(item.id as 'any' | 'male_only' | 'female_only')}
-                className={`p-3.5 sm:p-4 rounded-2xl border text-center transition-all cursor-pointer ${
+                className={`py-3.5 px-3 rounded-2xl border text-center transition-all cursor-pointer ${
                   isSelected
                     ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
-                    : 'border-[#E5E5EA] bg-white hover:border-[#B0B0B0]'
+                    : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
                 }`}
               >
-                <div className="font-inter text-sm font-semibold text-[#222222]">
+                <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
                   {item.label}
-                </div>
-                <div className="font-inter text-[11px] sm:text-xs text-[#717171] mt-0.5">
-                  {item.sub}
-                </div>
+                </span>
               </button>
             );
           })}
@@ -324,7 +286,7 @@ export default function StepWhoCanStay({
             Maximum occupants
           </h2>
           <p className="font-inter text-xs sm:text-sm text-[#717171] mt-0.5">
-            Total number of people allowed to stay at the same time.
+            Total people allowed to stay simultaneously
           </p>
         </div>
 
@@ -336,7 +298,7 @@ export default function StepWhoCanStay({
             className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
               maxOccupants <= 1
                 ? 'border-[#E5E5EA] text-[#D1D1D6] cursor-not-allowed'
-                : 'border-[#B0B0B0] hover:border-[#222222] text-[#222222] active:scale-95'
+                : 'border-[#B0B0B0] hover:border-[#222222] text-[#222222] active:scale-95 cursor-pointer'
             }`}
             aria-label="Decrease maximum occupants"
           >
@@ -354,7 +316,7 @@ export default function StepWhoCanStay({
             className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
               maxOccupants >= 30
                 ? 'border-[#E5E5EA] text-[#D1D1D6] cursor-not-allowed'
-                : 'border-[#B0B0B0] hover:border-[#222222] text-[#222222] active:scale-95'
+                : 'border-[#B0B0B0] hover:border-[#222222] text-[#222222] active:scale-95 cursor-pointer'
             }`}
             aria-label="Increase maximum occupants"
           >
@@ -364,195 +326,150 @@ export default function StepWhoCanStay({
       </div>
 
       {/* ==================================================================== */}
-      {/* 4. HOUSE RULES (AIRBNB CLEAN ROWS)                                   */}
+      {/* 4. AGE REQUIREMENTS (EXACT AIRBNB FORMAT)                            */}
       {/* ==================================================================== */}
-      <div className="pt-6 border-t border-[#EBEBEB] space-y-5">
-        <div>
-          <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
-            House guidelines
-          </h2>
-          <p className="font-inter text-xs sm:text-sm text-[#717171] mt-0.5">
-            Key policies guests must follow while staying.
-          </p>
-        </div>
+      <div className="pt-6 border-t border-[#EBEBEB] space-y-4">
+        <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
+          Age requirements
+        </h2>
 
-        <div className="divide-y divide-[#EBEBEB]">
-          {/* PETS */}
-          <div className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222]">
-                <PawPrint className="w-4 h-4 stroke-[1.75]" />
-              </div>
-              <div>
-                <div className="font-inter text-sm font-semibold text-[#222222]">
-                  Pets allowed
-                </div>
-                <div className="font-inter text-xs text-[#717171]">
-                  Are pets permitted inside the property?
-                </div>
-              </div>
+        <div className="space-y-3">
+          {/* OPTION 1: NO SPECIFIC REQUIREMENT */}
+          <label
+            onClick={() => {
+              setAgeRequirementType('none');
+              setErrorMsg(null);
+            }}
+            className={`w-full p-4 rounded-2xl border flex items-center gap-3.5 cursor-pointer transition-all ${
+              ageRequirementType === 'none'
+                ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
+                : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
+            }`}
+          >
+            <div
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                ageRequirementType === 'none'
+                  ? 'border-[#222222]'
+                  : 'border-[#B0B0B0]'
+              }`}
+            >
+              {ageRequirementType === 'none' && (
+                <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
+              )}
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-[#F7F7F7] rounded-full border border-[#EBEBEB]">
-              <button
-                type="button"
-                onClick={() => setPetsAllowed(false)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  !petsAllowed
-                    ? 'bg-white text-[#222222] shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => setPetsAllowed(true)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  petsAllowed
-                    ? 'bg-[#222222] text-white shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                Yes
-              </button>
-            </div>
-          </div>
+            <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
+              No specific requirement
+            </span>
+          </label>
 
-          {/* SMOKING */}
-          <div className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222]">
-                <Cigarette className="w-4 h-4 stroke-[1.75]" />
+          {/* OPTION 2: MINIMUM AGE */}
+          <div
+            onClick={() => {
+              setAgeRequirementType('min_age');
+              setErrorMsg(null);
+            }}
+            className={`w-full p-4 rounded-2xl border flex items-center justify-between gap-3.5 cursor-pointer transition-all ${
+              ageRequirementType === 'min_age'
+                ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
+                : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                  ageRequirementType === 'min_age'
+                    ? 'border-[#222222]'
+                    : 'border-[#B0B0B0]'
+                }`}
+              >
+                {ageRequirementType === 'min_age' && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
+                )}
               </div>
-              <div>
-                <div className="font-inter text-sm font-semibold text-[#222222]">
-                  Smoking allowed
-                </div>
-                <div className="font-inter text-xs text-[#717171]">
-                  Is smoking permitted on the premises?
-                </div>
-              </div>
+
+              <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
+                Minimum age:
+              </span>
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-[#F7F7F7] rounded-full border border-[#EBEBEB]">
-              <button
-                type="button"
-                onClick={() => setSmokingAllowed(false)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  !smokingAllowed
-                    ? 'bg-white text-[#222222] shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => setSmokingAllowed(true)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  smokingAllowed
-                    ? 'bg-[#222222] text-white shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                Yes
-              </button>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                max={120}
+                value={minAge}
+                onChange={(e) => {
+                  setAgeRequirementType('min_age');
+                  setErrorMsg(null);
+                  const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                  setMinAge(isNaN(val as number) ? '' : val);
+                }}
+                onFocus={() => {
+                  setAgeRequirementType('min_age');
+                  setErrorMsg(null);
+                }}
+                placeholder="18"
+                className="w-20 px-3 py-1.5 rounded-xl border border-[#DDDDDD] bg-white text-sm font-semibold text-[#222222] text-center focus:border-[#222222] focus:ring-1 focus:ring-[#222222] outline-none"
+              />
+              <span className="font-inter text-xs sm:text-sm text-[#717171]">
+                years
+              </span>
             </div>
           </div>
 
-          {/* ALCOHOL */}
-          <div className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222]">
-                <Wine className="w-4 h-4 stroke-[1.75]" />
+          {/* OPTION 3: MAXIMUM AGE */}
+          <div
+            onClick={() => {
+              setAgeRequirementType('max_age');
+              setErrorMsg(null);
+            }}
+            className={`w-full p-4 rounded-2xl border flex items-center justify-between gap-3.5 cursor-pointer transition-all ${
+              ageRequirementType === 'max_age'
+                ? 'border-[#222222] bg-[#F7F7F7] shadow-sm ring-1 ring-[#222222]'
+                : 'border-[#E5E5EA] bg-white hover:border-[#222222]'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                  ageRequirementType === 'max_age'
+                    ? 'border-[#222222]'
+                    : 'border-[#B0B0B0]'
+                }`}
+              >
+                {ageRequirementType === 'max_age' && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#222222]" />
+                )}
               </div>
-              <div>
-                <div className="font-inter text-sm font-semibold text-[#222222]">
-                  Alcohol allowed
-                </div>
-                <div className="font-inter text-xs text-[#717171]">
-                  Is alcohol permitted on the premises?
-                </div>
-              </div>
+
+              <span className="font-inter text-sm sm:text-base font-semibold text-[#222222]">
+                Maximum age:
+              </span>
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 bg-[#F7F7F7] rounded-full border border-[#EBEBEB]">
-              <button
-                type="button"
-                onClick={() => setAlcoholAllowed(false)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  !alcoholAllowed
-                    ? 'bg-white text-[#222222] shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => setAlcoholAllowed(true)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  alcoholAllowed
-                    ? 'bg-[#222222] text-white shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                Yes
-              </button>
-            </div>
-          </div>
-
-          {/* VISITORS / GUESTS */}
-          <div className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222]">
-                <Sparkles className="w-4 h-4 stroke-[1.75]" />
-              </div>
-              <div>
-                <div className="font-inter text-sm font-semibold text-[#222222]">
-                  Outside visitors
-                </div>
-                <div className="font-inter text-xs text-[#717171]">
-                  Can guests host visitors or overnight guests?
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5 p-1 bg-[#F7F7F7] rounded-full border border-[#EBEBEB]">
-              <button
-                type="button"
-                onClick={() => setGuestPolicy('not_allowed')}
-                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  guestPolicy === 'not_allowed'
-                    ? 'bg-white text-[#222222] shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => setGuestPolicy('with_restrictions')}
-                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  guestPolicy === 'with_restrictions'
-                    ? 'bg-white text-[#222222] shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                Day only
-              </button>
-              <button
-                type="button"
-                onClick={() => setGuestPolicy('allowed')}
-                className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  guestPolicy === 'allowed'
-                    ? 'bg-[#222222] text-white shadow-sm font-bold'
-                    : 'text-[#717171] hover:text-[#222222]'
-                }`}
-              >
-                Allowed
-              </button>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                max={120}
+                value={maxAge}
+                onChange={(e) => {
+                  setAgeRequirementType('max_age');
+                  setErrorMsg(null);
+                  const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                  setMaxAge(isNaN(val as number) ? '' : val);
+                }}
+                onFocus={() => {
+                  setAgeRequirementType('max_age');
+                  setErrorMsg(null);
+                }}
+                placeholder="35"
+                className="w-20 px-3 py-1.5 rounded-xl border border-[#DDDDDD] bg-white text-sm font-semibold text-[#222222] text-center focus:border-[#222222] focus:ring-1 focus:ring-[#222222] outline-none"
+              />
+              <span className="font-inter text-xs sm:text-sm text-[#717171]">
+                years
+              </span>
             </div>
           </div>
         </div>

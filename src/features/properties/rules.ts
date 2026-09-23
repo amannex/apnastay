@@ -52,6 +52,18 @@ export function validatePropertyRules(rules: Partial<PropertyRules>): { valid: b
     }
   }
 
+  if (rules.minAge !== undefined && rules.minAge !== null) {
+    if (rules.minAge < 0 || rules.minAge > 120) {
+      errors.push('Minimum age must be between 0 and 120.');
+    }
+  }
+
+  if (rules.maxAge !== undefined && rules.maxAge !== null) {
+    if (rules.maxAge < 0 || rules.maxAge > 120) {
+      errors.push('Maximum age must be between 0 and 120.');
+    }
+  }
+
   if (rules.customRules && Array.isArray(rules.customRules)) {
     if (rules.customRules.length > 30) {
       errors.push('Maximum of 30 custom rules allowed.');
