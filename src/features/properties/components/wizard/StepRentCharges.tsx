@@ -97,12 +97,6 @@ export default function StepRentCharges({
   const [electricityType, setElectricityType] = useState<ElectricityChargesType>(() => {
     return initialPricing.electricityChargesConfig?.type || 'meter_based';
   });
-  const [electricityAmount, setElectricityAmount] = useState<string>(() => {
-    if (initialPricing.electricityChargesConfig?.amount) {
-      return String(initialPricing.electricityChargesConfig.amount);
-    }
-    return '500';
-  });
 
   // 5. Additional / Other Recurring Charges
   const [otherCharges, setOtherCharges] = useState<OtherRecurringCharge[]>(() => {
@@ -119,7 +113,6 @@ export default function StepRentCharges({
   // Parsed numerical calculations
   const parsedRent = Number(rentAmount.replace(/[^0-9]/g, '')) || 0;
   const parsedMaintenance = Number(maintenanceAmount.replace(/[^0-9]/g, '')) || 0;
-  const parsedElectricity = Number(electricityAmount.replace(/[^0-9]/g, '')) || 0;
 
   const effectiveDepositAmount = useMemo(() => {
     return calculateEffectiveDeposit(
@@ -183,12 +176,6 @@ export default function StepRentCharges({
       }
     }
 
-    if (electricityType === 'fixed') {
-      if (isNaN(parsedElectricity) || parsedElectricity < 0) {
-        errs.electricity = 'Please enter a valid electricity amount.';
-      }
-    }
-
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       setErrorMsg(Object.values(errs)[0]);
@@ -217,8 +204,7 @@ export default function StepRentCharges({
       },
       maintenance: maintenanceType === 'fixed' ? parsedMaintenance : 0,
       electricityChargesConfig: {
-        type: electricityType,
-        amount: electricityType === 'fixed' ? parsedElectricity : undefined
+        type: electricityType
       },
       otherCharges
     };
@@ -485,9 +471,7 @@ export default function StepRentCharges({
                     ? 'As per meter / actual units'
                     : electricityType === 'included'
                     ? 'Included in monthly rent'
-                    : electricityType === 'fixed'
-                    ? `Fixed ₹${(Number(electricityAmount.replace(/[^0-9]/g, '')) || 0).toLocaleString('en-IN')} / month`
-                    : 'Excluded'}
+                    : 'Not applicable'}
                 </span>
               </div>
             </div>
@@ -497,8 +481,7 @@ export default function StepRentCharges({
                 {[
                   { id: 'meter_based', label: 'As per meter' },
                   { id: 'included', label: 'Included in rent' },
-                  { id: 'fixed', label: 'Fixed amount' },
-                  { id: 'excluded', label: 'Excluded' }
+                  { id: 'not_applicable', label: 'Not applicable' }
                 ].map((opt) => {
                   const isSelected = electricityType === opt.id;
                   return (
@@ -517,20 +500,6 @@ export default function StepRentCharges({
                   );
                 })}
               </div>
-
-              {electricityType === 'fixed' && (
-                <div className="relative w-full sm:w-48 mt-1">
-                  <span className="absolute inset-y-0 left-3 flex items-center text-xs sm:text-sm font-semibold text-[#717171]">₹</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={electricityAmount ? Number(electricityAmount.replace(/[^0-9]/g, '')).toLocaleString('en-IN') : ''}
-                    onChange={(e) => setElectricityAmount(e.target.value.replace(/[^0-9]/g, ''))}
-                    placeholder="e.g. 500 / month"
-                    className="w-full pl-7 pr-3 py-1.5 sm:py-2 rounded-xl border border-[#E0E0E0] focus:border-[#717171] focus:outline-none text-xs sm:text-sm text-[#222222] font-semibold transition-colors"
-                  />
-                </div>
-              )}
             </div>
           </div>
 
