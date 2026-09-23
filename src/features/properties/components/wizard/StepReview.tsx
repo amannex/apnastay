@@ -321,18 +321,15 @@ export default function StepReview({
             </div>
           )}
 
-          {/* DIVIDED SECTIONS (COMPLETELY UNBOXED, OPEN LIST WITH DIVIDERS) */}
-          <div className="divide-y divide-[#EBEBEB]">
+          {/* SECTIONS LIST (CLEAN, NO NUMBERS, NO DIVIDER BORDERS) */}
+          <div className="space-y-5 pt-1">
             {sections.map((sec) => (
               <div
                 key={sec.step}
-                className="py-4 sm:py-4.5 flex items-start justify-between gap-4 transition-colors"
+                className="flex items-start justify-between gap-4 transition-colors"
               >
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-[#717171] font-mono">
-                      {String(sec.step).padStart(2, '0')}
-                    </span>
                     <h3 className="font-outfit text-sm sm:text-base font-semibold text-[#222222]">
                       {sec.title}
                     </h3>
