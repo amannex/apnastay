@@ -59,6 +59,7 @@ import {
   updatePropertyRules,
   publishProperty
 } from '../../api';
+
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
@@ -1122,6 +1123,7 @@ export default function AddPropertyWizard({
   const handleSaveIncompleteDraft = async () => {
     await handleSaveAndExit();
   };
+
 
   const handleGlobalBack = () => {
     if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
