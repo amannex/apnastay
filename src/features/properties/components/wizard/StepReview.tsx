@@ -228,16 +228,6 @@ export default function StepReview({
       {/* 1. TENANT PREVIEW MODE */}
       {viewMode === 'preview' && (
         <div className="space-y-4">
-          <div className="p-3 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] flex items-center justify-between text-xs text-[#717171]">
-            <span>This is an accurate simulation of your public listing page.</span>
-            <button
-              type="button"
-              onClick={() => setViewMode('overview')}
-              className="text-[#222222] font-semibold underline hover:text-black"
-            >
-              Return to checklist
-            </button>
-          </div>
           <PropertyTenantPreview property={property} />
         </div>
       )}
