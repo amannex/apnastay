@@ -92,15 +92,17 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
               alt={property.title || 'Property view'}
               className="w-full h-full object-cover transition-all duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+            {/* Scrims for guaranteed high-contrast text and badge visibility regardless of image brightness */}
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/75 via-black/30 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-36 sm:h-44 bg-gradient-to-t from-black/95 via-black/70 via-50% to-transparent pointer-events-none" />
 
             {/* Badges Over Image */}
             <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20 shadow-sm">
-                <Building2 className="w-3.5 h-3.5 text-indigo-300" />
+                <Building2 className="w-3.5 h-3.5 text-white/80" />
                 <span>{property.customPropertyType || template.label}</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600/90 backdrop-blur-md text-white text-xs font-semibold shadow-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary backdrop-blur-md text-white text-xs font-semibold shadow-sm">
                 <Check className="w-3.5 h-3.5" />
                 <span>Verified Listing</span>
               </span>
@@ -113,11 +115,11 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
 
             {/* Title & Location Overlay */}
             <div className="absolute bottom-4 left-4 right-4 text-white">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-md">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {property.title}
               </h1>
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-200 mt-1">
-                <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-white/95 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                <MapPin className="w-4 h-4 text-primary shrink-0" />
                 <span className="font-medium truncate">
                   {[property.location?.locality, property.location?.city, property.location?.state]
                     .filter(Boolean)
