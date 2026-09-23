@@ -88,6 +88,7 @@ import StepWhoCanStay from './StepWhoCanStay';
 import StepRulesStayTerms from './StepRulesStayTerms';
 import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
+import StepRentCharges from './StepRentCharges';
 import StepRules from './StepRules';
 import StepReview from './StepReview';
 import PropertyIntroStep from './PropertyIntroStep';
@@ -1284,6 +1285,30 @@ export default function AddPropertyWizard({
       );
     }
 
+    if (currentStep === 9) {
+      return (
+        <button
+          type="submit"
+          form="rent-charges-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -1632,10 +1657,10 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 9: PRICING & AVAILABILITY (PARENT STEP 3 SUBSTEP 1) */}
+      {/* STEP 9: RENT & CHARGES (PARENT STEP 3 SUBSTEP 1) */}
       {currentStep === 9 && createdProperty && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
-          <StepPricing
+        <div className="w-full">
+          <StepRentCharges
             property={createdProperty}
             onBack={handleBackFromPricing}
             onSave={handleSavePricing}
