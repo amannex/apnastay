@@ -185,41 +185,41 @@ export default function StepReview({
   return (
     <div className="w-full max-w-2xl mx-auto py-2 space-y-8 animate-fade-in font-inter text-[#222222]">
       {/* HEADER WITH SEGMENTED TOGGLE (Minimalist Airbnb style) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-        <div className="space-y-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2">
+        <div className="space-y-0.5 flex-1 min-w-0">
           <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
             Review your listing
           </h1>
-          <p className="text-sm sm:text-base text-[#717171] leading-normal">
-            Here&apos;s what we&apos;ll show to guests and tenants. Make sure everything looks right before publishing.
+          <p className="text-xs sm:text-sm text-[#717171] leading-relaxed max-w-lg">
+            Here&apos;s what guests and tenants will see. Make sure everything looks right before publishing.
           </p>
         </div>
 
-        {/* View Switcher Toggle */}
-        <div className="flex items-center p-1 rounded-full bg-[#F7F7F7] border border-[#EBEBEB] self-start sm:self-center shrink-0">
+        {/* View Switcher Toggle (Compact size) */}
+        <div className="flex items-center p-0.5 rounded-full bg-[#F7F7F7] border border-[#EBEBEB] self-start sm:self-center shrink-0">
           <button
             type="button"
             onClick={() => setViewMode('overview')}
-            className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
               viewMode === 'overview'
                 ? 'bg-white text-[#222222] font-semibold shadow-apple-sm'
                 : 'text-[#717171] hover:text-[#222222]'
             }`}
           >
-            <ListChecks className="w-3.5 h-3.5" />
+            <ListChecks className="w-3 h-3" />
             <span>Overview</span>
           </button>
 
           <button
             type="button"
             onClick={() => setViewMode('preview')}
-            className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
               viewMode === 'preview'
                 ? 'bg-white text-[#222222] font-semibold shadow-apple-sm'
                 : 'text-[#717171] hover:text-[#222222]'
             }`}
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-3 h-3" />
             <span>Tenant preview</span>
           </button>
         </div>
