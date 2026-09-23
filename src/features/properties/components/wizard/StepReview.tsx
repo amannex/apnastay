@@ -17,7 +17,7 @@ import { formatCurrency, getPropertyAvailabilityLabel, formatPricingDisplay } fr
 
 export interface StepReviewProps {
   property: Property;
-  onBack: () => void;
+  onBack?: () => void;
   onEditSection: (stepNumber: number) => void;
   onSaveDraft?: () => Promise<void> | void;
   onPublish?: () => Promise<void> | void;
@@ -188,10 +188,12 @@ export default function StepReview({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2">
         <div className="space-y-0.5 flex-1 min-w-0">
           <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
-            Review your listing
+            {property.status === 'published' ? 'Manage your listing' : 'Review your listing'}
           </h1>
           <p className="text-xs sm:text-sm text-[#717171] leading-relaxed max-w-lg">
-            Here&apos;s what guests and tenants will see. Make sure everything looks right before publishing.
+            {property.status === 'published'
+              ? 'Update details, pricing, photos, or house rules across any section below.'
+              : "Here's what guests and tenants will see. Make sure everything looks right before publishing."}
           </p>
         </div>
 

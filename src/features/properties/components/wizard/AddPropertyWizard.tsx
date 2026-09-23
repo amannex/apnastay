@@ -113,8 +113,12 @@ export default function AddPropertyWizard({
     if (mode === 'create') {
       return 0;
     }
+    if (mode === 'edit' || mode === 'review') {
+      return 12;
+    }
     return 1;
   });
+  const [returnToReviewAfterSave, setReturnToReviewAfterSave] = useState<boolean>(false);
   const [selectedType, setSelectedType] = useState<PropertyType | null>(null);
   const [customPropertyType, setCustomPropertyType] = useState<string>('');
   const [selectedStructure, setSelectedStructure] = useState<RentalStructure | null>(null);
@@ -344,10 +348,8 @@ export default function AddPropertyWizard({
           const stepParam = propInitialStep || Number(params.get('step'));
           if (stepParam >= 1 && stepParam <= 12) {
             setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12);
-          } else if (mode === 'review') {
-            setCurrentStep(12);
-          } else if (mode === 'edit' || prop.status !== 'draft') {
-            setCurrentStep(3); // Start on basic details for established listings
+          } else if (mode === 'review' || mode === 'edit' || prop.status !== 'draft') {
+            setCurrentStep(12); // Open review & section management hub for established/published listings
           } else {
             const nextStep = determineNextIncompleteStep(prop);
             setCurrentStep(nextStep);
@@ -364,8 +366,12 @@ export default function AddPropertyWizard({
 
   // Update browser history and session storage whenever draft or step updates
   const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12) => {
+    const finalStep = returnToReviewAfterSave || (isEditMode && currentStep !== 12) ? 12 : step;
+    if (returnToReviewAfterSave) {
+      setReturnToReviewAfterSave(false);
+    }
     setCreatedProperty(prop);
-    setCurrentStep(step);
+    setCurrentStep(finalStep);
     setHasUnsavedChanges(false);
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus('idle'), 2500);
@@ -376,7 +382,7 @@ export default function AddPropertyWizard({
         window.sessionStorage?.setItem('apnastay_active_draft_id', prop.id);
       }
       const params = new URLSearchParams(window.location.search);
-      params.set('step', String(step));
+      params.set('step', String(finalStep));
       if (!window.location.pathname.includes(prop.id)) {
         params.set('draftId', prop.id);
       }
@@ -456,6 +462,11 @@ export default function AddPropertyWizard({
   };
 
   const handleBackToPropertyType = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     handleJumpToStep(1);
   };
 
@@ -518,6 +529,11 @@ export default function AddPropertyWizard({
   // --------------------------------------------------------------------------
   const handleBackFromLocation = (currentValues: LocationFormData) => {
     setLocationData(currentValues);
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     setCurrentStep(2);
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=2`;
@@ -570,6 +586,11 @@ export default function AddPropertyWizard({
   // --------------------------------------------------------------------------
   const handleBackFromBasicDetails = (currentValues: BasicDetailsFormData) => {
     setBasicDetails(currentValues);
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     setCurrentStep(3);
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=3`;
@@ -601,12 +622,16 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setBasicDetails(data);
-        setCreatedProperty(res.data);
-        setCurrentStep(5);
-        setShowPhase2Intro(true);
-        if (typeof window !== 'undefined') {
-          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase2`;
-          window.history.replaceState(null, '', newUrl);
+        if (returnToReviewAfterSave || isEditMode) {
+          syncDraftState(res.data, 12);
+        } else {
+          setCreatedProperty(res.data);
+          setCurrentStep(5);
+          setShowPhase2Intro(true);
+          if (typeof window !== 'undefined') {
+            const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase2`;
+            window.history.replaceState(null, '', newUrl);
+          }
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -625,6 +650,11 @@ export default function AddPropertyWizard({
   const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
     setAmenities(currentAmenities);
     setCustomAmenities(currentCustom);
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     setShowPhase2Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
@@ -669,6 +699,11 @@ export default function AddPropertyWizard({
     if (currentVideoUrl !== undefined) {
       setVideoUrl(currentVideoUrl);
     }
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     handleJumpToStep(5);
   };
 
@@ -706,6 +741,11 @@ export default function AddPropertyWizard({
   // Step 7: Who Can Stay Here Handlers (Parent Step 2 Substep 3)
   // --------------------------------------------------------------------------
   const handleBackFromWhoCanStay = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     handleJumpToStep(6);
   };
 
@@ -741,6 +781,11 @@ export default function AddPropertyWizard({
   // Step 8: Rules & Stay Terms Handlers (Parent Step 2 Substep 4)
   // --------------------------------------------------------------------------
   const handleBackFromRulesStayTerms = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     handleJumpToStep(7);
   };
 
@@ -760,11 +805,15 @@ export default function AddPropertyWizard({
       if (res.success && res.data) {
         setRules(res.data);
         const updated = { ...createdProperty, rules: res.data };
-        syncDraftState(updated, 9);
-        setShowPhase3Intro(true);
-        if (typeof window !== 'undefined') {
-          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(updated.id)}&step=phase3`;
-          window.history.replaceState(null, '', newUrl);
+        if (returnToReviewAfterSave || isEditMode) {
+          syncDraftState(updated, 12);
+        } else {
+          syncDraftState(updated, 9);
+          setShowPhase3Intro(true);
+          if (typeof window !== 'undefined') {
+            const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(updated.id)}&step=phase3`;
+            window.history.replaceState(null, '', newUrl);
+          }
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -851,6 +900,11 @@ export default function AddPropertyWizard({
   // Step 8: Pricing & Availability Back & Save Handlers (Phase 8)
   // --------------------------------------------------------------------------
   const handleBackFromPricing = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     setShowPhase3Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase3`;
@@ -898,6 +952,11 @@ export default function AddPropertyWizard({
   // Step 10: Availability Back & Save Handlers (Parent Step 3 Substep 2)
   // --------------------------------------------------------------------------
   const handleBackFromAvailability = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     handleJumpToStep(9);
   };
 
@@ -931,6 +990,11 @@ export default function AddPropertyWizard({
   // Step 11: Title & Description Handlers (Parent Step 3 Substep 3)
   // --------------------------------------------------------------------------
   const handleBackFromTitleDescription = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
     handleJumpToStep(10);
   };
 
@@ -1060,6 +1124,12 @@ export default function AddPropertyWizard({
   };
 
   const handleGlobalBack = () => {
+    if (returnToReviewAfterSave || (isEditMode && currentStep !== 12)) {
+      setReturnToReviewAfterSave(false);
+      handleJumpToStep(12);
+      return;
+    }
+
     if (currentStep === 1) {
       setCurrentStep(0);
       if (typeof window !== 'undefined') {
@@ -1100,7 +1170,11 @@ export default function AddPropertyWizard({
     } else if (currentStep === 11) {
       handleJumpToStep(10);
     } else if (currentStep === 12) {
-      handleJumpToStep(11);
+      if (isEditMode) {
+        handleSaveAndExit();
+      } else {
+        handleJumpToStep(11);
+      }
     }
   };
 
@@ -1783,8 +1857,11 @@ export default function AddPropertyWizard({
         <div className="w-full">
           <StepReview
             property={createdProperty}
-            onBack={() => handleJumpToStep(11)}
-            onEditSection={(step) => handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12)}
+            onBack={handleGlobalBack}
+            onEditSection={(step) => {
+              setReturnToReviewAfterSave(true);
+              handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12);
+            }}
             onSaveDraft={handleSaveIncompleteDraft}
             onPublish={handlePublishListing}
             isSaving={isSubmitting}
