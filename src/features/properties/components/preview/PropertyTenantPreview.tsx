@@ -81,24 +81,7 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
   return (
     <div className={`w-full text-left space-y-4 sm:space-y-5 text-[#222222] font-inter ${className}`}>
       {/* ==================================================================== */}
-      {/* 1. TITLE & LOCATION HEADER (Airbnb Listing Style) */}
-      {/* ==================================================================== */}
-      <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#222222]">
-          {property.title || 'Untitled Property'}
-        </h1>
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#717171]">
-          <MapPin className="w-4 h-4 text-primary shrink-0" />
-          <span className="font-medium truncate">
-            {[property.location?.locality, property.location?.city, property.location?.state]
-              .filter(Boolean)
-              .join(', ') || 'Location details pending'}
-          </span>
-        </div>
-      </div>
-
-      {/* ==================================================================== */}
-      {/* 2. MEDIA HERO & GALLERY PREVIEW (Main Hero with Vertical Side Thumbnails) */}
+      {/* 1. MEDIA HERO & GALLERY PREVIEW (Main Hero with Vertical Side Thumbnails) */}
       {/* ==================================================================== */}
       <div className="flex flex-col sm:flex-row gap-3 w-full items-start">
         {/* Main Featured Photo */}
@@ -169,9 +152,24 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
       {/* ==================================================================== */}
       {/* 2. CORE DETAILS & PRICE BANNER */}
       {/* ==================================================================== */}
-      <div className="space-y-6 pt-2">
+      <div className="space-y-6 pt-1">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6 border-b border-[#EBEBEB]">
           <div className="flex-1 min-w-0">
+            {/* Title & Location Header (Directly below Cover Image) */}
+            <div className="space-y-1 mb-3.5">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#222222]">
+                {property.title || 'Untitled Property'}
+              </h1>
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#717171]">
+                <MapPin className="w-4 h-4 text-primary shrink-0" />
+                <span className="font-medium truncate">
+                  {[property.location?.locality, property.location?.city, property.location?.state]
+                    .filter(Boolean)
+                    .join(', ') || 'Location details pending'}
+                </span>
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="px-2.5 py-1 rounded-full bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]">
                 {formatRentalLabel()}
