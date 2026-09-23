@@ -424,8 +424,6 @@ export default function StepRentCharges({
                     ? 'Included in monthly rent'
                     : maintenanceType === 'fixed'
                     ? `Fixed ₹${(Number(maintenanceAmount.replace(/[^0-9]/g, '')) || 0).toLocaleString('en-IN')} / month`
-                    : maintenanceType === 'variable'
-                    ? 'As per actual society bill'
                     : 'Not applicable'}
                 </span>
               </div>
@@ -436,7 +434,6 @@ export default function StepRentCharges({
                 {[
                   { id: 'included', label: 'Included in rent' },
                   { id: 'fixed', label: 'Fixed amount' },
-                  { id: 'variable', label: 'As per actuals' },
                   { id: 'not_applicable', label: 'Not applicable' }
                 ].map((opt) => {
                   const isSelected = maintenanceType === opt.id;
