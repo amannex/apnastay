@@ -1933,7 +1933,7 @@ export default function AddPropertyWizard({
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
+            <div className="w-full">
               <StepReview
                 property={createdProperty}
                 onBack={() => handleJumpToStep(11)}

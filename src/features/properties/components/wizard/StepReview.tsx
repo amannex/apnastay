@@ -2,12 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import {
-  Check,
   AlertCircle,
   Camera,
   Eye,
-  ListChecks,
-  ExternalLink
+  ListChecks
 } from 'lucide-react';
 import type { Property } from '../../types';
 import {
@@ -185,9 +183,9 @@ export default function StepReview({
   const sections = getSectionData();
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-2 space-y-8 animate-fade-in font-inter text-[#222222]">
+    <div className="w-full max-w-2xl mx-auto py-2 space-y-8 animate-fade-in font-inter text-[#222222]">
       {/* HEADER WITH SEGMENTED TOGGLE (Minimalist Airbnb style) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#EBEBEB] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div className="space-y-1">
           <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
             Review your listing
@@ -244,13 +242,13 @@ export default function StepReview({
         </div>
       )}
 
-      {/* 2. OVERVIEW CHECKLIST MODE */}
+      {/* 2. OVERVIEW CHECKLIST MODE (UNBOXED AIRBNB LAYOUT) */}
       {viewMode === 'overview' && (
-        <div className="space-y-7">
-          {/* HERO SUMMARY CARD */}
-          <div className="p-4 sm:p-5 rounded-2xl border border-[#EBEBEB] bg-white flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+        <div className="space-y-6">
+          {/* HERO SUMMARY (UNBOXED FLOW) */}
+          <div className="pb-6 border-b border-[#EBEBEB] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
             {/* Cover photo thumbnail */}
-            <div className="w-full sm:w-40 h-28 rounded-xl overflow-hidden bg-[#F7F7F7] border border-[#EBEBEB] shrink-0 flex items-center justify-center">
+            <div className="w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-[#F7F7F7] border border-[#EBEBEB] shrink-0 flex items-center justify-center">
               {coverPhoto?.url ? (
                 <img
                   src={coverPhoto.url}
@@ -258,26 +256,26 @@ export default function StepReview({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="flex flex-col items-center justify-center text-[#717171] gap-1.5 text-xs">
-                  <Camera className="w-5 h-5 stroke-[1.5]" />
+                <div className="flex flex-col items-center justify-center text-[#717171] gap-1 text-xs">
+                  <Camera className="w-4 h-4 stroke-[1.5]" />
                   <span>No photo</span>
                 </div>
               )}
             </div>
 
             {/* Info */}
-            <div className="space-y-1.5 flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs uppercase tracking-wider font-semibold text-[#717171]">
+            <div className="space-y-1 flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap text-xs text-[#717171]">
+                <span className="uppercase tracking-wider font-semibold">
                   {property.customPropertyType || property.propertyType?.replace(/_/g, ' ') || 'Property'} • {property.rentalStructure?.replace(/_/g, ' ') || 'Entire space'}
                 </span>
-                <span className="text-xs text-[#717171]">•</span>
-                <span className="text-xs text-[#717171]">
+                <span>•</span>
+                <span>
                   {getPropertyAvailabilityLabel(property.availability)}
                 </span>
               </div>
 
-              <h2 className="font-outfit text-lg sm:text-xl font-semibold text-[#222222] truncate">
+              <h2 className="font-outfit text-base sm:text-lg font-semibold text-[#222222] truncate">
                 {property.title || 'Untitled Property'}
               </h2>
 
@@ -285,8 +283,8 @@ export default function StepReview({
                 {[property.location?.locality, property.location?.city].filter(Boolean).join(', ') || 'No location set'}
               </p>
 
-              <div className="pt-0.5">
-                <span className="font-semibold text-sm sm:text-base text-[#222222]">
+              <div>
+                <span className="font-semibold text-sm text-[#222222]">
                   {formatPricingDisplay(property.pricing, property.pricing?.monthlyRent || 0)}
                 </span>
               </div>
@@ -295,26 +293,26 @@ export default function StepReview({
             <button
               type="button"
               onClick={() => onEditSection(11)}
-              className="text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black self-end sm:self-center shrink-0"
+              className="text-xs sm:text-sm font-semibold text-[#222222] underline underline-offset-4 hover:text-black self-end sm:self-center shrink-0 cursor-pointer"
             >
               Edit title
             </button>
           </div>
 
-          {/* ACTION REQUIRED NOTICE (Clean, quiet, not loud red) */}
+          {/* ACTION REQUIRED NOTICE (UNBOXED, MINIMALIST) */}
           {!evaluation.isPublishable && evaluation.missingRequired.length > 0 && (
-            <div className="p-4 rounded-xl border border-[#EBEBEB] bg-[#F7F7F7] text-xs sm:text-sm text-[#222222] space-y-2">
-              <div className="flex items-center gap-2 font-semibold">
+            <div className="py-2 text-xs sm:text-sm text-[#222222] space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-[#222222]">
                 <AlertCircle className="w-4 h-4 text-[#717171] shrink-0" />
                 <span>Complete the following items before publishing:</span>
               </div>
-              <div className="flex flex-wrap gap-2 pt-1">
+              <div className="flex flex-wrap gap-2 pt-0.5">
                 {evaluation.missingRequired.map((req) => (
                   <button
                     key={req.id}
                     type="button"
                     onClick={() => onEditSection(req.stepNumber)}
-                    className="px-3 py-1 rounded-full bg-white border border-[#EBEBEB] text-xs text-[#222222] font-medium hover:border-[#717171] transition-colors"
+                    className="px-3 py-1 rounded-full bg-[#F7F7F7] border border-[#EBEBEB] text-xs text-[#222222] font-medium hover:border-[#717171] transition-colors cursor-pointer"
                   >
                     {req.label} &rarr;
                   </button>
@@ -323,12 +321,12 @@ export default function StepReview({
             </div>
           )}
 
-          {/* DIVIDED SECTIONS CHECKLIST (Airbnb minimalist style) */}
-          <div className="border border-[#EBEBEB] rounded-2xl bg-white divide-y divide-[#EBEBEB]">
+          {/* DIVIDED SECTIONS (COMPLETELY UNBOXED, OPEN LIST WITH DIVIDERS) */}
+          <div className="divide-y divide-[#EBEBEB]">
             {sections.map((sec) => (
               <div
                 key={sec.step}
-                className="p-4 sm:p-5 flex items-start justify-between gap-4 hover:bg-[#FAF9F8]/50 transition-colors"
+                className="py-4 sm:py-4.5 flex items-start justify-between gap-4 transition-colors"
               >
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-2">
