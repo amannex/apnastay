@@ -146,10 +146,10 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
                 key={photo.id}
                 type="button"
                 onClick={() => setActivePhoto(photo)}
-                className={`relative rounded-xl overflow-hidden shrink-0 w-16 h-12 border-2 transition-all cursor-pointer ${
+                className={`relative rounded-xl overflow-hidden shrink-0 w-16 h-12 border transition-all cursor-pointer ${
                   (activePhoto?.id || initialPhoto?.id) === photo.id
-                    ? 'border-[#222222] ring-2 ring-[#222222]/20 scale-105'
-                    : 'border-transparent opacity-75 hover:opacity-100'
+                    ? 'border-primary ring-1 ring-primary/30 shadow-sm opacity-100'
+                    : 'border-[#EBEBEB] opacity-70 hover:opacity-100 hover:border-[#717171]'
                 }`}
                 title="Click to view photo"
               >
