@@ -75,7 +75,7 @@ export function getSectionStepNumber(section: CompletenessSectionKey): number {
     case 'pricing':
       return 9;
     case 'availability':
-      return 9;
+      return 10;
     default:
       return 1;
   }
@@ -390,7 +390,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   });
 
   // --------------------------------------------------------------------------
-  // 9. Move-In Availability (Step 9)
+  // 10. Move-In Availability (Step 10)
   // --------------------------------------------------------------------------
   const avail = property.availability;
   const hasAvailabilityType = Boolean(avail && avail.type);
@@ -399,7 +399,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'avail_type_set',
     section: 'availability',
-    stepNumber: 9,
+    stepNumber: 10,
     label: 'Move-in availability status specified',
     severity: 'required',
     isSatisfied: hasAvailabilityType && hasValidDateIfSpecific,
@@ -545,21 +545,21 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
  * with missing required or unconfigured fields, or defaults to Step 10 (Review)
  * if all required sections are satisfied.
  */
-export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 {
+export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 {
   const result = evaluateListingCompleteness(property);
 
   // If there are missing required items, navigate directly to the earliest one
   if (result.missingRequired.length > 0) {
     const earliestStep = Math.min(...result.missingRequired.map((i) => i.stepNumber));
-    if (earliestStep >= 1 && earliestStep <= 10) {
-      return earliestStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    if (earliestStep >= 1 && earliestStep <= 11) {
+      return earliestStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
     }
   }
 
   // If all required items are satisfied, check if any recommended section has 0 data configured:
   // Check amenities
   if (!property.amenities || (property.amenities.length === 0 && (!property.customAmenities || property.customAmenities.length === 0))) {
-    return 6;
+    return 5;
   }
 
   // Check house rules
@@ -568,10 +568,10 @@ export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 |
     (!property.rules.guestPolicy || property.rules.guestPolicy === 'not_specified') &&
     (!property.rules.customRules || property.rules.customRules.length === 0)
   )) {
-    return 9;
+    return 8;
   }
 
-  // If everything is populated or publishable, resume to Step 10 (Review & Publishing)
-  return 10;
+  // If everything is populated or publishable, resume to Step 11 (Review & Publishing)
+  return 11;
 }
 

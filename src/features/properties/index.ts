@@ -29,6 +29,8 @@ export type { StepAmenitiesProps } from './components/wizard/StepAmenities';
 export { default as StepUnits } from './components/wizard/StepUnits';
 export type { StepUnitsProps } from './components/wizard/StepUnits';
 export { default as StepPricing } from './components/wizard/StepPricing';
+export { default as StepRentCharges } from './components/wizard/StepRentCharges';
+export { default as StepAvailability } from './components/wizard/StepAvailability';
 export { default as StepRules } from './components/wizard/StepRules';
 export { default as StepReview } from './components/wizard/StepReview';
 export { default as PropertyTenantPreview } from './components/preview/PropertyTenantPreview';

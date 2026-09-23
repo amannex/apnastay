@@ -89,6 +89,7 @@ import StepRulesStayTerms from './StepRulesStayTerms';
 import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRentCharges from './StepRentCharges';
+import StepAvailability from './StepAvailability';
 import StepRules from './StepRules';
 import StepReview from './StepReview';
 import PropertyIntroStep from './PropertyIntroStep';
@@ -116,7 +117,7 @@ export default function AddPropertyWizard({
 }: AddPropertyWizardProps = {}) {
   const router = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10>(() => {
+  const [currentStep, setCurrentStep] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const hasExplicitDraft = params.get('draftId') || params.get('propertyId');
@@ -124,8 +125,8 @@ export default function AddPropertyWizard({
         return 0;
       }
     }
-    if (propInitialStep && propInitialStep >= 1 && propInitialStep <= 10) {
-      return propInitialStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    if (propInitialStep && propInitialStep >= 1 && propInitialStep <= 11) {
+      return propInitialStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
     }
     if (mode === 'create') {
       return 0;
@@ -360,10 +361,10 @@ export default function AddPropertyWizard({
 
           // Determine step from props, URL, or intelligent progress evaluation
           const stepParam = propInitialStep || Number(params.get('step'));
-          if (stepParam >= 1 && stepParam <= 10) {
-            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10);
+          if (stepParam >= 1 && stepParam <= 11) {
+            setCurrentStep(stepParam as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11);
           } else if (mode === 'review') {
-            setCurrentStep(10);
+            setCurrentStep(11);
           } else if (mode === 'edit' || prop.status !== 'draft') {
             setCurrentStep(3); // Start on basic details for established listings
           } else {
@@ -381,7 +382,7 @@ export default function AddPropertyWizard({
   }, [propPropertyId, propInitialStep, mode]);
 
   // Update browser history and session storage whenever draft or step updates
-  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
+  const syncDraftState = (prop: Property, step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11) => {
     setCreatedProperty(prop);
     setCurrentStep(step);
     setHasUnsavedChanges(false);
@@ -404,7 +405,7 @@ export default function AddPropertyWizard({
   };
 
   // Direct Stepper Navigation
-  const handleJumpToStep = (targetStep: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10) => {
+  const handleJumpToStep = (targetStep: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11) => {
     if (!createdProperty && targetStep > 2) return;
     setShowPhase2Intro(false);
     setShowPhase3Intro(false);
@@ -913,6 +914,45 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
+  // Step 10: Availability Back & Save Handlers (Parent Step 3 Substep 2)
+  // --------------------------------------------------------------------------
+  const handleBackFromAvailability = () => {
+    handleJumpToStep(9);
+  };
+
+  const handleSaveAvailability = async (data: {
+    availability: PropertyAvailability;
+    units?: PropertyUnit[];
+  }) => {
+    if (!createdProperty || isSubmitting) return;
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      if (data.units && data.units.length > 0) {
+        setUnits(data.units);
+        await updatePropertyUnits(createdProperty.id, data.units);
+      }
+
+      const res = await updateProperty(createdProperty.id, {
+        availability: data.availability
+      });
+
+      if (res.success && res.data) {
+        syncDraftState(res.data, 11);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setAppError(res, 'Failed to save property availability.');
+      }
+    } catch (err: any) {
+      setAppError(err, 'Network error while saving availability.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
   // Step 9: Rules & Preferences Handlers (Phase 9)
   // --------------------------------------------------------------------------
   const handleBackFromRules = () => {
@@ -1092,6 +1132,8 @@ export default function AddPropertyWizard({
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (currentStep === 10) {
       handleJumpToStep(9);
+    } else if (currentStep === 11) {
+      handleJumpToStep(10);
     }
   };
 
@@ -1309,18 +1351,42 @@ export default function AddPropertyWizard({
       );
     }
 
+    if (currentStep === 10) {
+      return (
+        <button
+          type="submit"
+          form="availability-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
         onClick={() => {
-          if (currentStep < 10) {
+          if (currentStep < 11) {
             handleJumpToStep((currentStep + 1) as any);
           }
         }}
         disabled={isSubmitting}
         className="min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] bg-[#222222] hover:bg-black text-white cursor-pointer"
       >
-        <span>{currentStep === 10 ? 'Publish' : 'Next'}</span>
+        <span>{currentStep === 11 ? 'Publish' : 'Next'}</span>
       </button>
     );
   };
@@ -1669,8 +1735,20 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 10: LISTING REVIEW & PUBLISHING (PHASE 10) */}
+      {/* STEP 10: AVAILABILITY (PARENT STEP 3 SUBSTEP 2) */}
       {currentStep === 10 && createdProperty && !isLoadingDraft && (
+        <div className="w-full">
+          <StepAvailability
+            property={createdProperty}
+            onBack={handleBackFromAvailability}
+            onSave={handleSaveAvailability}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 11: LISTING REVIEW & PUBLISHING (PARENT STEP 3 SUBSTEP 3) */}
+      {currentStep === 11 && createdProperty && !isLoadingDraft && (
         <>
           {isPublishedSuccess ? (
             <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#EDEDED] shadow-apple-sm text-center space-y-6 animate-fade-in">
@@ -1762,8 +1840,8 @@ export default function AddPropertyWizard({
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
               <StepReview
                 property={createdProperty}
-                onBack={() => handleJumpToStep(9)}
-                onEditSection={(step) => handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10)}
+                onBack={() => handleJumpToStep(10)}
+                onEditSection={(step) => handleJumpToStep(step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11)}
                 onSaveDraft={handleSaveIncompleteDraft}
                 onPublish={handlePublishListing}
                 isSaving={isSubmitting}
@@ -1825,13 +1903,19 @@ export default function AddPropertyWizard({
             />
           </div>
 
-          {/* Phase 3: Steps 9-10 (Parent Step 3: Finish up and publish - 2 substeps) */}
+          {/* Phase 3: Steps 9-11 (Parent Step 3: Finish up and publish - 3 substeps) */}
           <div className="h-full bg-[#E5E5EA] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#222222] rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  currentStep >= 10 ? 100 : currentStep === 9 ? 50 : 0
+                  currentStep >= 11
+                    ? 100
+                    : currentStep === 10
+                    ? 66
+                    : currentStep === 9
+                    ? 33
+                    : 0
                 }%`,
               }}
             />
