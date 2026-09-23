@@ -94,7 +94,7 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
     key: 'rules_stay_terms',
     title: 'Rules & Stay Terms',
     shortLabel: 'Rules',
-    description: 'Set house rules on smoking, alcohol, visitors, pets, quiet hours, parties, and cooking.',
+    description: 'Set house rules on smoking, alcohol, visitors, pets, and parties.',
     isApplicable: () => true,
     isCompleted: (p) => Boolean(p.rules?.smokingRule || p.rules?.alcoholRule || p.rules?.visitorsRule)
   },

@@ -6,9 +6,7 @@ import {
   Wine,
   Users,
   PawPrint,
-  Clock,
   Sparkles,
-  Utensils,
   AlertCircle
 } from 'lucide-react';
 import type { PropertyRules } from '../../types';
@@ -58,25 +56,10 @@ export default function StepRulesStayTerms({
     return 'not_allowed';
   });
 
-  // 5. Quiet hours: Yes / No
-  const [quietHoursRule, setQuietHoursRule] = useState<'yes' | 'no'>(() => {
-    if (initialRules?.quietHoursRule) return initialRules.quietHoursRule;
-    if (initialRules?.quietHoursStart && initialRules?.quietHoursEnd) return 'yes';
-    return 'yes';
-  });
-
-  // 6. Parties: Allowed / Not allowed / With permission
+  // 5. Parties: Allowed / Not allowed / With permission
   const [partiesRule, setPartiesRule] = useState<'allowed' | 'not_allowed' | 'with_permission'>(() => {
     if (initialRules?.partiesRule) return initialRules.partiesRule;
     return 'not_allowed';
-  });
-
-  // 7. Cooking: Allowed / Not allowed / Restricted
-  const [cookingRule, setCookingRule] = useState<'allowed' | 'not_allowed' | 'restricted'>(() => {
-    if (initialRules?.cookingRule) return initialRules.cookingRule;
-    if (initialRules?.cookingPolicy === 'not_allowed') return 'not_allowed';
-    if (initialRules?.cookingPolicy === 'veg_only') return 'restricted';
-    return 'allowed';
   });
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -90,10 +73,7 @@ export default function StepRulesStayTerms({
       alcoholRule,
       visitorsRule,
       petsRule,
-      quietHoursRule,
-      partiesRule,
-      cookingRule,
-      cookingPolicy: cookingRule === 'allowed' ? 'veg_and_nonveg' : cookingRule === 'restricted' ? 'veg_only' : 'not_allowed'
+      partiesRule
     });
 
     onSave(payload);
@@ -149,17 +129,6 @@ export default function StepRulesStayTerms({
       ]
     },
     {
-      id: 'quiet_hours',
-      label: 'Quiet hours',
-      icon: Clock,
-      value: quietHoursRule,
-      onChange: (val: any) => setQuietHoursRule(val),
-      options: [
-        { id: 'yes', label: 'Yes' },
-        { id: 'no', label: 'No' }
-      ]
-    },
-    {
       id: 'parties',
       label: 'Parties',
       icon: Sparkles,
@@ -169,18 +138,6 @@ export default function StepRulesStayTerms({
         { id: 'allowed', label: 'Allowed' },
         { id: 'not_allowed', label: 'Not allowed' },
         { id: 'with_permission', label: 'With permission' }
-      ]
-    },
-    {
-      id: 'cooking',
-      label: 'Cooking',
-      icon: Utensils,
-      value: cookingRule,
-      onChange: (val: any) => setCookingRule(val),
-      options: [
-        { id: 'allowed', label: 'Allowed' },
-        { id: 'not_allowed', label: 'Not allowed' },
-        { id: 'restricted', label: 'Restricted' }
       ]
     }
   ];
@@ -215,13 +172,13 @@ export default function StepRulesStayTerms({
           Property rules
         </h2>
 
-        <div className="divide-y divide-[#EBEBEB]">
+        <div className="space-y-3 sm:space-y-4">
           {RULES_DATA.map((rule) => {
             const Icon = rule.icon;
             return (
               <div
                 key={rule.id}
-                className="py-4 sm:py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+                className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
               >
                 {/* RULE NAME & ICON */}
                 <div className="flex items-center gap-3">

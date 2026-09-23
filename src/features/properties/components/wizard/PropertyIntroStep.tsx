@@ -46,7 +46,7 @@ export default function PropertyIntroStep({
         'Select all true amenities and utilities included.',
         'Upload at least 5 clear photos showing different angles.',
         'Specify who can stay and age requirements.',
-        'Set clear rules on smoking, alcohol, visitors, pets, quiet hours, parties, and cooking.'
+        'Set clear rules on smoking, alcohol, visitors, pets, and parties.'
       ]
     },
     3: {
