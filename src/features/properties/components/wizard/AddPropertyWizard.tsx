@@ -81,10 +81,10 @@ import {
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
-import StepTitleDescription from './StepTitleDescription';
 import StepLocation, { LocationFormData } from './StepLocation';
 import StepPhotos from './StepPhotos';
 import StepAmenities from './StepAmenities';
+import StepWhoCanStay from './StepWhoCanStay';
 import StepUnits from './StepUnits';
 import StepPricing from './StepPricing';
 import StepRules from './StepRules';
@@ -719,37 +719,40 @@ export default function AddPropertyWizard({
 
 
   // --------------------------------------------------------------------------
-  // Step 7: Title & Description Handlers (Parent Step 2 Substep 3)
+  // Step 7: Who Can Stay Here Handlers (Parent Step 2 Substep 3)
   // --------------------------------------------------------------------------
-  const handleBackFromTitleDescription = () => {
+  const handleBackFromWhoCanStay = () => {
     handleJumpToStep(6);
   };
 
-  const handleSaveTitleDescription = async (data: { title: string; description: string }) => {
+  const handleSaveWhoCanStay = async (rulesPayload: PropertyRules) => {
     if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
     clearError();
 
     try {
-      const res = await updateProperty(createdProperty.id, {
-        title: data.title,
-        description: data.description
-      });
+      const mergedRules: PropertyRules = {
+        ...(createdProperty.rules || {}),
+        ...rulesPayload
+      };
+      const res = await updatePropertyRules(createdProperty.id, mergedRules);
 
       if (res.success && res.data) {
-        syncDraftState(res.data, 8);
+        setRules(res.data);
+        const updated = { ...createdProperty, rules: res.data };
+        syncDraftState(updated, 8);
         setShowPhase3Intro(true);
         if (typeof window !== 'undefined') {
-          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(res.data.id)}&step=phase3`;
+          const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(updated.id)}&step=phase3`;
           window.history.replaceState(null, '', newUrl);
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setAppError(res, 'Failed to save title and description.');
+        setAppError(res, 'Failed to save resident preferences.');
       }
     } catch (err: any) {
-      setAppError(err, 'Network error while saving title and description.');
+      setAppError(err, 'Network error while saving resident preferences.');
     } finally {
       setIsSubmitting(false);
     }
@@ -1201,7 +1204,7 @@ export default function AddPropertyWizard({
       return (
         <button
           type="submit"
-          form="title-description-form"
+          form="who-can-stay-form"
           disabled={isSubmitting}
           className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
             isSubmitting
@@ -1543,17 +1546,14 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 7: TITLE & DESCRIPTION (PHASE 2 SUBSTEP 3) */}
+      {/* STEP 7: WHO CAN STAY HERE (PARENT STEP 2 SUBSTEP 3) */}
       {currentStep === 7 && createdProperty && !isLoadingDraft && (
         <div className="w-full">
-          <StepTitleDescription
-            propertyType={selectedType || createdProperty.propertyType}
-            customPropertyType={customPropertyType || createdProperty.customPropertyType}
-            rentalStructure={selectedStructure || createdProperty.rentalStructure}
-            initialTitle={createdProperty.title || basicDetails.title || ''}
-            initialDescription={createdProperty.description || basicDetails.description || ''}
-            onBack={handleBackFromTitleDescription}
-            onSave={handleSaveTitleDescription}
+          <StepWhoCanStay
+            propertyId={createdProperty.id}
+            initialRules={createdProperty.rules || rules}
+            onBack={handleBackFromWhoCanStay}
+            onSave={handleSaveWhoCanStay}
             isSaving={isSubmitting}
           />
         </div>

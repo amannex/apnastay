@@ -38,14 +38,14 @@ export default function PropertyIntroStep({
       stepLabel: 'Step 2',
       title: 'Make your place stand out',
       description:
-        'In this step, you’ll add the amenities your property offers, upload photos and an optional video, and give your place a title and description.',
+        'In this step, you’ll add the amenities your property offers, upload photos and an optional video, and set who can stay at your place.',
       modalTitle: 'Step 2: Make Your Place Stand Out',
       modalDesc:
-        'Highlight what makes your place unique. High-quality photos, an optional video walkthrough, and rich amenities help attract high-quality prospective tenants.',
+        'Highlight what makes your place unique. High-quality photos, rich amenities, and clear resident preferences help attract high-quality prospective tenants.',
       modalTips: [
         'Select all true amenities and utilities included.',
         'Upload at least 5 clear photos showing different angles.',
-        'Add an optional video tour to give renters a real feel of your space.',
+        'Specify who can stay (families, bachelors, students) and house guidelines.',
         'Detailed listings receive up to 3x more viewing requests.'
       ]
     },

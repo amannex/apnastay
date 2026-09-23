@@ -82,12 +82,12 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
   },
   {
     stepNumber: 7,
-    key: 'title_description',
-    title: 'Title & Description',
-    shortLabel: 'Details',
-    description: 'Give your listing a catchy headline and an authentic description.',
+    key: 'who_can_stay',
+    title: 'Who Can Stay Here',
+    shortLabel: 'Residents',
+    description: 'Set who is welcome to stay and specify your key house rules.',
     isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.title && p.title.trim().length >= 5 && p.description && p.description.trim().length >= 10)
+    isCompleted: (p) => Boolean(p.rules?.suitableFor && p.rules.suitableFor.length > 0)
   },
   {
     stepNumber: 8,
