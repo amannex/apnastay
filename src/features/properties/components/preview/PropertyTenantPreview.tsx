@@ -79,9 +79,26 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
   const currentCover = activePhoto || initialPhoto;
 
   return (
-    <div className={`w-full text-left space-y-6 text-[#222222] font-inter ${className}`}>
+    <div className={`w-full text-left space-y-4 sm:space-y-5 text-[#222222] font-inter ${className}`}>
       {/* ==================================================================== */}
-      {/* 1. MEDIA HERO & GALLERY PREVIEW */}
+      {/* 1. TITLE & LOCATION HEADER (Airbnb Listing Style) */}
+      {/* ==================================================================== */}
+      <div className="space-y-1">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#222222]">
+          {property.title || 'Untitled Property'}
+        </h1>
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#717171]">
+          <MapPin className="w-4 h-4 text-primary shrink-0" />
+          <span className="font-medium truncate">
+            {[property.location?.locality, property.location?.city, property.location?.state]
+              .filter(Boolean)
+              .join(', ') || 'Location details pending'}
+          </span>
+        </div>
+      </div>
+
+      {/* ==================================================================== */}
+      {/* 2. MEDIA HERO & GALLERY PREVIEW */}
       {/* ==================================================================== */}
       <div className="relative aspect-video sm:aspect-[21/9] w-full bg-[#1D1D1F] rounded-2xl overflow-hidden shadow-apple-sm">
         {currentCover ? (
@@ -92,14 +109,11 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
               alt={property.title || 'Property view'}
               className="w-full h-full object-cover transition-all duration-300"
             />
-            {/* Scrims for guaranteed high-contrast text and badge visibility regardless of image brightness */}
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/75 via-black/30 to-transparent pointer-events-none" />
-            <div className="absolute inset-x-0 bottom-0 h-36 sm:h-44 bg-gradient-to-t from-black/95 via-black/70 via-50% to-transparent pointer-events-none" />
 
             {/* Badges Over Image */}
-            <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20 shadow-sm">
-                <Building2 className="w-3.5 h-3.5 text-white/80" />
+                <Building2 className="w-3.5 h-3.5 text-white/90" />
                 <span>{property.customPropertyType || template.label}</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary backdrop-blur-md text-white text-xs font-semibold shadow-sm">
@@ -108,24 +122,9 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
               </span>
             </div>
 
-            <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20">
+            <div className="absolute top-3 sm:top-4 right-3 sm:right-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold border border-white/20">
               <Camera className="w-3.5 h-3.5" />
               <span>{photos.length} Photo{photos.length !== 1 ? 's' : ''}</span>
-            </div>
-
-            {/* Title & Location Overlay */}
-            <div className="absolute bottom-4 left-4 right-4 text-white">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                {property.title}
-              </h1>
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-white/95 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <span className="font-medium truncate">
-                  {[property.location?.locality, property.location?.city, property.location?.state]
-                    .filter(Boolean)
-                    .join(', ') || 'Location details pending'}
-                </span>
-              </div>
             </div>
           </>
         ) : (
