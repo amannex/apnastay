@@ -143,14 +143,32 @@ export function sanitizePropertyRules(rules: Partial<PropertyRules>): PropertyRu
     clean.petPolicy = clean.petsAllowed ? 'allowed' : 'not_allowed';
   }
 
-  // Synchronize Guest Policy <-> Legacy Visitors Boolean
-  if (clean.visitorsRule) {
-    clean.guestPolicy = clean.visitorsRule === 'allowed' ? 'allowed' : clean.visitorsRule === 'restricted' ? 'with_restrictions' : 'not_allowed';
-    clean.visitorsAllowed = clean.visitorsRule !== 'not_allowed';
-  } else if (clean.guestPolicy) {
-    clean.visitorsAllowed = clean.guestPolicy === 'allowed' || clean.guestPolicy === 'with_restrictions';
-  } else if (clean.visitorsAllowed !== undefined) {
-    clean.guestPolicy = clean.visitorsAllowed ? 'allowed' : 'not_allowed';
+  // Synchronize Stay Terms
+  if (clean.minimumStayRule) {
+    clean.lockInPeriodMonths = clean.minimumStayRule === '12+' ? 12 : parseInt(clean.minimumStayRule, 10);
+  } else if (clean.lockInPeriodMonths !== undefined) {
+    if (clean.lockInPeriodMonths >= 12) clean.minimumStayRule = '12+';
+    else if (clean.lockInPeriodMonths >= 11) clean.minimumStayRule = '11';
+    else if (clean.lockInPeriodMonths >= 6) clean.minimumStayRule = '6';
+    else if (clean.lockInPeriodMonths >= 3) clean.minimumStayRule = '3';
+    else clean.minimumStayRule = '1';
+  }
+
+  if (clean.noticePeriodRule) {
+    clean.noticePeriodDays = clean.noticePeriodRule === '60+' ? 60 : parseInt(clean.noticePeriodRule, 10);
+  } else if (clean.noticePeriodDays !== undefined) {
+    if (clean.noticePeriodDays >= 60) clean.noticePeriodRule = '60+';
+    else if (clean.noticePeriodDays >= 30) clean.noticePeriodRule = '30';
+    else if (clean.noticePeriodDays >= 15) clean.noticePeriodRule = '15';
+    else clean.noticePeriodRule = '7';
+  }
+
+  if (clean.tenantVerificationRule !== undefined) {
+    clean.requiresPoliceVerification = clean.tenantVerificationRule === 'yes';
+  }
+
+  if (clean.otherTerms !== undefined) {
+    clean.additionalNotes = clean.otherTerms;
   }
 
   return clean;

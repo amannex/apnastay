@@ -319,6 +319,14 @@ export interface PropertyRules {
   requiresEmploymentOrCollegeProof?: boolean;
   verificationNotes?: string;
 
+  // Stay Terms
+  minimumStayRule?: '1' | '3' | '6' | '11' | '12+';
+  noticePeriodRule?: '7' | '15' | '30' | '60+';
+  agreementRule?: 'yes' | 'no';
+  tenantVerificationRule?: 'yes' | 'no';
+  moveInRequirements?: string[];
+  otherTerms?: string;
+
   // Custom Rules & Notes
   customRules?: string[];
   additionalNotes?: string;

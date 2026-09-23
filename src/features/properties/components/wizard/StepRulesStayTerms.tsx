@@ -7,7 +7,13 @@ import {
   Users,
   PawPrint,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  Bell,
+  FileText,
+  ShieldCheck,
+  ClipboardCheck,
+  ScrollText
 } from 'lucide-react';
 import type { PropertyRules } from '../../types';
 import { sanitizePropertyRules } from '../../rules';
@@ -62,6 +68,57 @@ export default function StepRulesStayTerms({
     return 'not_allowed';
   });
 
+  // Stay Terms States
+  const [minimumStayRule, setMinimumStayRule] = useState<'1' | '3' | '6' | '11' | '12+'>(() => {
+    if (initialRules?.minimumStayRule) return initialRules.minimumStayRule;
+    if (initialRules?.lockInPeriodMonths) {
+      if (initialRules.lockInPeriodMonths >= 12) return '12+';
+      if (initialRules.lockInPeriodMonths >= 11) return '11';
+      if (initialRules.lockInPeriodMonths >= 6) return '6';
+      if (initialRules.lockInPeriodMonths >= 3) return '3';
+      return '1';
+    }
+    return '11';
+  });
+
+  const [noticePeriodRule, setNoticePeriodRule] = useState<'7' | '15' | '30' | '60+'>(() => {
+    if (initialRules?.noticePeriodRule) return initialRules.noticePeriodRule;
+    if (initialRules?.noticePeriodDays) {
+      if (initialRules.noticePeriodDays >= 60) return '60+';
+      if (initialRules.noticePeriodDays >= 30) return '30';
+      if (initialRules.noticePeriodDays >= 15) return '15';
+      return '7';
+    }
+    return '30';
+  });
+
+  const [agreementRule, setAgreementRule] = useState<'yes' | 'no'>(() => {
+    if (initialRules?.agreementRule) return initialRules.agreementRule;
+    return 'yes';
+  });
+
+  const [tenantVerificationRule, setTenantVerificationRule] = useState<'yes' | 'no'>(() => {
+    if (initialRules?.tenantVerificationRule) return initialRules.tenantVerificationRule;
+    if (initialRules?.requiresPoliceVerification !== undefined) {
+      return initialRules.requiresPoliceVerification ? 'yes' : 'no';
+    }
+    return 'yes';
+  });
+
+  const [moveInRequirements, setMoveInRequirements] = useState<string[]>(() => {
+    if (initialRules?.moveInRequirements) return initialRules.moveInRequirements;
+    const reqs: string[] = [];
+    if (initialRules?.requiresIdProof !== false) reqs.push('government_id');
+    if (initialRules?.requiresPoliceVerification) reqs.push('police_verification');
+    if (initialRules?.requiresEmploymentOrCollegeProof) reqs.push('employment_proof');
+    if (reqs.length === 0) return ['government_id', 'security_deposit'];
+    return reqs;
+  });
+
+  const [otherTerms, setOtherTerms] = useState<string>(() => {
+    return initialRules?.otherTerms || initialRules?.additionalNotes || '';
+  });
+
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,7 +130,13 @@ export default function StepRulesStayTerms({
       alcoholRule,
       visitorsRule,
       petsRule,
-      partiesRule
+      partiesRule,
+      minimumStayRule,
+      noticePeriodRule,
+      agreementRule,
+      tenantVerificationRule,
+      moveInRequirements,
+      otherTerms: otherTerms.trim() || undefined
     });
 
     onSave(payload);
@@ -213,6 +276,229 @@ export default function StepRulesStayTerms({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* STAY TERMS SECTION */}
+      <div className="space-y-4 pt-2">
+        <h2 className="font-inter text-base sm:text-lg font-semibold text-[#222222]">
+          Stay terms
+        </h2>
+
+        <div className="space-y-3 sm:space-y-4">
+          {/* Minimum stay */}
+          <div className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
+                <Clock className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+                Minimum stay
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap justify-start sm:justify-end">
+              {[
+                { id: '1', label: '1 month' },
+                { id: '3', label: '3 months' },
+                { id: '6', label: '6 months' },
+                { id: '11', label: '11 months' },
+                { id: '12+', label: '12+ months' }
+              ].map((option) => {
+                const isSelected = minimumStayRule === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setMinimumStayRule(option.id as any)}
+                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
+                      isSelected
+                        ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
+                        : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Notice period */}
+          <div className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
+                <Bell className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+                Notice period
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap justify-start sm:justify-end">
+              {[
+                { id: '7', label: '7 days' },
+                { id: '15', label: '15 days' },
+                { id: '30', label: '30 days' },
+                { id: '60+', label: '60+ days' }
+              ].map((option) => {
+                const isSelected = noticePeriodRule === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setNoticePeriodRule(option.id as any)}
+                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
+                      isSelected
+                        ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
+                        : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Agreement */}
+          <div className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
+                <FileText className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+                Agreement
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap justify-start sm:justify-end">
+              {[
+                { id: 'yes', label: 'Yes' },
+                { id: 'no', label: 'No' }
+              ].map((option) => {
+                const isSelected = agreementRule === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setAgreementRule(option.id as any)}
+                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
+                      isSelected
+                        ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
+                        : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Tenant verification */}
+          <div className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
+                <ShieldCheck className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+                Tenant verification
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap justify-start sm:justify-end">
+              {[
+                { id: 'yes', label: 'Yes' },
+                { id: 'no', label: 'No' }
+              ].map((option) => {
+                const isSelected = tenantVerificationRule === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setTenantVerificationRule(option.id as any)}
+                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
+                      isSelected
+                        ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
+                        : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Move-in requirements */}
+          <div className="py-2 sm:py-2.5 flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:pt-1">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
+                <ClipboardCheck className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <div>
+                <span className="font-inter text-sm sm:text-base font-medium text-[#222222] block">
+                  Move-in requirements
+                </span>
+                <span className="font-inter text-xs text-[#717171]">
+                  Select requirements
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-start sm:justify-end max-w-md">
+              {[
+                { id: 'government_id', label: 'Government ID' },
+                { id: 'police_verification', label: 'Police verification' },
+                { id: 'employment_proof', label: 'Job / Student ID' },
+                { id: 'security_deposit', label: 'Security deposit' },
+                { id: 'rent_agreement', label: 'Rent agreement' }
+              ].map((option) => {
+                const isSelected = moveInRequirements.includes(option.id);
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => {
+                      setMoveInRequirements((prev) =>
+                        prev.includes(option.id)
+                          ? prev.filter((item) => item !== option.id)
+                          : [...prev, option.id]
+                      );
+                    }}
+                    className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
+                      isSelected
+                        ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
+                        : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Other terms */}
+          <div className="py-2 sm:py-2.5 flex flex-col gap-2.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F7F7] flex items-center justify-center text-[#222222] shrink-0">
+                <ScrollText className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <span className="font-inter text-sm sm:text-base font-medium text-[#222222]">
+                Other terms <span className="text-xs font-normal text-[#717171]">(Optional)</span>
+              </span>
+            </div>
+
+            <textarea
+              rows={2}
+              value={otherTerms}
+              onChange={(e) => setOtherTerms(e.target.value)}
+              placeholder="e.g., Gate closes at 11 PM, no shoes inside premises, quiet hours after 10 PM..."
+              className="w-full px-4 py-2.5 rounded-xl border border-[#E0E0E0] focus:border-[#717171] focus:outline-none text-xs sm:text-sm text-[#222222] placeholder:text-[#9E9E9E] transition-colors resize-none"
+            />
+          </div>
         </div>
       </div>
     </form>
