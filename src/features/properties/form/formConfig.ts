@@ -73,29 +73,21 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
   },
   {
     stepNumber: 6,
-    key: 'property_structure',
-    title: 'Rooms or Units',
-    shortLabel: 'Structure',
-    description: 'Tell us about the rooms or units and accommodation structure.',
+    key: 'photos',
+    title: 'Photos & Optional Video',
+    shortLabel: 'Photos',
+    description: 'Upload high quality photos and an optional video tour of your space.',
     isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.units && p.units.length > 0)
+    isCompleted: (p) => Boolean(p.photos && p.photos.length >= 5)
   },
   {
     stepNumber: 7,
-    key: 'units',
-    title: 'Units, Rooms & Beds',
-    shortLabel: 'Units',
-    description: 'Configure individual flats, private rooms, or dorm beds for multi-unit properties.',
-    isApplicable: (type, structure) => {
-      if (!type || !structure) return false;
-      if (structure === 'entire_property') return false;
-      const template = getPropertyTemplate(type);
-      return template.hasUnits || structure === 'multiple_units' || structure === 'individual_room' || structure === 'individual_bed';
-    },
-    isCompleted: (p) => {
-      if (p.rentalStructure === 'entire_property') return true;
-      return Boolean(p.units && p.units.length > 0);
-    }
+    key: 'title_description',
+    title: 'Title & Description',
+    shortLabel: 'Details',
+    description: 'Give your listing a catchy headline and an authentic description.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.title && p.title.trim().length >= 5 && p.description && p.description.trim().length >= 10)
   },
   {
     stepNumber: 8,

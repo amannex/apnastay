@@ -381,6 +381,7 @@ export interface Property {
   bathrooms?: number;
   hasLock?: boolean;
   guests?: number;
+  videoUrl?: string;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -441,6 +442,7 @@ export interface UpdatePropertyPayload {
   guests?: number;
   rules?: Partial<PropertyRules>;
   photos?: PropertyPhoto[];
+  videoUrl?: string;
   status?: PropertyStatus;
 }
 

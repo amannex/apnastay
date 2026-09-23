@@ -80,7 +80,6 @@ import {
 } from '../../rules';
 import StepPropertyType from './StepPropertyType';
 import StepRentalStructure from './StepRentalStructure';
-import StepPropertyStructure from './StepPropertyStructure';
 import StepBasicDetails, { BasicDetailsFormData } from './StepBasicDetails';
 import StepTitleDescription from './StepTitleDescription';
 import StepLocation, { LocationFormData } from './StepLocation';
@@ -142,8 +141,9 @@ export default function AddPropertyWizard({
   const [locationData, setLocationData] = useState<Partial<LocationFormData>>({});
   const [confirmedLocationData, setConfirmedLocationData] = useState<LocationFormData | null>(null);
 
-  // Photos draft state (Phase 5)
+  // Photos & Video draft state (Parent Step 2 Substep 2)
   const [photos, setPhotos] = useState<PropertyPhoto[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string>('');
 
   // Amenities draft state (Phase 6)
   const [amenities, setAmenities] = useState<string[]>([]);
@@ -312,9 +312,12 @@ export default function AddPropertyWizard({
             }
           }
 
-          // Restore photos form fields (Phase 5)
+          // Restore photos and video draft fields
           if (prop.photos && prop.photos.length > 0) {
             setPhotos(prop.photos);
+          }
+          if (prop.videoUrl) {
+            setVideoUrl(prop.videoUrl);
           }
 
           // Restore amenities form fields (Phase 6)
@@ -675,16 +678,17 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
-  // Step 6: Accommodation Structure Back & Save Handlers (Parent Step 2 Substep 2)
+  // Step 6: Photos & Video Handlers (Parent Step 2 Substep 2)
   // --------------------------------------------------------------------------
-  const handleBackFromPropertyStructure = () => {
+  const handleBackFromPhotos = (currentPhotos: PropertyPhoto[], currentVideoUrl?: string) => {
+    setPhotos(currentPhotos);
+    if (currentVideoUrl !== undefined) {
+      setVideoUrl(currentVideoUrl);
+    }
     handleJumpToStep(5);
   };
 
-  const handleSavePropertyStructure = async (
-    newUnits: PropertyUnit[],
-    structure: 'single_unit' | 'multiple_units'
-  ) => {
+  const handleSavePhotos = async (currentPhotos: PropertyPhoto[], currentVideoUrl?: string) => {
     if (!createdProperty || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -692,57 +696,16 @@ export default function AddPropertyWizard({
 
     try {
       const res = await updateProperty(createdProperty.id, {
-        units: newUnits,
-        propertyStructure: structure
-      });
-
-      if (res.success && res.data) {
-        setUnits(newUnits);
-        syncDraftState(res.data, 7);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        setAppError(res, 'Failed to save accommodation structure.');
-        throw new Error(res.error || 'Failed to save accommodation structure.');
-      }
-    } catch (err: any) {
-      setAppError(err, 'Network error while saving accommodation structure.');
-      throw err;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleContinueToStep2 = () => {
-    handleJumpToStep(7);
-  };
-
-  // --------------------------------------------------------------------------
-  // Step 5: Photos Back & Save Handlers (Phase 5)
-  // --------------------------------------------------------------------------
-  const handleBackFromPhotos = (currentPhotos: PropertyPhoto[]) => {
-    setPhotos(currentPhotos);
-    setCurrentStep(4);
-    if (createdProperty && typeof window !== 'undefined') {
-      const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=4`;
-      window.history.replaceState(null, '', newUrl);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSavePhotos = async (currentPhotos: PropertyPhoto[]) => {
-    if (!createdProperty || isSubmitting) return;
-
-    setIsSubmitting(true);
-    clearError();
-
-    try {
-      const res = await updateProperty(createdProperty.id, {
-        photos: currentPhotos
+        photos: currentPhotos,
+        videoUrl: currentVideoUrl || ''
       });
 
       if (res.success && res.data) {
         setPhotos(currentPhotos);
-        syncDraftState(res.data, 6);
+        if (currentVideoUrl !== undefined) {
+          setVideoUrl(currentVideoUrl);
+        }
+        syncDraftState(res.data, 7);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save property photos.');
@@ -1015,6 +978,7 @@ export default function AddPropertyWizard({
     setBasicDetails({});
     setLocationData({});
     setPhotos([]);
+    setVideoUrl('');
     setAmenities([]);
     setCustomAmenities([]);
     setUnits([]);
@@ -1213,7 +1177,7 @@ export default function AddPropertyWizard({
       return (
         <button
           type="submit"
-          form="property-structure-form"
+          form="photos-form"
           disabled={isSubmitting}
           className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
             isSubmitting
@@ -1565,24 +1529,15 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 6: ACCOMMODATION STRUCTURE (PHASE 2 SUBSTEP 2) */}
+      {/* STEP 6: PHOTOS & OPTIONAL VIDEO (PARENT STEP 2 SUBSTEP 2) */}
       {currentStep === 6 && createdProperty && !isLoadingDraft && (
         <div className="w-full">
-          <StepPropertyStructure
+          <StepPhotos
             propertyId={createdProperty.id}
-            propertyType={selectedType || createdProperty.propertyType}
-            customPropertyType={customPropertyType || createdProperty.customPropertyType}
-            rentalStructure={selectedStructure || createdProperty.rentalStructure}
-            initialPropertyStructure={createdProperty.propertyStructure}
-            initialUnits={units.length > 0 ? units : createdProperty.units || []}
-            locationSummary={
-              locationData.publicLocation ||
-              createdProperty.location?.publicLocation ||
-              [createdProperty.location?.locality, createdProperty.location?.city].filter(Boolean).join(', ')
-            }
-            onBack={handleBackFromPropertyStructure}
-            onSave={handleSavePropertyStructure}
-            onContinueToStep2={handleContinueToStep2}
+            initialPhotos={photos.length > 0 ? photos : createdProperty.photos || []}
+            initialVideoUrl={videoUrl || createdProperty.videoUrl || ''}
+            onBack={handleBackFromPhotos}
+            onSave={handleSavePhotos}
             isSaving={isSubmitting}
           />
         </div>
