@@ -168,7 +168,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'title_present',
     section: 'basic_details',
-    stepNumber: 3,
+    stepNumber: 11,
     label: 'Property title specified (min 5 characters)',
     severity: 'required',
     isSatisfied: hasValidTitle,
@@ -182,7 +182,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'desc_min_length',
     section: 'basic_details',
-    stepNumber: 3,
+    stepNumber: 11,
     label: 'Basic description (min 10 characters)',
     severity: 'required',
     isSatisfied: hasBasicDesc,
@@ -192,7 +192,7 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
   items.push({
     id: 'desc_detailed',
     section: 'basic_details',
-    stepNumber: 3,
+    stepNumber: 11,
     label: 'Detailed description (50+ characters)',
     severity: 'recommended',
     isSatisfied: hasRichDesc,
@@ -545,14 +545,14 @@ export function evaluateListingCompleteness(property: Property): ListingComplete
  * with missing required or unconfigured fields, or defaults to Step 10 (Review)
  * if all required sections are satisfied.
  */
-export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 {
+export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 {
   const result = evaluateListingCompleteness(property);
 
   // If there are missing required items, navigate directly to the earliest one
   if (result.missingRequired.length > 0) {
     const earliestStep = Math.min(...result.missingRequired.map((i) => i.stepNumber));
-    if (earliestStep >= 1 && earliestStep <= 11) {
-      return earliestStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+    if (earliestStep >= 1 && earliestStep <= 12) {
+      return earliestStep as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
     }
   }
 
@@ -571,7 +571,7 @@ export function determineNextIncompleteStep(property: Property): 1 | 2 | 3 | 4 |
     return 8;
   }
 
-  // If everything is populated or publishable, resume to Step 11 (Review & Publishing)
-  return 11;
+  // If everything is populated or publishable, resume to Step 12 (Review & Publishing)
+  return 12;
 }
 

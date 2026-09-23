@@ -11,7 +11,7 @@ export interface StepTitleDescriptionProps {
   rentalStructure: RentalStructure;
   initialTitle?: string;
   initialDescription?: string;
-  onBack: (title: string, description: string) => void;
+  onBack?: (title?: string, description?: string) => void;
   onSave: (data: { title: string; description: string }) => Promise<void> | void;
   isSaving?: boolean;
 }
@@ -31,6 +31,14 @@ export default function StepTitleDescription({
   const [title, setTitle] = useState<string>(initialTitle);
   const [description, setDescription] = useState<string>(initialDescription);
   const [errors, setErrors] = useState<{ title?: string; description?: string }>({});
+
+  React.useEffect(() => {
+    if (initialTitle) setTitle(initialTitle);
+  }, [initialTitle]);
+
+  React.useEffect(() => {
+    if (initialDescription) setDescription(initialDescription);
+  }, [initialDescription]);
 
   const getShortPropertyType = () => {
     switch (propertyType) {
@@ -95,12 +103,12 @@ export default function StepTitleDescription({
       className="w-full max-w-2xl mx-auto animate-fade-in py-2 space-y-8"
       noValidate
     >
-      {/* SECTION HEADING */}
+      {/* SECTION HEADING (Airbnb Style) */}
       <div className="space-y-1">
-        <h1 className="font-outfit text-xl sm:text-2xl lg:text-[28px] font-semibold text-[#222222] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+        <h1 className="font-outfit text-2xl sm:text-[30px] font-semibold text-[#222222] tracking-tight">
           Now, let&apos;s give your {getShortPropertyType()} a title &amp; description
         </h1>
-        <p className="font-inter text-xs sm:text-sm text-[#717171] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
+        <p className="font-inter text-sm sm:text-base text-[#717171] leading-normal">
           Short titles and clear descriptions work best. You can always change them later.
         </p>
       </div>
