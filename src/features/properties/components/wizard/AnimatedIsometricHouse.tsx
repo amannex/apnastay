@@ -16,11 +16,11 @@ const PHASE_IMAGES: Record<1 | 2 | 3, { src: string; alt: string }> = {
     alt: 'Isometric 3D Property Structure & Architecture'
   },
   2: {
-    src: '/images/isometric-step2.jpg',
+    src: '/images/isometric-step2.png',
     alt: 'Isometric 3D Living Space & Amenities'
   },
   3: {
-    src: '/images/isometric-step3.jpg',
+    src: '/images/isometric-step3.png',
     alt: 'Isometric 3D Property Management & Final Handover'
   }
 };
