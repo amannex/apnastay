@@ -64,21 +64,21 @@ export const WIZARD_STEPS: PropertyWizardStepDefinition[] = [
   },
   {
     stepNumber: 5,
-    key: 'property_structure',
-    title: 'Rooms or Units',
-    shortLabel: 'Structure',
-    description: 'Tell us about the rooms or units and accommodation structure.',
-    isApplicable: () => true,
-    isCompleted: (p) => Boolean(p.units && p.units.length > 0)
-  },
-  {
-    stepNumber: 6,
     key: 'amenities',
     title: 'Amenities & Features',
     shortLabel: 'Amenities',
     description: 'Select curated amenities (Wi-Fi, parking, power backup) or add custom perks.',
     isApplicable: () => true,
     isCompleted: (p) => Boolean((p.amenities && p.amenities.length > 0) || (p.customAmenities && p.customAmenities.length > 0))
+  },
+  {
+    stepNumber: 6,
+    key: 'property_structure',
+    title: 'Rooms or Units',
+    shortLabel: 'Structure',
+    description: 'Tell us about the rooms or units and accommodation structure.',
+    isApplicable: () => true,
+    isCompleted: (p) => Boolean(p.units && p.units.length > 0)
   },
   {
     stepNumber: 7,

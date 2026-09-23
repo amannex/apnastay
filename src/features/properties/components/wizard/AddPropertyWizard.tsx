@@ -633,15 +633,52 @@ export default function AddPropertyWizard({
   };
 
   // --------------------------------------------------------------------------
-  // Step 5: Accommodation Structure Back & Save Handlers (Parent Step 2 Substep 1)
+  // Step 5: Amenities Back & Save Handlers (Parent Step 2 Substep 1)
   // --------------------------------------------------------------------------
-  const handleBackFromPropertyStructure = () => {
+  const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
+    setAmenities(currentAmenities);
+    setCustomAmenities(currentCustom);
     setShowPhase2Intro(true);
     if (createdProperty && typeof window !== 'undefined') {
       const newUrl = `${window.location.pathname}?draftId=${encodeURIComponent(createdProperty.id)}&step=phase2`;
       window.history.replaceState(null, '', newUrl);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSaveAmenities = async (currentAmenities: string[], currentCustom: string[]) => {
+    if (!createdProperty || isSubmitting) return;
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      const res = await updatePropertyAmenities(
+        createdProperty.id,
+        currentAmenities,
+        currentCustom
+      );
+
+      if (res.success && res.data) {
+        setAmenities(currentAmenities);
+        setCustomAmenities(currentCustom);
+        syncDraftState(res.data, 6);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setAppError(res, 'Failed to save property amenities.');
+      }
+    } catch (err: any) {
+      setAppError(err, 'Network error while saving amenities.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Step 6: Accommodation Structure Back & Save Handlers (Parent Step 2 Substep 2)
+  // --------------------------------------------------------------------------
+  const handleBackFromPropertyStructure = () => {
+    handleJumpToStep(5);
   };
 
   const handleSavePropertyStructure = async (
@@ -661,7 +698,7 @@ export default function AddPropertyWizard({
 
       if (res.success && res.data) {
         setUnits(newUnits);
-        syncDraftState(res.data, 6);
+        syncDraftState(res.data, 7);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setAppError(res, 'Failed to save accommodation structure.');
@@ -676,7 +713,7 @@ export default function AddPropertyWizard({
   };
 
   const handleContinueToStep2 = () => {
-    handleJumpToStep(6);
+    handleJumpToStep(7);
   };
 
   // --------------------------------------------------------------------------
@@ -717,42 +754,6 @@ export default function AddPropertyWizard({
     }
   };
 
-  // --------------------------------------------------------------------------
-  // Step 6: Amenities Back & Save Handlers (Phase 6)
-  // --------------------------------------------------------------------------
-  const handleBackFromAmenities = (currentAmenities: string[], currentCustom: string[]) => {
-    setAmenities(currentAmenities);
-    setCustomAmenities(currentCustom);
-    handleJumpToStep(5);
-  };
-
-  const handleSaveAmenities = async (currentAmenities: string[], currentCustom: string[]) => {
-    if (!createdProperty || isSubmitting) return;
-
-    setIsSubmitting(true);
-    clearError();
-
-    try {
-      const res = await updatePropertyAmenities(
-        createdProperty.id,
-        currentAmenities,
-        currentCustom
-      );
-
-      if (res.success && res.data) {
-        setAmenities(currentAmenities);
-        setCustomAmenities(currentCustom);
-        syncDraftState(res.data, 7);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        setAppError(res, 'Failed to save property amenities.');
-      }
-    } catch (err: any) {
-      setAppError(err, 'Network error while saving amenities.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // --------------------------------------------------------------------------
   // Step 7: Title & Description Handlers (Parent Step 2 Substep 3)
@@ -1188,6 +1189,30 @@ export default function AddPropertyWizard({
       return (
         <button
           type="submit"
+          form="amenities-form"
+          disabled={isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isSubmitting
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span>Next</span>
+          )}
+        </button>
+      );
+    }
+
+    if (currentStep === 6) {
+      return (
+        <button
+          type="submit"
           form="property-structure-form"
           disabled={isSubmitting}
           className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
@@ -1523,8 +1548,25 @@ export default function AddPropertyWizard({
         </div>
       )}
 
-      {/* STEP 5: ACCOMMODATION STRUCTURE (SUBSTEP 5) */}
+      {/* STEP 5: AMENITIES & FEATURES (PHASE 2 SUBSTEP 1) */}
       {currentStep === 5 && createdProperty && !isLoadingDraft && (
+        <div className="w-full">
+          <StepAmenities
+            propertyType={selectedType}
+            customPropertyType={customPropertyType}
+            initialAmenities={amenities.length > 0 ? amenities : createdProperty.amenities || []}
+            initialCustomAmenities={
+              customAmenities.length > 0 ? customAmenities : createdProperty.customAmenities || []
+            }
+            onBack={handleBackFromAmenities}
+            onSave={handleSaveAmenities}
+            isSaving={isSubmitting}
+          />
+        </div>
+      )}
+
+      {/* STEP 6: ACCOMMODATION STRUCTURE (PHASE 2 SUBSTEP 2) */}
+      {currentStep === 6 && createdProperty && !isLoadingDraft && (
         <div className="w-full">
           <StepPropertyStructure
             propertyId={createdProperty.id}
@@ -1541,23 +1583,6 @@ export default function AddPropertyWizard({
             onBack={handleBackFromPropertyStructure}
             onSave={handleSavePropertyStructure}
             onContinueToStep2={handleContinueToStep2}
-            isSaving={isSubmitting}
-          />
-        </div>
-      )}
-
-      {/* STEP 6: AMENITIES & FEATURES (PHASE 6) */}
-      {currentStep === 6 && createdProperty && !isLoadingDraft && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EDEDED] shadow-apple-sm">
-          <StepAmenities
-            propertyType={selectedType}
-            customPropertyType={customPropertyType}
-            initialAmenities={amenities.length > 0 ? amenities : createdProperty.amenities || []}
-            initialCustomAmenities={
-              customAmenities.length > 0 ? customAmenities : createdProperty.customAmenities || []
-            }
-            onBack={handleBackFromAmenities}
-            onSave={handleSaveAmenities}
             isSaving={isSubmitting}
           />
         </div>
