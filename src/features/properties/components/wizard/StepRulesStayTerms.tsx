@@ -201,8 +201,8 @@ export default function StepRulesStayTerms({
                         onClick={() => rule.onChange(option.id)}
                         className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer select-none whitespace-nowrap ${
                           isSelected
-                            ? 'border-2 border-[#222222] bg-[#F7F7F7] font-semibold text-[#222222] shadow-sm'
-                            : 'border border-[#DDDDDD] bg-white font-medium text-[#222222] hover:border-[#222222]'
+                            ? 'border border-[#717171] bg-[#F7F7F7] font-semibold text-[#222222]'
+                            : 'border border-[#E0E0E0] bg-white font-medium text-[#222222] hover:border-[#717171]'
                         }`}
                       >
                         {option.label}
