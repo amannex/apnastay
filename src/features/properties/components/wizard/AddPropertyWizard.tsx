@@ -1431,6 +1431,30 @@ export default function AddPropertyWizard({
       );
     }
 
+    if (currentStep === 12) {
+      return (
+        <button
+          type="button"
+          onClick={handlePublishListing}
+          disabled={isPublishing || isSubmitting}
+          className={`min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] ${
+            isPublishing
+              ? 'bg-[#EBEBEB] text-[#717171] cursor-not-allowed'
+              : 'bg-[#222222] hover:bg-black text-white cursor-pointer'
+          }`}
+        >
+          {isPublishing ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Publishing...</span>
+            </span>
+          ) : (
+            <span>Publish</span>
+          )}
+        </button>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -1442,7 +1466,7 @@ export default function AddPropertyWizard({
         disabled={isSubmitting}
         className="min-w-[120px] sm:min-w-[140px] py-3.5 px-7 sm:px-8 rounded-xl text-sm sm:text-base font-semibold inline-flex items-center justify-center transition-all active:scale-[0.98] shadow-apple-sm lg:translate-x-[10px] bg-[#222222] hover:bg-black text-white cursor-pointer"
       >
-        <span>{currentStep === 12 ? 'Publish' : 'Next'}</span>
+        <span>Next</span>
       </button>
     );
   };
