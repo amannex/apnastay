@@ -152,16 +152,16 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
       {/* ==================================================================== */}
       {/* 2. CORE DETAILS & PRICE BANNER */}
       {/* ==================================================================== */}
-      <div className="space-y-6 pt-1">
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6 border-b border-[#EBEBEB]">
+      <div className="space-y-4 pt-1">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-[#EBEBEB]">
           <div className="flex-1 min-w-0">
-            {/* Title & Location Header (Directly below Cover Image) */}
-            <div className="space-y-1 mb-3.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#222222]">
+            {/* Title & Location Header */}
+            <div className="space-y-0.5 mb-2">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#222222]">
                 {property.title || 'Untitled Property'}
               </h1>
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#717171]">
-                <MapPin className="w-4 h-4 text-primary shrink-0" />
+              <div className="flex items-center gap-1.5 text-xs text-[#717171]">
+                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="font-medium truncate">
                   {[property.location?.locality, property.location?.city, property.location?.state]
                     .filter(Boolean)
@@ -170,39 +170,39 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="px-2.5 py-1 rounded-full bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]">
+            <div className="flex flex-wrap items-center gap-1.5 mb-2">
+              <span className="px-2 py-0.5 rounded-full bg-[#F7F7F7] text-[#222222] text-[11px] font-medium border border-[#EBEBEB]">
                 {formatRentalLabel()}
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB] inline-flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#717171]" />
+              <span className="px-2 py-0.5 rounded-full bg-[#F7F7F7] text-[#222222] text-[11px] font-medium border border-[#EBEBEB] inline-flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-[#717171]" />
                 <span>{getPropertyAvailabilityLabel(property.availability)}</span>
               </span>
               {property.rules?.genderPreference && property.rules.genderPreference !== 'any' && (
-                <span className="px-2.5 py-1 rounded-full bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]">
+                <span className="px-2 py-0.5 rounded-full bg-[#F7F7F7] text-[#222222] text-[11px] font-medium border border-[#EBEBEB]">
                   {property.rules.genderPreference === 'female_only' ? 'Women Only' : 'Men Only'}
                 </span>
               )}
             </div>
 
-            <p className="text-sm text-[#717171] leading-relaxed max-w-2xl whitespace-pre-line">
+            <p className="text-xs text-[#717171] leading-relaxed max-w-xl whitespace-pre-line line-clamp-3">
               {property.description || 'No description provided for this listing yet.'}
             </p>
           </div>
 
-          {/* Pricing Box */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#F7F7F7] border border-[#EBEBEB] shrink-0 min-w-[240px]">
-            <span className="text-[11px] font-semibold text-[#717171] uppercase tracking-wider block mb-1">
+          {/* Pricing Box - Compact & Concise */}
+          <div className="p-3 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] shrink-0 sm:min-w-[200px]">
+            <span className="text-[10px] font-semibold text-[#717171] uppercase tracking-wider block mb-0.5">
               Rental Terms
             </span>
-            <div className="text-2xl font-bold text-[#222222] flex items-baseline gap-1">
-              <span>{formatPricingDisplay(property.pricing, property.pricing?.monthlyRent || 0)}</span>
+            <div className="text-lg sm:text-xl font-bold text-[#222222]">
+              {formatPricingDisplay(property.pricing, property.pricing?.monthlyRent || 0)}
             </div>
 
-            <div className="mt-3 pt-3 border-t border-[#EBEBEB] space-y-2 text-xs">
+            <div className="mt-2 pt-2 border-t border-[#EBEBEB] space-y-1 text-[11px]">
               <div className="flex items-center justify-between">
-                <span className="text-[#717171] flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#717171]" />
+                <span className="text-[#717171] flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-[#717171]" />
                   <span>Deposit:</span>
                 </span>
                 <span className="font-semibold text-[#222222]">
@@ -218,8 +218,8 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
 
               {property.pricing?.maintenanceChargesConfig && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[#717171] flex items-center gap-1.5">
-                    <Wrench className="w-3.5 h-3.5 text-[#717171]" />
+                  <span className="text-[#717171] flex items-center gap-1">
+                    <Wrench className="w-3 h-3 text-[#717171]" />
                     <span>Maintenance:</span>
                   </span>
                   <span className="font-medium text-[#222222]">
@@ -234,15 +234,15 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
 
               {property.pricing?.electricityChargesConfig && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[#717171] flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-[#717171]" />
+                  <span className="text-[#717171] flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-[#717171]" />
                     <span>Electricity:</span>
                   </span>
                   <span className="font-medium text-[#222222]">
                     {property.pricing.electricityChargesConfig.type === 'included'
                       ? 'Included'
                       : property.pricing.electricityChargesConfig.type === 'meter_based'
-                      ? 'As per meter'
+                      ? 'Meter'
                       : property.pricing.electricityChargesConfig.type}
                   </span>
                 </div>
@@ -255,42 +255,40 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         {/* 3. UNITS & ROOM INVENTORY (IF APPLICABLE) */}
         {/* ==================================================================== */}
         {property.units && property.units.length > 0 && (
-          <div className="space-y-3 pb-6 border-b border-[#EBEBEB]">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#222222] flex items-center gap-2">
-                <Layers className="w-4 h-4 text-[#717171]" />
-                <span>Available {term.plural} ({property.units.length})</span>
-              </h3>
-            </div>
+          <div className="space-y-2 pb-4 border-b border-[#EBEBEB]">
+            <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#717171]" />
+              <span>Available {term.plural} ({property.units.length})</span>
+            </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {property.units.map((unit) => (
-                <div key={unit.id} className="p-3.5 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-[#222222]">{unit.nameOrNumber}</span>
+                <div key={unit.id} className="p-2.5 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB] flex flex-col justify-between space-y-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-semibold text-xs text-[#222222] truncate">{unit.nameOrNumber}</span>
                     {unit.furnishing && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white border border-[#EBEBEB] text-[#717171]">
+                      <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-white border border-[#EBEBEB] text-[#717171] shrink-0">
                         {unit.furnishing.replace('_', ' ')}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs text-[#717171]">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5" />
-                      <span>Capacity: {unit.capacity || 1}</span>
+                  <div className="flex items-center gap-2 text-[11px] text-[#717171]">
+                    <span className="flex items-center gap-0.5">
+                      <Users className="w-3 h-3" />
+                      <span>{unit.capacity || 1}</span>
                     </span>
                     {term.hasBeds && unit.beds && unit.beds.length > 0 && (
-                      <span className="flex items-center gap-1">
-                        <BedDouble className="w-3.5 h-3.5 text-[#717171]" />
-                        <span>{unit.beds.length} Beds</span>
+                      <span className="flex items-center gap-0.5">
+                        <BedDouble className="w-3 h-3 text-[#717171]" />
+                        <span>{unit.beds.length} beds</span>
                       </span>
                     )}
                   </div>
 
                   {unit.pricing?.monthlyRent ? (
-                    <div className="pt-1 text-xs font-bold text-[#222222]">
-                      {formatCurrency(unit.pricing.monthlyRent)} /month
+                    <div className="text-xs font-bold text-[#222222] pt-0.5">
+                      {formatCurrency(unit.pricing.monthlyRent)}/mo
                     </div>
                   ) : null}
                 </div>
@@ -304,21 +302,21 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         {/* ==================================================================== */}
         {((property.amenities && property.amenities.length > 0) ||
           (property.customAmenities && property.customAmenities.length > 0)) && (
-          <div className="space-y-3 pb-6 border-b border-[#EBEBEB]">
-            <h3 className="text-sm font-semibold text-[#222222] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#717171]" />
+          <div className="space-y-2 pb-4 border-b border-[#EBEBEB]">
+            <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#717171]" />
               <span>Amenities & Highlights</span>
             </h3>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {property.amenities?.map((amenityId) => {
                 const def = AMENITY_REGISTRY[amenityId];
                 return (
                   <span
                     key={amenityId}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]"
                   >
-                    <Check className="w-3.5 h-3.5 text-[#717171]" />
+                    <Check className="w-3 h-3 text-[#717171]" />
                     <span>{def?.name || amenityId}</span>
                   </span>
                 );
@@ -327,7 +325,7 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
               {property.customAmenities?.map((custom, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]"
                 >
                   <Sparkles className="w-3 h-3 text-[#717171]" />
                   <span>{custom}</span>
@@ -341,73 +339,71 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         {/* 5. HOUSE RULES & TENANT PREFERENCES */}
         {/* ==================================================================== */}
         {property.rules && (
-          <div className="space-y-4 pb-6 border-b border-[#EBEBEB]">
-            <h3 className="text-sm font-semibold text-[#222222] flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-[#717171]" />
+          <div className="space-y-2.5 pb-4 border-b border-[#EBEBEB]">
+            <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
+              <ShieldAlert className="w-3.5 h-3.5 text-[#717171]" />
               <span>House Rules & Guidelines</span>
             </h3>
 
             {/* Preferred Profiles */}
             {property.rules.suitableFor && property.rules.suitableFor.length > 0 && (
-              <div className="space-y-1.5">
-                <span className="text-xs font-medium text-[#717171] block">Suitable Residents</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {property.rules.suitableFor.map((suitability) => (
-                    <span
-                      key={suitability}
-                      className="px-2.5 py-1 rounded-lg bg-[#F7F7F7] text-[#222222] text-xs font-medium border border-[#EBEBEB]"
-                    >
-                      {formatResidentSuitability(suitability)}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-wrap items-center gap-1 text-xs">
+                <span className="text-[11px] font-medium text-[#717171]">Suitable for:</span>
+                {property.rules.suitableFor.map((suitability) => (
+                  <span
+                    key={suitability}
+                    className="px-2 py-0.5 rounded-md bg-[#F7F7F7] text-[#222222] text-[11px] font-medium border border-[#EBEBEB]"
+                  >
+                    {formatResidentSuitability(suitability)}
+                  </span>
+                ))}
               </div>
             )}
 
             {/* Quick Policies Matrix */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="p-2.5 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] text-xs">
-                <span className="text-[#717171] block text-[11px] mb-0.5">Guests</span>
-                <span className="font-semibold text-[#222222]">
+            <div className="grid grid-cols-4 gap-1.5 text-xs">
+              <div className="p-2 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB]">
+                <span className="text-[#717171] block text-[10px]">Guests</span>
+                <span className="font-semibold text-[#222222] text-[11px] truncate block">
                   {getPolicyBadgeInfo(property.rules.guestPolicy).label}
                 </span>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] text-xs">
-                <span className="text-[#717171] block text-[11px] mb-0.5">Pets</span>
-                <span className="font-semibold text-[#222222]">
+              <div className="p-2 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB]">
+                <span className="text-[#717171] block text-[10px]">Pets</span>
+                <span className="font-semibold text-[#222222] text-[11px] truncate block">
                   {getPolicyBadgeInfo(property.rules.petPolicy).label}
                 </span>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] text-xs">
-                <span className="text-[#717171] block text-[11px] mb-0.5">Smoking</span>
-                <span className="font-semibold text-[#222222]">
+              <div className="p-2 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB]">
+                <span className="text-[#717171] block text-[10px]">Smoking</span>
+                <span className="font-semibold text-[#222222] text-[11px] truncate block">
                   {getPolicyBadgeInfo(property.rules.smokingPolicy).label}
                 </span>
               </div>
-              <div className="p-2.5 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] text-xs">
-                <span className="text-[#717171] block text-[11px] mb-0.5">Alcohol</span>
-                <span className="font-semibold text-[#222222]">
+              <div className="p-2 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB]">
+                <span className="text-[#717171] block text-[10px]">Alcohol</span>
+                <span className="font-semibold text-[#222222] text-[11px] truncate block">
                   {getPolicyBadgeInfo(property.rules.alcoholPolicy).label}
                 </span>
               </div>
             </div>
 
             {/* Timing & Food Summary */}
-            <div className="flex flex-wrap gap-3 text-xs text-[#222222]">
+            <div className="flex flex-wrap gap-2.5 text-[11px] text-[#222222]">
               {property.rules.timingType && (
-                <span className="inline-flex items-center gap-1.5 font-medium">
-                  <Clock className="w-3.5 h-3.5 text-[#717171]" />
+                <span className="inline-flex items-center gap-1 font-medium">
+                  <Clock className="w-3 h-3 text-[#717171]" />
                   <span>{formatTimingPolicy(property.rules.timingType, property.rules.gateClosingTime)}</span>
                 </span>
               )}
               {property.rules.foodPolicy && property.rules.foodPolicy !== 'not_specified' && (
-                <span className="inline-flex items-center gap-1.5 font-medium">
-                  <Utensils className="w-3.5 h-3.5 text-[#717171]" />
+                <span className="inline-flex items-center gap-1 font-medium">
+                  <Utensils className="w-3 h-3 text-[#717171]" />
                   <span>{formatFoodPolicy(property.rules.foodPolicy)}</span>
                 </span>
               )}
               {property.rules.kitchenAccess && property.rules.kitchenAccess !== 'not_specified' && (
-                <span className="inline-flex items-center gap-1.5 font-medium">
+                <span className="inline-flex items-center gap-1 font-medium">
                   <span>{formatKitchenPolicy(property.rules.kitchenAccess, property.rules.cookingPolicy)}</span>
                 </span>
               )}
@@ -415,9 +411,9 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
 
             {/* Custom Rules List */}
             {property.rules.customRules && property.rules.customRules.length > 0 && (
-              <div className="space-y-1 pt-1">
-                <span className="text-xs font-medium text-[#717171] block">Community Guidelines</span>
-                <ul className="list-disc list-inside text-xs text-[#222222] space-y-1 pl-1">
+              <div className="space-y-0.5 pt-0.5">
+                <span className="text-[11px] font-medium text-[#717171] block">Community Guidelines</span>
+                <ul className="list-disc list-inside text-xs text-[#222222] space-y-0.5 pl-0.5">
                   {property.rules.customRules.map((rule, idx) => (
                     <li key={idx}>{rule}</li>
                   ))}
@@ -430,13 +426,13 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         {/* ==================================================================== */}
         {/* 6. LOCATION & NEIGHBORHOOD MAP SUMMARY */}
         {/* ==================================================================== */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-[#222222] flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-[#717171]" />
+        <div className="space-y-1.5">
+          <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#717171]" />
             <span>Neighborhood & Address</span>
           </h3>
 
-          <div className="p-3.5 sm:p-4 rounded-xl bg-[#F7F7F7] border border-[#EBEBEB] space-y-1.5 text-xs">
+          <div className="p-2.5 sm:p-3 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB] space-y-1 text-xs">
             <div className="font-semibold text-[#222222]">
               {[property.location?.locality, property.location?.city, property.location?.state, property.location?.pincode]
                 .filter(Boolean)
@@ -450,9 +446,9 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
             )}
 
             {property.location?.hideExactAddress ? (
-              <div className="inline-flex items-center gap-1 text-[11px] text-[#717171] bg-white border border-[#EBEBEB] px-2 py-0.5 rounded-full font-medium">
+              <div className="inline-flex items-center gap-1 text-[10px] text-[#717171] bg-white border border-[#EBEBEB] px-2 py-0.5 rounded-full font-medium">
                 <EyeOff className="w-3 h-3" />
-                <span>Exact street address shared after booking confirmation</span>
+                <span>Exact address shared after booking confirmation</span>
               </div>
             ) : null}
           </div>
