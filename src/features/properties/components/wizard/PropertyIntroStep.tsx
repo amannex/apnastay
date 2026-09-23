@@ -125,7 +125,7 @@ export default function PropertyIntroStep({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-16 items-center w-full">
           {/* 3D ISOMETRIC HOUSE (order-1 on mobile: appears on top) */}
           <div className="order-1 lg:order-2 lg:col-span-6 flex items-center justify-center py-2 sm:py-0">
-            <AnimatedIsometricHouse />
+            <AnimatedIsometricHouse phase={phase} />
           </div>
 
           {/* INTRODUCTION TEXT (order-2 on mobile: appears below house) */}
