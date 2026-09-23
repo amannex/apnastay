@@ -7,8 +7,6 @@ import {
   ShieldCheck,
   Calendar,
   Building2,
-  BedDouble,
-  Users,
   Sparkles,
   Zap,
   Wrench,
@@ -23,13 +21,11 @@ import {
   EyeOff,
   Camera,
   Star,
-  Layers,
   ChevronRight,
   ShieldAlert
 } from 'lucide-react';
-import type { Property, PropertyPhoto, PropertyUnit } from '../../types';
+import type { Property, PropertyPhoto } from '../../types';
 import { getPropertyTemplate } from '../../templates';
-import { getUnitTerminology } from '../../units';
 import {
   formatCurrency,
   calculateEffectiveDeposit,
@@ -52,7 +48,6 @@ interface PropertyTenantPreviewProps {
 
 export default function PropertyTenantPreview({ property, className = '' }: PropertyTenantPreviewProps) {
   const template = getPropertyTemplate(property.propertyType);
-  const term = getUnitTerminology(property.propertyType, property.rentalStructure);
   const photos = property.photos || [];
 
   // Active viewing photo
@@ -153,7 +148,7 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
       {/* 2. CORE DETAILS & PRICE BANNER */}
       {/* ==================================================================== */}
       <div className="space-y-4 pt-1">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-[#EBEBEB]">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {/* Title & Location Header */}
             <div className="space-y-0.5 mb-2">
@@ -252,57 +247,11 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         </div>
 
         {/* ==================================================================== */}
-        {/* 3. UNITS & ROOM INVENTORY (IF APPLICABLE) */}
-        {/* ==================================================================== */}
-        {property.units && property.units.length > 0 && (
-          <div className="space-y-2 pb-4 border-b border-[#EBEBEB]">
-            <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#717171]" />
-              <span>Available {term.plural} ({property.units.length})</span>
-            </h3>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {property.units.map((unit) => (
-                <div key={unit.id} className="p-2.5 rounded-lg bg-[#F7F7F7] border border-[#EBEBEB] flex flex-col justify-between space-y-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-semibold text-xs text-[#222222] truncate">{unit.nameOrNumber}</span>
-                    {unit.furnishing && (
-                      <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-white border border-[#EBEBEB] text-[#717171] shrink-0">
-                        {unit.furnishing.replace('_', ' ')}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 text-[11px] text-[#717171]">
-                    <span className="flex items-center gap-0.5">
-                      <Users className="w-3 h-3" />
-                      <span>{unit.capacity || 1}</span>
-                    </span>
-                    {term.hasBeds && unit.beds && unit.beds.length > 0 && (
-                      <span className="flex items-center gap-0.5">
-                        <BedDouble className="w-3 h-3 text-[#717171]" />
-                        <span>{unit.beds.length} beds</span>
-                      </span>
-                    )}
-                  </div>
-
-                  {unit.pricing?.monthlyRent ? (
-                    <div className="text-xs font-bold text-[#222222] pt-0.5">
-                      {formatCurrency(unit.pricing.monthlyRent)}/mo
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ==================================================================== */}
-        {/* 4. AMENITIES & FEATURES */}
+        {/* 3. AMENITIES & FEATURES */}
         {/* ==================================================================== */}
         {((property.amenities && property.amenities.length > 0) ||
           (property.customAmenities && property.customAmenities.length > 0)) && (
-          <div className="space-y-2 pb-4 border-b border-[#EBEBEB]">
+          <div className="space-y-2">
             <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#717171]" />
               <span>Amenities & Highlights</span>
@@ -336,10 +285,10 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         )}
 
         {/* ==================================================================== */}
-        {/* 5. HOUSE RULES & TENANT PREFERENCES */}
+        {/* 4. HOUSE RULES & TENANT PREFERENCES */}
         {/* ==================================================================== */}
         {property.rules && (
-          <div className="space-y-2.5 pb-4 border-b border-[#EBEBEB]">
+          <div className="space-y-2.5">
             <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5 text-[#717171]" />
               <span>House Rules & Guidelines</span>
@@ -424,7 +373,7 @@ export default function PropertyTenantPreview({ property, className = '' }: Prop
         )}
 
         {/* ==================================================================== */}
-        {/* 6. LOCATION & NEIGHBORHOOD MAP SUMMARY */}
+        {/* 5. LOCATION & NEIGHBORHOOD MAP SUMMARY */}
         {/* ==================================================================== */}
         <div className="space-y-1.5">
           <h3 className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
