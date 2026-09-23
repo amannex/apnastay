@@ -97,6 +97,15 @@ export default function StepRentCharges({
   const [electricityType, setElectricityType] = useState<ElectricityChargesType>(() => {
     return initialPricing.electricityChargesConfig?.type || 'meter_based';
   });
+  const [electricityRatePerUnit, setElectricityRatePerUnit] = useState<string>(() => {
+    if (initialPricing.electricityChargesConfig?.ratePerUnit) {
+      return String(initialPricing.electricityChargesConfig.ratePerUnit);
+    }
+    if (initialPricing.electricityChargesConfig?.amount) {
+      return String(initialPricing.electricityChargesConfig.amount);
+    }
+    return '';
+  });
 
   // 5. Additional / Other Recurring Charges
   const [otherCharges, setOtherCharges] = useState<OtherRecurringCharge[]>(() => {
@@ -204,7 +213,9 @@ export default function StepRentCharges({
       },
       maintenance: maintenanceType === 'fixed' ? parsedMaintenance : 0,
       electricityChargesConfig: {
-        type: electricityType
+        type: electricityType,
+        amount: electricityType === 'meter_based' && electricityRatePerUnit ? Number(electricityRatePerUnit) : undefined,
+        ratePerUnit: electricityType === 'meter_based' && electricityRatePerUnit ? Number(electricityRatePerUnit) : undefined
       },
       otherCharges
     };
@@ -468,7 +479,9 @@ export default function StepRentCharges({
                 </span>
                 <span className="font-inter text-xs text-[#717171]">
                   {electricityType === 'meter_based'
-                    ? 'As per meter / actual units'
+                    ? electricityRatePerUnit
+                      ? `As per meter (₹${electricityRatePerUnit} / unit)`
+                      : 'As per meter / actual units'
                     : electricityType === 'included'
                     ? 'Included in monthly rent'
                     : 'Not applicable'}
@@ -500,6 +513,26 @@ export default function StepRentCharges({
                   );
                 })}
               </div>
+
+              {electricityType === 'meter_based' && (
+                <div className="relative w-full sm:w-48 mt-1">
+                  <span className="absolute inset-y-0 left-3 flex items-center text-xs sm:text-sm font-semibold text-[#717171]">₹</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={electricityRatePerUnit}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9.]/g, '');
+                      setElectricityRatePerUnit(val);
+                    }}
+                    placeholder="Rate (e.g. 10)"
+                    className="w-full pl-7 pr-14 py-1.5 sm:py-2 rounded-xl border border-[#E0E0E0] focus:border-[#717171] focus:outline-none text-xs sm:text-sm text-[#222222] font-semibold transition-colors"
+                  />
+                  <span className="absolute inset-y-0 right-3 flex items-center text-xs font-medium text-[#717171]">
+                    / unit
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

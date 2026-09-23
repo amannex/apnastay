@@ -141,6 +141,7 @@ export interface MaintenanceChargesConfig {
 export interface ElectricityChargesConfig {
   type: ElectricityChargesType;
   amount?: number;
+  ratePerUnit?: number;
 }
 
 export interface GenericRentablePricing {
