@@ -1497,7 +1497,7 @@ export default function AddPropertyWizard({
           </span>
         </Link>
 
-        {/* Right: Questions? and Save & exit buttons */}
+        {/* Right: Help and Save & exit buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
 
           <button
@@ -1505,7 +1505,7 @@ export default function AddPropertyWizard({
             onClick={() => setShowQuestionsModal(true)}
             className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
           >
-            <span>Questions?</span>
+            <span>Help</span>
           </button>
 
           <button

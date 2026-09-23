@@ -96,14 +96,14 @@ export default function PropertyIntroStep({
           </span>
         </Link>
 
-        {/* Right: Questions? button (and Save & exit on desktop) */}
+        {/* Right: Help button (and Save & exit on desktop) */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={() => setShowQuestionsModal(true)}
             className="px-5 py-2 sm:py-2.5 rounded-full border border-[#E5E5EA] hover:border-[#D1D1D6] hover:bg-[#F8F8FA] text-xs sm:text-sm font-semibold text-[#1D1D1F] transition-all active:scale-[0.98] whitespace-nowrap inline-flex items-center justify-center shrink-0 shadow-apple-xs"
           >
-            <span>Questions?</span>
+            <span>Help</span>
           </button>
 
           {onExit && (
