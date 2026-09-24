@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, Scale, UserCheck, Shield, BarChart3, ChevronDown, Sparkles, LogIn, User, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function Navbar({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -30,6 +31,20 @@ export default function Navbar({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileMenuOpen]);
+
   const userDisplayName = currentUser
     ? (currentUser.name || [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || currentUser.email?.split('@')[0] || 'User')
     : 'Account';
@@ -39,6 +54,7 @@ export default function Navbar({
     : currentUser?.role?.includes('admin')
     ? 'Admin'
     : 'Tenant';
+  const avatarUrl = currentUser?.avatar || currentUser?.metadata?.avatar;
 
   const isActiveRoute = (path) => pathname === path;
 
@@ -150,17 +166,40 @@ export default function Navbar({
 
             {/* UNIFIED USER PROFILE & ROLE SWITCHER DROPDOWN */}
             {currentUser ? (
-              <div className="relative hidden md:block shrink-0">
+              <div ref={profileMenuRef} className="relative hidden md:block shrink-0">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white border border-[#EDEDED] text-xs font-semibold text-[#1A1A1A] transition-all whitespace-nowrap shadow-xs"
+                  className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer border ${
+                    profileMenuOpen
+                      ? 'border-[#E1224D] ring-2 ring-[#E1224D]/20 bg-rose-50'
+                      : 'border-[#EDEDED] hover:border-[#D1D5DB] bg-white/90 hover:bg-white'
+                  }`}
+                  title={`${userDisplayName} (${roleLabel})`}
+                  aria-label="User Account Menu"
+                  aria-expanded={profileMenuOpen}
                 >
-                  <User className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
-                  <span>{userFirstName}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-[#E1224D] uppercase font-bold">
-                    {roleLabel}
-                  </span>
-                  <ChevronDown className={`w-3 h-3 text-[#6B7280] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={userDisplayName}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-rose-50 flex items-center justify-center text-[#E1224D] hover:bg-rose-100 transition-colors">
+                      <User className="w-4 h-4 text-[#E1224D]" />
+                    </div>
+                  )}
+                  {/* Role status badge dot */}
+                  <span
+                    className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                      currentUser?.role?.includes('owner')
+                        ? 'bg-[#E1224D]'
+                        : currentUser?.role?.includes('admin')
+                        ? 'bg-purple-600'
+                        : 'bg-emerald-500'
+                    }`}
+                    title={roleLabel}
+                  />
                 </button>
 
                 {profileMenuOpen && (
