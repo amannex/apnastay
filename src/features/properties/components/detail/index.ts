@@ -11,6 +11,7 @@ export { default as PropertyHighlightsSection } from './PropertyHighlightsSectio
 export { default as PropertyAmenitiesSection } from './PropertyAmenitiesSection';
 export { default as PropertyDetailsSection } from './PropertyDetailsSection';
 export { default as PropertyLocationSection } from './PropertyLocationSection';
+export { default as PropertyInteractiveMap } from './PropertyInteractiveMap';
 export { default as NearbyPlacesSection } from './NearbyPlacesSection';
 export { default as HouseRulesSection } from './HouseRulesSection';
 export { default as VerificationCard } from './VerificationCard';

@@ -181,6 +181,25 @@ export function getPropertyTypeLabel(type?: string): string {
   }
 }
 
+export const DEFAULT_CITY_COORDINATES: Record<string, { lat: number; lng: number; state: string }> = {
+  indore: { lat: 22.7533, lng: 75.8937, state: 'Madhya Pradesh' },
+  jaipur: { lat: 26.8530, lng: 75.8050, state: 'Rajasthan' },
+  coimbatore: { lat: 11.0088, lng: 76.9515, state: 'Tamil Nadu' },
+  kochi: { lat: 10.0159, lng: 76.3419, state: 'Kerala' },
+  chandigarh: { lat: 30.7415, lng: 76.7801, state: 'Punjab' },
+  pune: { lat: 18.5362, lng: 73.8940, state: 'Maharashtra' },
+  noida: { lat: 28.6280, lng: 77.3649, state: 'Uttar Pradesh' },
+  delhi: { lat: 28.6139, lng: 77.2090, state: 'Delhi' },
+  bangalore: { lat: 12.9716, lng: 77.5946, state: 'Karnataka' },
+  bengaluru: { lat: 12.9716, lng: 77.5946, state: 'Karnataka' },
+  mumbai: { lat: 19.0760, lng: 72.8777, state: 'Maharashtra' },
+  gurgaon: { lat: 28.4595, lng: 77.0266, state: 'Haryana' },
+  gurugram: { lat: 28.4595, lng: 77.0266, state: 'Haryana' },
+  hyderabad: { lat: 17.3850, lng: 78.4867, state: 'Telangana' },
+  chennai: { lat: 13.0827, lng: 80.2707, state: 'Tamil Nadu' },
+  kolkata: { lat: 22.5726, lng: 88.3639, state: 'West Bengal' }
+};
+
 const DEFAULT_COVER_IMAGE =
   'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80';
 
@@ -204,14 +223,19 @@ export function normalizeProperty(raw: any): NormalizedProperty {
   // Location resolution
   const city = raw.location?.city || raw.city || 'Indore';
   const locality = raw.location?.locality || raw.location?.addressLine1 || raw.neighborhood || '';
-  const state = raw.location?.state || raw.state || '';
+  const cityMeta = DEFAULT_CITY_COORDINATES[city.toLowerCase().trim()];
+  const state = raw.location?.state || raw.state || cityMeta?.state || '';
   const pincode = raw.location?.pincode || raw.pincode || '';
   const address = raw.location?.hideExactAddress ? undefined : (raw.location?.address || raw.location?.addressLine1 || undefined);
   const displayLocation = locality ? (locality.includes(city) ? locality : `${locality}, ${city}`) : city;
-  const latitude = raw.location?.coordinates?.latitude || raw.location?.latitude || raw.latitude || undefined;
-  const longitude = raw.location?.coordinates?.longitude || raw.location?.longitude || raw.longitude || undefined;
+  
+  const rawLat = raw.location?.coordinates?.latitude ?? raw.location?.latitude ?? raw.latitude ?? cityMeta?.lat;
+  const rawLng = raw.location?.coordinates?.longitude ?? raw.location?.longitude ?? raw.longitude ?? cityMeta?.lng;
+  const latitude = typeof rawLat === 'number' && !isNaN(rawLat) ? rawLat : undefined;
+  const longitude = typeof rawLng === 'number' && !isNaN(rawLng) ? rawLng : undefined;
+
   const landmark = raw.location?.landmark || raw.landmark || undefined;
-  const hideExactAddress = Boolean(raw.location?.hideExactAddress);
+  const hideExactAddress = raw.location?.hideExactAddress !== undefined ? Boolean(raw.location.hideExactAddress) : true;
 
   // Pricing resolution
   const rentVal = Number(

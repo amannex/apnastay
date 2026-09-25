@@ -1,0 +1,211 @@
+'use client';
+
+import React, { useEffect, useRef, useState } from 'react';
+import { MapPin, Navigation, ExternalLink, ShieldCheck } from 'lucide-react';
+
+interface PropertyInteractiveMapProps {
+  latitude?: number;
+  longitude?: number;
+  displayLocation: string;
+  isApproximate?: boolean;
+}
+
+export default function PropertyInteractiveMap({
+  latitude,
+  longitude,
+  displayLocation,
+  isApproximate = true
+}: PropertyInteractiveMapProps) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
+
+  const hasCoords = typeof latitude === 'number' && typeof longitude === 'number' && !isNaN(latitude) && !isNaN(longitude);
+
+  useEffect(() => {
+    if (!hasCoords || !mapContainerRef.current) return;
+
+    let isCancelled = false;
+
+    async function initMap() {
+      try {
+        // Dynamically inject Leaflet CSS if not already present
+        if (!document.getElementById('leaflet-css')) {
+          const link = document.createElement('link');
+          link.id = 'leaflet-css';
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+          link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+          link.crossOrigin = '';
+          document.head.appendChild(link);
+        }
+
+        // Dynamically import Leaflet library (client-side only)
+        const L = (await import('leaflet')).default;
+
+        if (isCancelled || !mapContainerRef.current) return;
+
+        // Clean up any existing map instance
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+
+        const map = L.map(mapContainerRef.current, {
+          center: [latitude!, longitude!],
+          zoom: isApproximate ? 14 : 15,
+          zoomControl: false,
+          scrollWheelZoom: false, // Prevents scroll hijacking on mobile/desktop
+          attributionControl: true
+        });
+
+        // Add zoom control at top-right
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // OpenStreetMap clean tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        if (isApproximate) {
+          // 1. Draw approximate circular boundary (350m radius)
+          L.circle([latitude!, longitude!], {
+            radius: 400,
+            color: '#E1224D',
+            fillColor: '#E1224D',
+            fillOpacity: 0.12,
+            weight: 1.5,
+            dashArray: '5, 5'
+          }).addTo(map);
+
+          // 2. Soft pulsating center pin
+          const approxIcon = L.divIcon({
+            className: 'apnastay-approx-pin',
+            html: `
+              <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(225, 34, 77, 0.25); animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                <div style="position: relative; width: 26px; height: 26px; border-radius: 50%; background: #E1224D; border: 3px solid #FFFFFF; box-shadow: 0 4px 12px rgba(225,34,77,0.4); display: flex; align-items: center; justify-content: center;">
+                  <div style="width: 7px; height: 7px; border-radius: 50%; background: #FFFFFF;"></div>
+                </div>
+              </div>
+            `,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
+          });
+
+          const marker = L.marker([latitude!, longitude!], {
+            icon: approxIcon,
+            interactive: true
+          }).addTo(map);
+
+          marker.bindPopup(
+            `<strong>Approximate Area</strong><br/><span style="font-size: 12px; color: #4B5563;">${displayLocation}</span><br/><span style="font-size: 11px; color: #E1224D;">Exact address provided on visit schedule</span>`
+          );
+        } else {
+          // Direct pinpoint marker
+          const directIcon = L.divIcon({
+            className: 'apnastay-direct-pin',
+            html: `
+              <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+                <div style="position: relative; width: 28px; height: 28px; border-radius: 50%; background: #E1224D; border: 3px solid #FFFFFF; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+              </div>
+            `,
+            iconSize: [34, 34],
+            iconAnchor: [17, 34]
+          });
+
+          const marker = L.marker([latitude!, longitude!], {
+            icon: directIcon,
+            interactive: true
+          }).addTo(map);
+
+          marker.bindPopup(`<strong>${displayLocation}</strong>`);
+        }
+
+        mapInstanceRef.current = map;
+        setMapLoaded(true);
+      } catch (err) {
+        console.warn('[PropertyInteractiveMap] Map initialization error:', err);
+        setMapError(true);
+      }
+    }
+
+    initMap();
+
+    return () => {
+      isCancelled = true;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [latitude, longitude, displayLocation, isApproximate, hasCoords]);
+
+  const mapsSearchUrl = hasCoords
+    ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayLocation)}`;
+
+  // Missing location coordinates fallback
+  if (!hasCoords || mapError) {
+    return (
+      <div className="relative h-60 sm:h-72 rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-center p-6 space-y-3">
+        <div className="p-3.5 rounded-full bg-white text-[#E1224D] shadow-sm">
+          <Navigation className="w-6 h-6" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-gray-900">{displayLocation || 'Location unavailable'}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Exact geographic map coordinates are being verified by ApnaStay field engineers.
+          </p>
+        </div>
+        <a
+          href={mapsSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#E1224D] hover:underline pt-1"
+        >
+          <span>Search on Google Maps</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-gray-200 shadow-2xs group">
+      {/* Map container DOM */}
+      <div
+        ref={mapContainerRef}
+        aria-label={`Interactive map showing ${displayLocation}`}
+        className="h-64 sm:h-80 w-full z-0 bg-gray-100"
+      />
+
+      {/* External Map Link button overlay */}
+      <div className="absolute bottom-3 right-3 z-10">
+        <a
+          href={mapsSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-xs text-xs font-semibold text-gray-700 hover:text-[#E1224D] rounded-xl shadow-sm border border-gray-200/80 transition-colors"
+        >
+          <span>Open in Google Maps</span>
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+
+      {/* Approximate notice badge overlay */}
+      {isApproximate && (
+        <div className="absolute top-3 left-3 z-10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/95 backdrop-blur-xs rounded-lg shadow-2xs border border-gray-200/80 text-[11px] font-medium text-gray-700">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Approximate Location</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
