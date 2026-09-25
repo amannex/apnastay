@@ -5,39 +5,41 @@ import { siteConfig } from '@/config/site';
 import { resolveProperty, getAllPropertyStaticParams } from '@/features/properties/adapter';
 import { PropertyDetailContainer, PropertyErrorView } from '@/features/properties/components/detail';
 
-interface PropertyPageProps {
-  params: Promise<{ id: string }>;
+interface CityPropertyPageProps {
+  params: Promise<{ city: string; slug: string }>;
 }
 
 export async function generateStaticParams() {
   const all = await getAllPropertyStaticParams();
   return all.map((p) => ({
-    id: p.id,
+    city: p.city,
+    slug: p.slug,
   }));
 }
 
-export async function generateMetadata({ params }: PropertyPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const property = await resolveProperty(id);
+export async function generateMetadata({ params }: CityPropertyPageProps): Promise<Metadata> {
+  const { city, slug } = await params;
+  const property = await resolveProperty(slug, city);
 
   if (!property) {
     return {
       title: 'Property Not Found | ApnaStay',
-      description: 'The requested rental property could not be found or is no longer available.',
+      description: 'The requested rental property could not be found.',
     };
   }
 
   const title = `${property.title} - ${property.pricing.rentDisplay}/mo in ${property.location.displayLocation} | ApnaStay`;
-  const description = `Rent ${property.propertyTypeLabel} in ${property.location.displayLocation} with zero brokerage. Physically verified with 100% verified ownership.`;
-  const canonicalUrl = `${siteConfig.url}/properties/${property.id}`;
+  const description = `Rent ${property.propertyTypeLabel} in ${property.location.displayLocation} with zero brokerage. Verified, physically audited, and direct owner lease.`;
+  const canonicalUrl = `${siteConfig.url}/${property.location.city.toLowerCase()}/${property.slug}`;
 
   return {
     title,
     description,
     keywords: [
       `${property.location.city.toLowerCase()} rentals`,
+      `${city.toLowerCase()} flats for rent`,
       'zero brokerage flat india',
-      'apnastay verified residence',
+      'apnastay property',
       property.propertyTypeLabel.toLowerCase(),
     ],
     alternates: {
@@ -68,15 +70,15 @@ export async function generateMetadata({ params }: PropertyPageProps): Promise<M
   };
 }
 
-export default async function PropertyPage({ params }: PropertyPageProps) {
-  const { id } = await params;
-  const property = await resolveProperty(id);
+export default async function CityPropertyPage({ params }: CityPropertyPageProps) {
+  const { city, slug } = await params;
+  const property = await resolveProperty(slug, city);
 
   if (!property) {
     return (
       <PropertyErrorView
         title="Property Not Found"
-        message={`We could not find any property matching ID "${id}". It may have been unlisted, rented, or removed.`}
+        message={`We could not find any property matching "${slug}" in ${city}. It may have been unlisted or the address may have changed.`}
         type="not_found"
       />
     );
@@ -87,7 +89,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     '@type': 'RealEstateListing',
     name: property.title,
     description: property.description,
-    url: `${siteConfig.url}/properties/${property.id}`,
+    url: `${siteConfig.url}/${property.location.city.toLowerCase()}/${property.slug}`,
     datePosted: '2026-07-01',
     offers: {
       '@type': 'Offer',

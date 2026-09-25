@@ -1,0 +1,92 @@
+'use client';
+
+import React from 'react';
+import type { NormalizedProperty } from '../../adapter';
+
+import PropertyBreadcrumb from './PropertyBreadcrumb';
+import PropertyGallerySection from './PropertyGallerySection';
+import PropertyHeroSection from './PropertyHeroSection';
+import PropertyActionsSection from './PropertyActionsSection';
+import PropertySnapshotSection from './PropertySnapshotSection';
+import PropertyDescriptionSection from './PropertyDescriptionSection';
+import PropertyHighlightsSection from './PropertyHighlightsSection';
+import PropertyAmenitiesSection from './PropertyAmenitiesSection';
+import PropertyDetailsSection from './PropertyDetailsSection';
+import PropertyLocationSection from './PropertyLocationSection';
+import NearbyPlacesSection from './NearbyPlacesSection';
+import HouseRulesSection from './HouseRulesSection';
+import VerificationCard from './VerificationCard';
+import OwnerCard from './OwnerCard';
+import SimilarPropertiesSection from './SimilarPropertiesSection';
+
+interface PropertyDetailContainerProps {
+  property: NormalizedProperty;
+}
+
+export default function PropertyDetailContainer({ property }: PropertyDetailContainerProps) {
+  return (
+    <article className="min-h-screen bg-[#FAFAFA] pt-6 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* BREADCRUMB & BACK NAVIGATION */}
+        <PropertyBreadcrumb property={property} />
+
+        {/* PROPERTY IMAGE GALLERY FOUNDATION */}
+        <PropertyGallerySection property={property} />
+
+        {/* MAIN RESPONSIVE CONTENT GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start pt-2">
+          {/* LEFT 2 COLUMNS: CORE PROPERTY DETAILS & CONTENT */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* HERO INFORMATION */}
+            <PropertyHeroSection property={property} />
+
+            {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
+            <div className="block lg:hidden">
+              <PropertyActionsSection property={property} />
+            </div>
+
+            {/* PROPERTY SNAPSHOT */}
+            <PropertySnapshotSection property={property} />
+
+            {/* ABOUT THIS PROPERTY */}
+            <PropertyDescriptionSection property={property} />
+
+            {/* WHY THIS PROPERTY (DATA-DRIVEN HIGHLIGHTS) */}
+            <PropertyHighlightsSection property={property} />
+
+            {/* AMENITIES & FACILITIES */}
+            <PropertyAmenitiesSection property={property} />
+
+            {/* PROPERTY DETAILS & SPECIFICATIONS */}
+            <PropertyDetailsSection property={property} />
+
+            {/* LOCATION & NEIGHBORHOOD */}
+            <PropertyLocationSection property={property} />
+
+            {/* NEARBY PLACES */}
+            <NearbyPlacesSection property={property} />
+
+            {/* HOUSE RULES / REQUIREMENTS */}
+            <HouseRulesSection property={property} />
+
+            {/* VERIFICATION & TRUST INFORMATION */}
+            <VerificationCard property={property} />
+
+            {/* OWNER INFORMATION */}
+            <OwnerCard property={property} />
+          </div>
+
+          {/* RIGHT 1 COLUMN: DESKTOP STICKY ACTION CARD */}
+          <aside aria-label="Booking and pricing actions" className="hidden lg:block lg:col-span-1 sticky top-24">
+            <PropertyActionsSection property={property} />
+          </aside>
+        </div>
+
+        {/* SIMILAR PROPERTIES (FULL WIDTH BOTTOM SECTION) */}
+        <div className="pt-6">
+          <SimilarPropertiesSection property={property} />
+        </div>
+      </div>
+    </article>
+  );
+}
