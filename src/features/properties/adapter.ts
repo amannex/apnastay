@@ -251,7 +251,7 @@ export function normalizeProperty(raw: any): NormalizedProperty {
   // Description
   const description = (typeof raw.description === 'string' && raw.description.trim())
     ? raw.description.trim()
-    : 'Fully verified zero-brokerage residence carefully audited by ApnaStay field engineers.';
+    : undefined;
 
   // Specs resolution
   const rawType = (raw.propertyType || raw.type || '').toLowerCase();
@@ -394,18 +394,62 @@ export function normalizeProperty(raw: any): NormalizedProperty {
     ? raw.nearby.map((n: any) => ({ name: n.name, distance: n.distance }))
     : [];
 
-  // Highlights
+  // Highlights (strictly data-driven from real property fields)
   const highlights: string[] = [];
-  if (safeRent > 0) highlights.push('Zero Brokerage direct lease');
-  if (furnishing) highlights.push(`Furnishing: ${furnishing}`);
-  if (amenities.some((a) => a.name.toLowerCase().includes('wi-fi') || a.name.toLowerCase().includes('wifi'))) {
-    highlights.push('High-speed Wi-Fi connectivity');
+
+  // 1. Furnishing status
+  if (furnishing) {
+    if (/fully/i.test(furnishing)) {
+      highlights.push('Fully furnished');
+    } else if (/semi/i.test(furnishing)) {
+      highlights.push('Semi-furnished');
+    } else {
+      highlights.push(furnishing);
+    }
   }
-  if (displayStatus.includes('Immediately')) {
-    highlights.push('Ready to move in immediately');
+
+  // 2. Parking
+  const hasParking = Boolean(parking) || amenities.some((a) => /parking/i.test(a.name));
+  if (hasParking) {
+    highlights.push('Parking available');
   }
-  if (verification.isVerified) {
-    highlights.push('100% verified ownership & documentation');
+
+  // 3. Proximity to Metro
+  const metroNearby = nearbyPlaces.find((n) => /metro/i.test(n.name));
+  if (metroNearby) {
+    const distMatch = metroNearby.distance?.match(/^(\d+(?:\.\d+)?\s*(?:m|km))/i);
+    highlights.push(distMatch ? `Near metro (${distMatch[1]})` : 'Near metro');
+  } else if (raw.metroDistanceMin) {
+    highlights.push(`Near metro (${raw.metroDistanceMin} mins)`);
+  }
+
+  // 4. Verified Owner
+  if (owner.verified || verification.isVerified) {
+    highlights.push('Verified owner');
+  }
+
+  // 5. Immediate Availability
+  if (isImmediate || availStatus === 'immediate') {
+    highlights.push('Available immediately');
+  } else if (availableFrom) {
+    highlights.push(`Available from ${availableFrom}`);
+  }
+
+  // 6. Zero Brokerage
+  const hasZeroBrokerage = raw.costBreakdown?.brokerage === 0 || raw.brokerage === 0 || raw.pricing?.brokerage === 0;
+  if (safeRent > 0 && hasZeroBrokerage) {
+    highlights.push('Zero brokerage');
+  }
+
+  // 7. Power Backup
+  if (amenities.some((a) => /power\s*backup|inverter/i.test(a.name))) {
+    highlights.push('Power backup');
+  }
+
+  // 8. Lift
+  const hasElevator = amenities.some((a) => /lift|elevator/i.test(a.name)) || /elevator/i.test(String(floor));
+  if (hasElevator) {
+    highlights.push('Lift available');
   }
 
   return {

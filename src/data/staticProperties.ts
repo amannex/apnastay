@@ -102,11 +102,21 @@ export const STATIC_PROPERTIES: Property[] = [
       floor: '6th Floor (Elevator)',
       furnishing: 'Fully Furnished (Herman Miller WFH Desk & Bed)'
     },
+    description: `A sun-drenched, designer 1 BHK apartment situated on the 6th floor in the heart of Vijay Nagar, Indore. Engineered specifically for remote tech professionals and corporate executives who prioritize acoustic tranquility, rapid fiber connectivity, and seamless move-in readiness.
+
+The unit features custom soundproof double-glazed acoustic glass windows suppressing exterior road noise to under 32 dB, an ergonomic workstation equipped with a Herman Miller chair, and high-efficiency inverter AC units in both the living space and bedroom.
+
+Building privileges include 24/7 biometric and NFC smart-lock entry, dedicated elevator access, 100% full DG power backup, covered four-wheeler parking, and an on-premise private fitness studio. Situated within a 4-minute walk to Vijay Nagar BRTS/Metro station and a 5-minute drive to Crystal IT Park.`,
     amenities: [
       { name: '300 Mbps JioFiber Wi-Fi', icon: 'Wifi', verified: true },
-      { name: 'Double-Glazed Soundproofing (32 dB)', icon: 'ShieldCheck', verified: true },
+      { name: 'Split Air Conditioner (AC)', icon: 'Wind', verified: true },
+      { name: 'Modular Equipped Kitchen', icon: 'Utensils', verified: true },
+      { name: 'Dedicated Covered Car Parking', icon: 'Car', verified: true },
+      { name: 'High-Speed Passenger Lift', icon: 'ArrowUpDown', verified: true },
+      { name: '24/7 Security & CCTV', icon: 'ShieldCheck', verified: true },
+      { name: '100% DG Power Backup', icon: 'Zap', verified: true },
+      { name: 'Automatic Washing Machine', icon: 'Sparkles', verified: true },
       { name: 'NFC Smart-Lock Keyless Entry', icon: 'Key', verified: true },
-      { name: '100% Power Backup', icon: 'Zap', verified: true },
       { name: 'Private Sunlit Balcony', icon: 'Sun', verified: true },
       { name: 'In-building Fitness Studio', icon: 'Dumbbell', verified: true }
     ],
@@ -166,11 +176,24 @@ export const STATIC_PROPERTIES: Property[] = [
       floor: '3rd Floor (Park Facing)',
       furnishing: 'Fully Furnished (Artisan Teak & WFH Setup)'
     },
+    description: `A masterfully curated 2 BHK heritage residence in Malviya Nagar, Jaipur, overlooking lush neighbourhood gardens. Blending handcrafted Rajasthani woodwork with modern lifestyle amenities for individuals and families seeking quiet comfort.
+
+Highlights of this home include:
+- High-speed 250 Mbps fiber internet for seamless remote work
+- Direct park-facing panoramic balcony with morning sunlight
+- Fully equipped modular kitchen with gas pipeline connection
+- Dedicated covered car parking space and 24/7 security
+
+Located less than 10 minutes walking distance from World Trade Park and Jawahar Circle Garden.`,
     amenities: [
       { name: '250 Mbps Fiber Internet', icon: 'Wifi', verified: true },
+      { name: 'Air Conditioning (AC)', icon: 'Wind', verified: true },
+      { name: 'Modular Kitchen', icon: 'Utensils', verified: true },
+      { name: 'Covered Car Parking', icon: 'Car', verified: true },
+      { name: 'Solar Water Heating', icon: 'Sun', verified: true },
+      { name: '24/7 Security Guard', icon: 'ShieldCheck', verified: true },
       { name: 'NFC Keyless Entry', icon: 'Key', verified: true },
-      { name: 'Acoustic Wall Panels (34 dB)', icon: 'ShieldCheck', verified: true },
-      { name: 'Solar Water Heating', icon: 'Sun', verified: true }
+      { name: 'Acoustic Wall Panels (34 dB)', icon: 'ShieldCheck', verified: true }
     ],
     nearby: [
       { name: 'World Trade Park Jaipur', distance: '800 m (10 min walk)' },
