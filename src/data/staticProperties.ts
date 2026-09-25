@@ -734,6 +734,49 @@ Features 4 lavish en-suite bedrooms, high double-height ceilings, a designer mod
       responseTime: 'Under 1 hour',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
     }
+  },
+  {
+    id: 'prop-999',
+    title: 'The Saket Tower Studio',
+    neighborhood: 'Saket Nagar, Indore',
+    city: 'Indore',
+    price: 14000,
+    currency: '₹',
+    period: '/month',
+    roomType: 'Studio Suite',
+    status: 'removed',
+    isAvailable: false,
+    rating: 4.8,
+    reviewsCount: 15,
+    verified: true,
+    images: [
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80'
+    ],
+    costBreakdown: {
+      monthlyRent: 14000,
+      maintenance: 1000,
+      brokerage: 0,
+      securityDeposit: 28000,
+      totalMoveIn: 43000
+    },
+    specs: {
+      bedrooms: 1,
+      bathrooms: 1,
+      sqft: 450,
+      builtUpArea: 550,
+      floor: '3rd Floor',
+      furnishing: 'Semi Furnished',
+      parking: 'Available'
+    },
+    description: 'A cozy studio apartment located in Saket Nagar, Indore. Recently leased out to a long-term corporate tenant.',
+    amenities: [
+      { name: 'Wi-Fi', icon: 'Wifi', verified: true },
+      { name: 'Power Backup', icon: 'Zap', verified: true }
+    ],
+    owner: {
+      name: 'Anand Verma',
+      role: 'Property Owner'
+    }
   }
 ];
 

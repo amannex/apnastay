@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { siteConfig } from '@/config/site';
 import { resolveProperty, getAllPropertyStaticParams } from '@/features/properties/adapter';
 import { PropertyDetailContainer, PropertyErrorView } from '@/features/properties/components/detail';
+import { STATIC_PROPERTIES } from '@/data/staticProperties';
 
 interface CityPropertyPageProps {
   params: Promise<{ city: string; slug: string }>;
@@ -72,14 +73,44 @@ export async function generateMetadata({ params }: CityPropertyPageProps): Promi
 
 export default async function CityPropertyPage({ params }: CityPropertyPageProps) {
   const { city, slug } = await params;
-  const property = await resolveProperty(slug, city);
+  let property: import('@/features/properties/adapter').NormalizedProperty | null = null;
 
+  try {
+    property = await resolveProperty(slug, city);
+  } catch (err) {
+    console.error('[CityPropertyPage] Error resolving property:', err);
+    return (
+      <PropertyErrorView
+        title="We couldn't load this property."
+        message="Please try again."
+        type="error"
+      />
+    );
+  }
+
+  // Not Found State
   if (!property) {
     return (
       <PropertyErrorView
-        title="Property Not Found"
-        message={`We could not find any property matching "${slug}" in ${city}. It may have been unlisted or the address may have changed.`}
+        title="Property not found"
+        message="This property may have been removed or is no longer available."
         type="not_found"
+      />
+    );
+  }
+
+  // Removed / Unlisted Property State (offers alternatives)
+  if (property.status === 'removed' || property.status === 'unlisted') {
+    const alternatives = STATIC_PROPERTIES.filter(
+      (p) => p.city?.toLowerCase() === city.toLowerCase() && p.id !== property.id
+    );
+
+    return (
+      <PropertyErrorView
+        title="This property is no longer available."
+        type="removed"
+        city={city}
+        alternatives={alternatives}
       />
     );
   }

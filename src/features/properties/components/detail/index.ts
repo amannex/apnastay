@@ -18,6 +18,6 @@ export { default as VerificationCard } from './VerificationCard';
 export { default as OwnerCard } from './OwnerCard';
 export { default as SimilarPropertiesSection } from './SimilarPropertiesSection';
 export { default as PropertyShareModal } from './PropertyShareModal';
-export { default as PropertyPageSkeleton } from './PropertyPageSkeleton';
+export { default as PropertyPageSkeleton, PropertyDetailSkeleton } from './PropertyPageSkeleton';
 export { default as PropertyErrorView } from './PropertyErrorView';
 export * from './propertyDetailsConfig';

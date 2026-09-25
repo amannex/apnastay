@@ -902,17 +902,17 @@ export function normalizeProperty(raw: any): NormalizedProperty {
 
     pricing: {
       monthlyRent: safeRent,
-      rentDisplay: formatCurrency(safeRent),
+      rentDisplay: safeRent > 0 ? formatCurrency(safeRent) : 'Price on Request',
       securityDeposit: safeDeposit,
-      depositDisplay: safeDeposit !== undefined ? formatCurrency(safeDeposit) : undefined,
+      depositDisplay: safeDeposit !== undefined && safeDeposit > 0 ? formatCurrency(safeDeposit) : undefined,
       maintenance: safeMaintenance,
-      maintenanceDisplay: safeMaintenance !== undefined ? formatCurrency(safeMaintenance) : undefined,
+      maintenanceDisplay: safeMaintenance !== undefined && safeMaintenance > 0 ? formatCurrency(safeMaintenance) : undefined,
       brokerage: 0,
       brokerageDisplay: '₹0 Brokerage',
       currency: '₹',
       billingPeriod: 'month',
       totalMoveIn: safeTotalMoveIn,
-      totalMoveInDisplay: safeTotalMoveIn !== undefined ? formatCurrency(safeTotalMoveIn) : undefined
+      totalMoveInDisplay: safeTotalMoveIn !== undefined && safeTotalMoveIn > 0 ? formatCurrency(safeTotalMoveIn) : undefined
     },
 
     availability: {
