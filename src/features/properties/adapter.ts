@@ -53,6 +53,12 @@ export interface NormalizedSpecs {
   totalFloors?: string | number;
   parking?: string;
   roomType?: string;
+  sharingType?: string;
+  genderPreference?: string;
+  foodPolicy?: string;
+  curfewOrTiming?: string;
+  plotArea?: string;
+  occupancyCapacity?: number | string;
 }
 
 export interface NormalizedAmenity {
@@ -248,6 +254,14 @@ export function normalizeProperty(raw: any): NormalizedProperty {
     : 'Fully verified zero-brokerage residence carefully audited by ApnaStay field engineers.';
 
   // Specs resolution
+  const rawType = (raw.propertyType || raw.type || '').toLowerCase();
+  const isPgOrHostel =
+    rawType === 'pg' ||
+    rawType === 'hostel' ||
+    rawType === 'co_living' ||
+    rawType === 'coliving' ||
+    rawType === 'bed_space';
+
   const firstUnit = Array.isArray(raw.units) && raw.units.length > 0 ? raw.units[0] : null;
   const bedrooms = raw.specs?.bedrooms ?? (firstUnit?.unitType?.match(/(\d+)\s*BHK/i) ? parseInt(firstUnit.unitType) : raw.bedrooms);
   const bathrooms = raw.specs?.bathrooms ?? raw.bathrooms;
@@ -257,6 +271,38 @@ export function normalizeProperty(raw: any): NormalizedProperty {
   const totalFloors = raw.specs?.totalFloors ?? raw.totalFloors;
   const parking = raw.specs?.parking ?? raw.parking;
   const roomType = raw.roomType ?? raw.type ?? (firstUnit?.unitType || 'Apartment');
+
+  const sharingType =
+    raw.specs?.sharingType ||
+    (firstUnit?.occupancyModel ? firstUnit.occupancyModel.replace(/_/g, ' ') : undefined) ||
+    (firstUnit?.capacity ? `${firstUnit.capacity} Sharing` : undefined);
+
+  const genderPreference = raw.rules?.genderPreference
+    ? raw.rules.genderPreference === 'male_only'
+      ? 'Male Only'
+      : raw.rules.genderPreference === 'female_only'
+      ? 'Female Only'
+      : 'Co-Ed / Any'
+    : raw.specs?.genderPreference;
+
+  const foodPolicy = raw.rules?.foodPolicy
+    ? raw.rules.foodPolicy.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+    : raw.pricing?.foodIncluded
+    ? 'Meals Included'
+    : raw.specs?.foodPolicy;
+
+  const curfewOrTiming = raw.rules?.timingType
+    ? raw.rules.timingType === 'open_24_7'
+      ? 'Open 24/7'
+      : raw.rules.timingType === 'gate_closing'
+      ? `Gate closes at ${raw.rules.gateClosingTime || '10:30 PM'}`
+      : raw.rules.timingType === 'curfew'
+      ? 'Curfew Applicable'
+      : 'Flexible Timings'
+    : raw.specs?.curfewOrTiming;
+
+  const plotArea = raw.specs?.plotArea || raw.plotArea;
+  const occupancyCapacity = firstUnit?.capacity || raw.specs?.occupancyCapacity || raw.specs?.capacity;
 
   // Amenities resolution
   const rawAmenities = raw.amenities || [];
@@ -412,14 +458,20 @@ export function normalizeProperty(raw: any): NormalizedProperty {
     description,
 
     specs: {
-      bedrooms: bedrooms ? Number(bedrooms) : undefined,
+      bedrooms: isPgOrHostel ? undefined : (bedrooms ? Number(bedrooms) : undefined),
       bathrooms: bathrooms ? Number(bathrooms) : undefined,
       sqft: sqft ? Number(sqft) : undefined,
       furnishing: typeof furnishing === 'string' ? furnishing : undefined,
       floor,
       totalFloors,
       parking: typeof parking === 'string' ? parking : undefined,
-      roomType: typeof roomType === 'string' ? roomType : undefined
+      roomType: typeof roomType === 'string' ? roomType : undefined,
+      sharingType: typeof sharingType === 'string' ? sharingType : undefined,
+      genderPreference: typeof genderPreference === 'string' ? genderPreference : undefined,
+      foodPolicy: typeof foodPolicy === 'string' ? foodPolicy : undefined,
+      curfewOrTiming: typeof curfewOrTiming === 'string' ? curfewOrTiming : undefined,
+      plotArea: typeof plotArea === 'string' || typeof plotArea === 'number' ? String(plotArea) : undefined,
+      occupancyCapacity: occupancyCapacity ? String(occupancyCapacity) : undefined
     },
 
     amenities,
