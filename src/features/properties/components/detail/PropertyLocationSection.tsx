@@ -18,7 +18,7 @@ export default function PropertyLocationSection({ property }: PropertyLocationSe
   return (
     <section
       aria-label="Location and neighborhood"
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-5"
+      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-5"
     >
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>

@@ -24,7 +24,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
     <>
       <section
         aria-label="Property owner details"
-        className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-5"
+        className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-5"
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* Owner Avatar */}

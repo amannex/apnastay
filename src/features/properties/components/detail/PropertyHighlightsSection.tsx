@@ -18,7 +18,7 @@ export default function PropertyHighlightsSection({ property }: PropertyHighligh
   return (
     <section
       aria-label="Why this property"
-      className="bg-[#FAFAFA] rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="bg-[#FAFAFA] rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-4"
     >
       <div className="flex items-center gap-2">
         <Sparkles className="w-5 h-5 text-[#E1224D]" />

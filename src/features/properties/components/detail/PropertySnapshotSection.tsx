@@ -247,10 +247,10 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
   return (
     <section
       aria-label="Property snapshot specifications"
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="bg-white rounded-3xl p-4 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-4"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#1A1A1A]">
+        <h2 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">
           Property Snapshot
         </h2>
         <span className="text-xs font-semibold text-[#6B7280]">
@@ -261,24 +261,24 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       {/* RESPONSIVE SNAPSHOT GRID */}
       {/* Desktop: 3 to 4 column balanced tile grid */}
       {/* Mobile: 2 column scannable card layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 pt-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 pt-1">
         {snapshotItems.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.id}
-              className="p-3.5 sm:p-4 rounded-2xl bg-[#FAFAFA] border border-gray-100 flex flex-col justify-between hover:border-gray-200 transition-colors"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAFAFA] border border-gray-100 flex flex-col justify-between hover:border-gray-200 transition-colors"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-[#6B7280]">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                <span className="text-[11px] sm:text-xs font-medium text-[#6B7280] truncate mr-1">
                   {item.label}
                 </span>
-                <div className="p-1.5 rounded-lg bg-white text-[#ED3258] shadow-2xs">
+                <div className="p-1 sm:p-1.5 rounded-lg bg-white text-[#ED3258] shadow-2xs shrink-0">
                   <Icon className="w-3.5 h-3.5" />
                 </div>
               </div>
 
-              <div className="text-sm sm:text-base font-extrabold text-[#1A1A1A] tracking-tight truncate">
+              <div className="text-xs sm:text-sm md:text-base font-extrabold text-[#1A1A1A] tracking-tight truncate">
                 {item.value}
               </div>
             </div>

@@ -136,7 +136,7 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
   return (
     <section
       aria-label="House rules & tenant requirements"
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-6"
+      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-6"
     >
       <div className="flex items-center justify-between">
         <div>

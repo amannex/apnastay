@@ -261,7 +261,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
 
           {/* CASE C: 3 OR MORE IMAGES (EXACT SPECIFICATION: Left Main + Right Stacked) */}
           {validImages.length >= 3 && (
-            <div className="grid grid-cols-3 gap-2 h-[440px] lg:h-[480px]">
+            <div className="grid grid-cols-3 gap-2 h-[360px] md:h-[400px] lg:h-[480px]">
               {/* Left Column: Primary Big Image (Spans 2 cols) */}
               <div
                 onClick={() => openLightbox(0)}

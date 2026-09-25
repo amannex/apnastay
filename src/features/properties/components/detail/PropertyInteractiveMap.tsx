@@ -185,7 +185,7 @@ export default function PropertyInteractiveMap({
       />
 
       {/* External Map Link button overlay */}
-      <div className="absolute bottom-3 right-3 z-10">
+      <div className="absolute bottom-3 left-3 z-10">
         <a
           href={mapsSearchUrl}
           target="_blank"

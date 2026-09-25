@@ -26,7 +26,7 @@ interface PropertyDetailContainerProps {
 
 export default function PropertyDetailContainer({ property }: PropertyDetailContainerProps) {
   return (
-    <article className="min-h-screen bg-[#FAFAFA] pt-6 pb-28 lg:pb-20">
+    <article className="min-h-screen bg-[#FAFAFA] pt-20 sm:pt-24 lg:pt-28 pb-32 sm:pb-36 lg:pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* BREADCRUMB & BACK NAVIGATION */}
         <PropertyBreadcrumb property={property} />
@@ -84,7 +84,7 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
           </div>
 
           {/* RIGHT 1 COLUMN: DESKTOP STICKY ACTION CARD */}
-          <aside aria-label="Booking and pricing actions" className="hidden lg:block lg:col-span-1 sticky top-24">
+          <aside aria-label="Booking and pricing actions" className="hidden lg:block lg:col-span-1 sticky top-28">
             <PropertyActionsSection property={property} />
           </aside>
         </div>

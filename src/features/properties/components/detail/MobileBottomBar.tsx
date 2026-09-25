@@ -22,18 +22,18 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
     <>
       <nav
         aria-label="Mobile quick actions"
-        className="block lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
+        className="block lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-3 sm:px-4 py-2.5 sm:py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
       >
-        <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-2 sm:gap-3">
           {/* Price & Deposit Preview */}
-          <div className="min-w-0">
+          <div className="min-w-0 shrink">
             <div className="flex items-baseline gap-1">
-              <span className="text-xl font-extrabold text-[#1A1A1A] tracking-tight">
+              <span className="text-lg sm:text-xl font-extrabold text-[#1A1A1A] tracking-tight whitespace-nowrap">
                 {pricing.rentDisplay}
               </span>
               <span className="text-xs text-[#6B7280] font-medium">/mo</span>
             </div>
-            <p className="text-[10px] text-emerald-600 font-semibold truncate">
+            <p className="text-[10px] text-emerald-600 font-semibold truncate hidden xs:block">
               {pricing.depositDisplay
                 ? `Deposit ${pricing.depositDisplay} • ₹0 Brokerage`
                 : '₹0 Brokerage • Verified'}
@@ -41,12 +41,12 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
           </div>
 
           {/* Action Buttons: Wishlist + Primary Contact Owner */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Wishlist Button */}
             <button
               type="button"
               onClick={() => onToggleWishlist(property.id)}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
                 isWishlisted
                   ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
                   : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -55,7 +55,7 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
               title={isWishlisted ? 'Saved' : 'Save'}
             >
               <Heart
-                className={`w-5 h-5 ${
+                className={`w-4 h-4 sm:w-5 sm:h-5 ${
                   isWishlisted ? 'fill-[#ED3258] text-[#ED3258]' : ''
                 }`}
               />
@@ -65,9 +65,9 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
             <button
               type="button"
               onClick={() => setContactModalOpen(true)}
-              className="py-3 px-5 rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+              className="py-2.5 sm:py-3 px-3.5 sm:px-5 rounded-xl sm:rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
             >
-              <PhoneCall className="w-4 h-4" />
+              <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>Contact Owner</span>
             </button>
           </div>

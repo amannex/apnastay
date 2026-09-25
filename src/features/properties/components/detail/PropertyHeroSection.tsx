@@ -70,7 +70,7 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           <button
             type="button"
             onClick={handleShareClick}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-[11px] sm:text-xs font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
             aria-label="Share this property"
             title="Share property via WhatsApp, Copy Link, etc."
           >
@@ -82,7 +82,7 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           <button
             type="button"
             onClick={handleToggleWishlist}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 ${
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 ${
               isWishlisted
                 ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
@@ -117,13 +117,13 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
       </div>
 
       {/* Main Property Title */}
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A1A1A] tracking-tight leading-tight">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A1A1A] tracking-tight leading-tight break-words">
         {title}
       </h1>
 
       {/* Location Bar */}
-      <div className="flex flex-wrap items-center gap-2 text-sm text-[#6B7280]">
-        <div className="inline-flex items-center gap-1.5 font-medium text-gray-800">
+      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-[#6B7280]">
+        <div className="inline-flex items-center gap-1.5 font-medium text-gray-800 break-words">
           <MapPin className="w-4 h-4 text-[#ED3258] shrink-0" />
           <span>{location.displayLocation}</span>
         </div>

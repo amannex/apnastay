@@ -72,8 +72,8 @@ export default function Navbar({
       }`}
     >
       {/* BALANCED HEADER WIDTH (1360px) - EXPANDED SLIGHTLY BEYOND 1280px CONTENT */}
-      <div className="max-w-[1360px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between gap-3 sm:gap-6">
+      <div className="max-w-[1360px] w-full mx-auto px-4 sm:px-6 lg:px-6 xl:px-8">
+        <nav className="flex items-center justify-between gap-3 sm:gap-4 xl:gap-6">
 
           {/* BRAND LOGO (NEVER WRAPS) */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0 whitespace-nowrap">
@@ -88,9 +88,9 @@ export default function Navbar({
           </Link>
 
           {/* MAIN DESKTOP NAVIGATION & ACTION BUTTONS WITH UNIFORM EVEN SPACING */}
-          <div className="hidden lg:flex items-center gap-8 xl:gap-10">
-            {/* The Four Multi-Page Text Menus (Font Size 15px: increased by 1 from 14px) */}
-            <div className="flex items-center gap-8 xl:gap-10 text-[15px] font-semibold tracking-tight text-[#374151]">
+          <div className="hidden lg:flex items-center gap-5 xl:gap-10">
+            {/* The Four Multi-Page Text Menus (Font Size 14px on lg, 15px on xl) */}
+            <div className="flex items-center gap-4 xl:gap-8 text-sm xl:text-[15px] font-semibold tracking-tight text-[#374151]">
               <Link
                 href="/about"
                 className={`whitespace-nowrap transition-colors duration-200 ${
@@ -132,7 +132,7 @@ export default function Navbar({
             </div>
 
             {/* ACTION BUTTONS: FIND APNA STAY (BUTTON) → LIST APNA STAY (BUTTON) → COMPARE → ACCOUNT (ICON ONLY) */}
-            <div className="flex items-center gap-5 lg:gap-6 xl:gap-8 shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-3 lg:gap-3.5 xl:gap-6 shrink-0 whitespace-nowrap">
               {/* Find Apna Stay Button */}
               <Link
                 href="/properties"

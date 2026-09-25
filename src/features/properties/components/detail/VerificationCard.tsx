@@ -17,7 +17,7 @@ export default function VerificationCard({ property }: VerificationCardProps) {
     return (
       <section
         aria-label="Verification and trust information"
-        className="bg-amber-50/50 rounded-3xl p-6 sm:p-7 border border-amber-200/80 shadow-sm space-y-4"
+        className="bg-amber-50/50 rounded-3xl p-5 sm:p-6 lg:p-7 border border-amber-200/80 shadow-sm space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -61,7 +61,7 @@ export default function VerificationCard({ property }: VerificationCardProps) {
   return (
     <section
       aria-label="Verification and trust"
-      className="bg-emerald-50/60 rounded-3xl p-6 sm:p-7 border border-emerald-200/80 shadow-sm space-y-5"
+      className="bg-emerald-50/60 rounded-3xl p-5 sm:p-6 lg:p-7 border border-emerald-200/80 shadow-sm space-y-5"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">

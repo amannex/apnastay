@@ -51,7 +51,7 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
   return (
     <section
       aria-label="Nearby places and transit"
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-4"
     >
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>

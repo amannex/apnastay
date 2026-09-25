@@ -39,31 +39,38 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
 
   return (
     <>
-      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl p-5 sm:p-7 border border-[#EDEDED] shadow-sm space-y-6">
         {/* PRICE DISPLAY */}
-        <div className="space-y-1.5 pb-5 border-b border-gray-100">
-          <div className="flex items-baseline justify-between">
+        <div className="space-y-2 pb-5 border-b border-gray-100">
+          <div className="flex items-baseline justify-between flex-wrap gap-2">
             <div>
-              <span className="text-3xl lg:text-4xl font-extrabold text-[#1A1A1A] tracking-tight">
+              <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1A1A1A] tracking-tight">
                 {pricing.rentDisplay}
               </span>
-              <span className="text-sm font-semibold text-[#6B7280]">
+              <span className="text-xs sm:text-sm font-semibold text-[#6B7280]">
                 {' '}
                 /{pricing.billingPeriod}
               </span>
             </div>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
               <ShieldCheck className="w-3.5 h-3.5" />
               {pricing.brokerageDisplay}
             </span>
           </div>
 
-          {/* Quick Availability Subtext */}
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 pt-1">
-            <Clock className="w-3.5 h-3.5 text-[#ED3258]" />
-            <span>
-              {availability.isImmediate ? 'Available now' : availability.displayStatus}
-            </span>
+          {/* AVAILABILITY STATUS */}
+          <div className="flex items-center gap-2 pt-0.5">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-800 bg-gray-50 border border-gray-200/80 px-2.5 py-1 rounded-lg">
+              <Clock className="w-3.5 h-3.5 text-[#ED3258]" />
+              <span>
+                {availability.isImmediate ? 'Available Now' : availability.displayStatus}
+              </span>
+            </div>
+            {availability.availableFrom && !availability.isImmediate && (
+              <span className="text-[11px] text-gray-500 font-medium">
+                From {availability.availableFrom}
+              </span>
+            )}
           </div>
         </div>
 
