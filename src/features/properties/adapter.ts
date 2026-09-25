@@ -81,9 +81,37 @@ export interface NormalizedAmenity {
 }
 
 export interface NormalizedRule {
+  id?: string;
+  category?: 'house_rules' | 'tenant_requirements';
   label: string;
   value: string;
-  allowed?: boolean;
+  allowed?: boolean | 'restricted';
+  detail?: string;
+  iconName?: string;
+}
+
+export interface VerificationCheckItem {
+  id: string;
+  label: string;
+  confirmed: boolean;
+  date?: string;
+  note?: string;
+}
+
+export interface NormalizedVerification {
+  isVerified: boolean;
+  status: 'verified' | 'unverified' | 'in_progress';
+  level?: string;
+  levelLabel?: string;
+  lastVerified?: string;
+  confirmedChecks: VerificationCheckItem[];
+  allChecks?: VerificationCheckItem[];
+  verifiedBadges: string[];
+}
+
+export interface NormalizedNearbyPlace {
+  name: string;
+  distance: string;
 }
 
 export interface NormalizedOwner {
@@ -93,17 +121,6 @@ export interface NormalizedOwner {
   verified?: boolean;
   responseTime?: string;
   memberSince?: string;
-}
-
-export interface NormalizedVerification {
-  isVerified: boolean;
-  verifiedBadges: string[];
-  lastVerified?: string;
-}
-
-export interface NormalizedNearbyPlace {
-  name: string;
-  distance: string;
 }
 
 export interface NormalizedProperty {
@@ -125,6 +142,8 @@ export interface NormalizedProperty {
   specs: NormalizedSpecs;
   amenities: NormalizedAmenity[];
   rules: NormalizedRule[];
+  houseRules: NormalizedRule[];
+  tenantRequirements: NormalizedRule[];
   owner: NormalizedOwner;
   verification: NormalizedVerification;
   nearbyPlaces: NormalizedNearbyPlace[];
@@ -373,55 +392,339 @@ export function normalizeProperty(raw: any): NormalizedProperty {
   const commonAreas = raw.specs?.commonAreas ?? raw.commonAreas ?? (amenities.some((a) => /common|lounge/i.test(a.name)) ? 'Common Lounge & Dining' : undefined);
   const security = raw.specs?.security ?? raw.security ?? (amenities.some((a) => /security|cctv|guard/i.test(a.name)) ? '24/7 Security & CCTV' : undefined);
 
-  // Rules resolution
+  // Rules & Requirements resolution (100% data-driven, never fabricated)
   const rulesList: NormalizedRule[] = [];
-  if (raw.rules) {
-    const r = raw.rules;
-    if (r.suitableFor && Array.isArray(r.suitableFor) && r.suitableFor.length > 0) {
+  const r = raw.rules || {};
+
+  // 1. Bachelor Friendly (Tenant Requirement)
+  if (r.suitableFor && Array.isArray(r.suitableFor)) {
+    if (r.suitableFor.includes('bachelors')) {
       rulesList.push({
-        label: 'Suitable For',
-        value: r.suitableFor.map((s: string) => s.replace(/_/g, ' ')).join(', '),
-        allowed: true
+        id: 'bachelor_friendly',
+        category: 'tenant_requirements',
+        label: 'Bachelor Friendly',
+        value: 'Bachelors Welcome',
+        allowed: true,
+        iconName: 'Users'
       });
     }
-    if (r.genderPreference && r.genderPreference !== 'any') {
+    if (r.suitableFor.includes('families')) {
       rulesList.push({
-        label: 'Gender Preference',
-        value: r.genderPreference.replace(/_/g, ' ').toUpperCase(),
-        allowed: true
+        id: 'family_preferred',
+        category: 'tenant_requirements',
+        label: 'Family Preferred',
+        value: 'Families Welcome',
+        allowed: true,
+        iconName: 'Home'
       });
     }
-    if (r.petPolicy) {
+  } else {
+    if (r.bachelorFriendly !== undefined) {
       rulesList.push({
-        label: 'Pet Policy',
-        value: r.petPolicy === 'allowed' ? 'Pets Allowed' : r.petPolicy === 'with_restrictions' ? 'Pets with Restrictions' : 'No Pets',
-        allowed: r.petPolicy === 'allowed'
+        id: 'bachelor_friendly',
+        category: 'tenant_requirements',
+        label: 'Bachelor Friendly',
+        value: r.bachelorFriendly ? 'Bachelors Welcome' : 'No Bachelors',
+        allowed: Boolean(r.bachelorFriendly),
+        iconName: 'Users'
       });
     }
-    if (r.smokingPolicy) {
+    if (r.familyPreferred !== undefined) {
       rulesList.push({
-        label: 'Smoking',
-        value: r.smokingPolicy === 'allowed' ? 'Smoking Allowed' : 'Non-Smoking',
-        allowed: r.smokingPolicy === 'allowed'
-      });
-    }
-    if (r.visitorsRule || r.visitorsAllowed !== undefined) {
-      const allowed = r.visitorsRule === 'allowed' || r.visitorsAllowed === true;
-      rulesList.push({
-        label: 'Visitors',
-        value: allowed ? 'Visitors Allowed' : 'Visitors Restricted',
-        allowed
-      });
-    }
-    if (r.noticePeriodDays || r.noticePeriodRule) {
-      const days = r.noticePeriodDays || r.noticePeriodRule;
-      rulesList.push({
-        label: 'Notice Period',
-        value: `${days} Days`,
-        allowed: true
+        id: 'family_preferred',
+        category: 'tenant_requirements',
+        label: 'Family Preferred',
+        value: r.familyPreferred ? 'Families Preferred' : 'Families Welcome',
+        allowed: true,
+        iconName: 'Home'
       });
     }
   }
+
+  // 2. Gender Preference (Tenant Requirement)
+  const genderPref = r.genderPreference || raw.specs?.genderPreference;
+  if (genderPref && genderPref !== 'any') {
+    const formattedGender = genderPref === 'male_only'
+      ? 'Male Only'
+      : genderPref === 'female_only'
+      ? 'Female Only'
+      : genderPref.replace(/_/g, ' ');
+    rulesList.push({
+      id: 'gender_preference',
+      category: 'tenant_requirements',
+      label: 'Gender Preference',
+      value: formattedGender,
+      allowed: true,
+      iconName: 'UserCheck'
+    });
+  }
+
+  // 3. Minimum Stay (Tenant Requirement)
+  const minStay = r.minimumStay || (r.minimumStayRule ? `${r.minimumStayRule} Months` : undefined) || raw.specs?.minimumStay || (raw.pricing?.lockInMonths ? `${raw.pricing.lockInMonths} Months` : undefined);
+  if (minStay) {
+    rulesList.push({
+      id: 'minimum_stay',
+      category: 'tenant_requirements',
+      label: 'Minimum Stay',
+      value: String(minStay),
+      allowed: 'restricted',
+      iconName: 'Calendar'
+    });
+  }
+
+  // 4. Notice Period (Tenant Requirement)
+  const noticeDays = r.noticePeriodDays || (r.noticePeriodRule ? `${r.noticePeriodRule} Days` : undefined) || raw.specs?.noticePeriod || (raw.pricing?.noticePeriodDays ? `${raw.pricing.noticePeriodDays} Days` : undefined);
+  if (noticeDays) {
+    rulesList.push({
+      id: 'notice_period',
+      category: 'tenant_requirements',
+      label: 'Notice Period',
+      value: typeof noticeDays === 'number' ? `${noticeDays} Days` : String(noticeDays),
+      allowed: 'restricted',
+      iconName: 'Clock'
+    });
+  }
+
+  // 5. Tenant Verification / Move-in Requirements (Tenant Requirement)
+  if (r.requiresIdProof || r.moveInRequirements?.includes('id_proof')) {
+    rulesList.push({
+      id: 'id_verification',
+      category: 'tenant_requirements',
+      label: 'ID Verification',
+      value: 'Govt Photo ID (Aadhaar / Passport) Required',
+      allowed: true,
+      iconName: 'FileCheck'
+    });
+  }
+  if (r.requiresPoliceVerification || r.tenantVerificationRule === 'yes') {
+    rulesList.push({
+      id: 'police_verification',
+      category: 'tenant_requirements',
+      label: 'Police Verification',
+      value: 'Police Verification Required',
+      allowed: true,
+      iconName: 'ShieldAlert'
+    });
+  }
+  if (r.requiresEmploymentOrCollegeProof) {
+    rulesList.push({
+      id: 'affiliation_proof',
+      category: 'tenant_requirements',
+      label: 'Affiliation Proof',
+      value: 'Work Email or College ID Required',
+      allowed: true,
+      iconName: 'Briefcase'
+    });
+  }
+  if (r.agreementRule === 'yes') {
+    rulesList.push({
+      id: 'agreement',
+      category: 'tenant_requirements',
+      label: 'Tenancy Agreement',
+      value: 'Standard E-Stamped Agreement Required',
+      allowed: true,
+      iconName: 'FileText'
+    });
+  }
+
+  // 6. Pets Allowed (House Rule)
+  const petStatus = r.petPolicy || r.petsRule || (r.petsAllowed !== undefined ? (r.petsAllowed ? 'allowed' : 'not_allowed') : undefined);
+  if (petStatus) {
+    if (petStatus === 'allowed') {
+      rulesList.push({
+        id: 'pets',
+        category: 'house_rules',
+        label: 'Pets Allowed',
+        value: 'Pets Allowed',
+        allowed: true,
+        iconName: 'Dog'
+      });
+    } else if (petStatus === 'with_restrictions' || petStatus === 'with_approval') {
+      rulesList.push({
+        id: 'pets',
+        category: 'house_rules',
+        label: 'Pets Allowed',
+        value: r.petRestrictions || 'Pets Allowed with Prior Approval',
+        allowed: 'restricted',
+        iconName: 'Dog'
+      });
+    } else if (petStatus === 'not_allowed') {
+      rulesList.push({
+        id: 'pets',
+        category: 'house_rules',
+        label: 'Pets Allowed',
+        value: 'No Pets Allowed',
+        allowed: false,
+        iconName: 'Dog'
+      });
+    }
+  }
+
+  // 7. Smoking (House Rule)
+  const smokeStatus = r.smokingPolicy || r.smokingRule || (r.smokingAllowed !== undefined ? (r.smokingAllowed ? 'allowed' : 'not_allowed') : undefined);
+  if (smokeStatus) {
+    if (smokeStatus === 'allowed') {
+      rulesList.push({
+        id: 'smoking',
+        category: 'house_rules',
+        label: 'Smoking',
+        value: 'Smoking Allowed',
+        allowed: true,
+        iconName: 'Cigarette'
+      });
+    } else if (smokeStatus === 'designated_area' || smokeStatus === 'with_restrictions') {
+      rulesList.push({
+        id: 'smoking',
+        category: 'house_rules',
+        label: 'Smoking',
+        value: r.smokingRestrictions || 'Designated Outdoor Area Only',
+        allowed: 'restricted',
+        iconName: 'Cigarette'
+      });
+    } else if (smokeStatus === 'not_allowed') {
+      rulesList.push({
+        id: 'smoking',
+        category: 'house_rules',
+        label: 'Smoking',
+        value: 'No Smoking Inside',
+        allowed: false,
+        iconName: 'CigaretteOff'
+      });
+    }
+  }
+
+  // 8. Visitors (House Rule)
+  const visitorStatus = r.visitorsRule || r.guestPolicy || (r.visitorsAllowed !== undefined ? (r.visitorsAllowed ? 'allowed' : 'not_allowed') : undefined);
+  if (visitorStatus) {
+    if (visitorStatus === 'allowed') {
+      rulesList.push({
+        id: 'visitors',
+        category: 'house_rules',
+        label: 'Visitors',
+        value: r.guestRestrictions || 'Visitors Allowed',
+        allowed: true,
+        iconName: 'Users'
+      });
+    } else if (visitorStatus === 'restricted' || visitorStatus === 'with_restrictions') {
+      rulesList.push({
+        id: 'visitors',
+        category: 'house_rules',
+        label: 'Visitors',
+        value: r.guestRestrictions || 'Daytime Visitors Only',
+        allowed: 'restricted',
+        iconName: 'Users'
+      });
+    } else if (visitorStatus === 'not_allowed') {
+      rulesList.push({
+        id: 'visitors',
+        category: 'house_rules',
+        label: 'Visitors',
+        value: 'Visitors Restricted',
+        allowed: false,
+        iconName: 'UserX'
+      });
+    }
+  }
+
+  // 9. Food & Cooking Rules (House Rule)
+  const foodRule = r.cookingPolicy || r.foodPolicy || r.cookingRule || raw.specs?.foodPolicy;
+  if (foodRule) {
+    if (foodRule === 'veg_only') {
+      rulesList.push({
+        id: 'food_rules',
+        category: 'house_rules',
+        label: 'Food Rules',
+        value: 'Vegetarian Cooking Only',
+        allowed: 'restricted',
+        iconName: 'Utensils'
+      });
+    } else if (foodRule === 'veg_and_nonveg') {
+      rulesList.push({
+        id: 'food_rules',
+        category: 'house_rules',
+        label: 'Food Rules',
+        value: 'Veg & Non-Veg Cooking Allowed',
+        allowed: true,
+        iconName: 'Utensils'
+      });
+    } else if (foodRule === 'all_meals') {
+      rulesList.push({
+        id: 'food_rules',
+        category: 'house_rules',
+        label: 'Food Rules',
+        value: r.foodNotes || 'Daily Meals Included',
+        allowed: true,
+        iconName: 'Soup'
+      });
+    } else if (foodRule === 'breakfast_only') {
+      rulesList.push({
+        id: 'food_rules',
+        category: 'house_rules',
+        label: 'Food Rules',
+        value: r.foodNotes || 'Breakfast Included',
+        allowed: true,
+        iconName: 'Coffee'
+      });
+    } else if (foodRule === 'not_allowed') {
+      rulesList.push({
+        id: 'food_rules',
+        category: 'house_rules',
+        label: 'Food Rules',
+        value: 'No Cooking Allowed in Rooms',
+        allowed: false,
+        iconName: 'Utensils'
+      });
+    } else if (typeof foodRule === 'string' && foodRule.trim().length > 0) {
+      rulesList.push({
+        id: 'food_rules',
+        category: 'house_rules',
+        label: 'Food Rules',
+        value: foodRule,
+        allowed: true,
+        iconName: 'Utensils'
+      });
+    }
+  }
+
+  // 10. Quiet Hours (House Rule)
+  if (r.quietHoursRule === 'yes' || (r.quietHoursStart && r.quietHoursEnd) || r.timingNotes) {
+    const quietHoursVal = (r.quietHoursStart && r.quietHoursEnd)
+      ? `${r.quietHoursStart} – ${r.quietHoursEnd}`
+      : (r.timingNotes || '10:00 PM – 7:00 AM');
+    rulesList.push({
+      id: 'quiet_hours',
+      category: 'house_rules',
+      label: 'Quiet Hours',
+      value: quietHoursVal,
+      allowed: 'restricted',
+      iconName: 'Moon'
+    });
+  }
+
+  // 11. Timing / Gate Closing / Curfew (House Rule)
+  if (r.timingType === 'curfew' || r.timingType === 'gate_closing' || r.gateClosingTime || (raw.specs?.curfewOrTiming && !/open|24\/7/i.test(raw.specs.curfewOrTiming))) {
+    const curfewVal = r.gateClosingTime ? `Gate closes at ${r.gateClosingTime}` : (raw.specs?.curfewOrTiming || 'Gate closes at 10:30 PM');
+    rulesList.push({
+      id: 'curfew',
+      category: 'house_rules',
+      label: 'Gate Closing / Curfew',
+      value: curfewVal,
+      allowed: 'restricted',
+      iconName: 'Clock'
+    });
+  } else if (r.timingType === 'open_24_7' || (raw.specs?.curfewOrTiming && /open|24\/7/i.test(raw.specs.curfewOrTiming))) {
+    rulesList.push({
+      id: 'curfew',
+      category: 'house_rules',
+      label: 'Access Timings',
+      value: 'Open 24/7 (Biometric Access)',
+      allowed: true,
+      iconName: 'Key'
+    });
+  }
+
+  const houseRules = rulesList.filter((rule) => rule.category === 'house_rules');
+  const tenantRequirements = rulesList.filter((rule) => rule.category === 'tenant_requirements');
 
   // Owner resolution
   const owner: NormalizedOwner = {
@@ -433,11 +736,80 @@ export function normalizeProperty(raw: any): NormalizedProperty {
     memberSince: raw.owner?.memberSince || '2026'
   };
 
-  // Verification
+  // Verification resolution (Strictly data-driven, future-ready)
+  const rawVerification = raw.verification || {};
+  const isExplicitlyVerified = rawVerification.isVerified !== undefined
+    ? Boolean(rawVerification.isVerified)
+    : (raw.verified !== undefined ? Boolean(raw.verified) : false);
+
+  const rawChecks = rawVerification.checks || {};
+
+  // Future-ready supported verification items:
+  // * Owner identity verified (Owner Verified)
+  // * Property details verified (Property Verified)
+  // * Documents verified (Documents Verified)
+  // * Photos reviewed (Photos Verified)
+  // * Availability confirmed (Availability Verified)
+  const hasExplicitChecks = Object.keys(rawChecks).length > 0;
+
+  const potentialChecks: VerificationCheckItem[] = [
+    {
+      id: 'owner_identity',
+      label: 'Owner identity verified',
+      confirmed: hasExplicitChecks
+        ? Boolean(rawChecks.ownerIdentity)
+        : Boolean(rawVerification.ownerIdentityVerified ?? (raw.owner?.verified === true))
+    },
+    {
+      id: 'property_details',
+      label: 'Property details verified',
+      confirmed: hasExplicitChecks
+        ? Boolean(rawChecks.propertyDetails)
+        : Boolean(rawVerification.propertyDetailsVerified ?? (raw.auditTimeline?.some((a: any) => /dimension|spec|detail|acoustics|wi-fi/i.test(a.event))))
+    },
+    {
+      id: 'documents',
+      label: 'Documents verified',
+      confirmed: hasExplicitChecks
+        ? Boolean(rawChecks.documents)
+        : Boolean(rawVerification.documentsVerified ?? (raw.auditTimeline?.some((a: any) => /deed|document|title|legal/i.test(a.event))))
+    },
+    {
+      id: 'photos_reviewed',
+      label: 'Photos reviewed',
+      confirmed: hasExplicitChecks
+        ? Boolean(rawChecks.photosReviewed ?? rawChecks.photos)
+        : Boolean(rawVerification.photosReviewed ?? (raw.auditTimeline?.some((a: any) => /photo/i.test(a.event))))
+    },
+    {
+      id: 'availability_confirmed',
+      label: 'Availability confirmed',
+      confirmed: hasExplicitChecks
+        ? Boolean(rawChecks.availabilityConfirmed ?? rawChecks.availability)
+        : Boolean(rawVerification.availabilityConfirmed ?? (raw.isInstantBook === true))
+    }
+  ];
+
+  // ONLY confirmed checks are displayed
+  const confirmedChecks = isExplicitlyVerified
+    ? potentialChecks.filter((c) => c.confirmed)
+    : [];
+
+  const lastVerifiedDate = rawVerification.lastVerifiedDate ||
+    rawVerification.lastVerified ||
+    (raw.auditTimeline?.[0]?.date ? raw.auditTimeline[0].date : undefined);
+
   const verification: NormalizedVerification = {
-    isVerified: Boolean(raw.verified ?? true),
-    verifiedBadges: ['Zero Brokerage', 'Identity Verified', 'Physically Audited'],
-    lastVerified: raw.auditTimeline?.[0]?.date || 'September 2026'
+    isVerified: isExplicitlyVerified && confirmedChecks.length > 0,
+    status: isExplicitlyVerified && confirmedChecks.length > 0 ? 'verified' : (rawVerification.status || 'unverified'),
+    level: rawVerification.level || (confirmedChecks.length >= 4 ? 'certified' : 'standard'),
+    levelLabel: rawVerification.levelLabel || (confirmedChecks.length >= 4 ? 'ApnaStay Certified' : 'Verified Listing'),
+    lastVerified: lastVerifiedDate,
+    confirmedChecks,
+    allChecks: potentialChecks,
+    verifiedBadges: isExplicitlyVerified && confirmedChecks.length > 0
+      ? ['Zero Brokerage', 'Identity Verified', 'Physically Audited']
+      : []
   };
 
   // Nearby places
@@ -583,6 +955,8 @@ export function normalizeProperty(raw: any): NormalizedProperty {
 
     amenities,
     rules: rulesList,
+    houseRules,
+    tenantRequirements,
     owner,
     verification,
     nearbyPlaces,

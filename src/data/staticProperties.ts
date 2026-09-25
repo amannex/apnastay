@@ -144,6 +144,34 @@ Building privileges include 24/7 biometric and NFC smart-lock entry, dedicated e
       { date: 'July 26, 2026', event: 'NFC Smart Lock Firmware Verified v4.2', status: 'pass' },
       { date: 'July 28, 2026', event: 'Sanitization & HVAC Filter Replacement Complete', status: 'pass' }
     ],
+    rules: {
+      suitableFor: ['bachelors', 'working_professionals', 'couples'],
+      genderPreference: 'any',
+      smokingPolicy: 'not_allowed',
+      petPolicy: 'with_restrictions',
+      petRestrictions: 'Cats and small trained pets allowed with prior deposit',
+      visitorsRule: 'allowed',
+      guestRestrictions: 'Visitors permitted until 10:00 PM',
+      quietHoursRule: 'yes',
+      quietHoursStart: '10:00 PM',
+      quietHoursEnd: '07:00 AM',
+      minimumStay: '3 Months',
+      noticePeriodDays: 30,
+      requiresIdProof: true,
+      requiresPoliceVerification: true,
+      cookingPolicy: 'veg_and_nonveg'
+    },
+    verification: {
+      isVerified: true,
+      lastVerifiedDate: '24 September 2026',
+      level: 'certified',
+      checks: {
+        ownerIdentity: true,
+        propertyDetails: true,
+        photosReviewed: true,
+        availabilityConfirmed: true
+      }
+    },
     aiAttributes: {
       matchScore: 98,
       commuteTag: '5 min to Crystal IT Park',
@@ -217,6 +245,32 @@ Located less than 10 minutes walking distance from World Trade Park and Jawahar 
       { date: 'July 22, 2026', event: 'Water pressure & Solar heating tested by ApnaStay Engineer', status: 'pass' },
       { date: 'July 25, 2026', event: 'Smart-lock NFC key programmed', status: 'pass' }
     ],
+    rules: {
+      suitableFor: ['families', 'working_professionals'],
+      smokingPolicy: 'not_allowed',
+      petPolicy: 'not_allowed',
+      visitorsRule: 'restricted',
+      guestRestrictions: 'Family guests welcome with prior notice',
+      quietHoursRule: 'yes',
+      quietHoursStart: '10:00 PM',
+      quietHoursEnd: '06:00 AM',
+      cookingPolicy: 'veg_only',
+      minimumStay: '6 Months',
+      noticePeriodDays: 15,
+      requiresIdProof: true,
+      agreementRule: 'yes'
+    },
+    verification: {
+      isVerified: true,
+      lastVerifiedDate: '22 September 2026',
+      level: 'standard',
+      checks: {
+        ownerIdentity: true,
+        propertyDetails: true,
+        documents: true,
+        photosReviewed: true
+      }
+    },
     aiAttributes: {
       matchScore: 96,
       commuteTag: '10 min walk to WTP Jaipur',
@@ -405,7 +459,7 @@ Located less than 10 minutes walking distance from World Trade Park and Jawahar 
     roomType: 'Designer Studio Residence',
     rating: 4.97,
     reviewsCount: 61,
-    verified: true,
+    verified: false,
     isInstantBook: true,
     nfcSelfTour: true,
     images: [
@@ -445,6 +499,19 @@ Located less than 10 minutes walking distance from World Trade Park and Jawahar 
     auditTimeline: [
       { date: 'July 28, 2026', event: 'Wi-Fi speed & acoustic seal verified by ApnaStay Engineer', status: 'pass' }
     ],
+    rules: {
+      suitableFor: ['working_professionals', 'bachelors'],
+      smokingPolicy: 'not_allowed',
+      petPolicy: 'not_allowed',
+      quietHoursRule: 'yes',
+      quietHoursStart: '11:00 PM',
+      quietHoursEnd: '07:00 AM',
+      noticePeriodDays: 30
+    },
+    verification: {
+      isVerified: false,
+      status: 'unverified'
+    },
     aiAttributes: {
       matchScore: 98,
       commuteTag: '6 min walk to Osho Gardens',
@@ -501,11 +568,35 @@ Rooms come equipped with individual orthopedic mattresses, dedicated study desks
       { name: 'Indore University Campus', distance: '400 m (5 min walk)' },
       { name: 'Bhawarkua Bus Station', distance: '250 m (3 min walk)' }
     ],
-    owner: {
-      name: 'Pooja Agarwal',
-      role: 'Verified ApnaStay Coliving Partner',
-      responseTime: 'Under 10 mins',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+    rules: {
+      suitableFor: ['students', 'working_professionals', 'bachelors'],
+      genderPreference: 'any',
+      foodPolicy: 'all_meals',
+      foodNotes: '3 Meals Included (North & South Indian)',
+      timingType: 'open_24_7',
+      timingNotes: 'No Curfew (24/7 Biometric Access)',
+      visitorsRule: 'restricted',
+      guestRestrictions: 'Visitors permitted in rooftop lounge & reception area only',
+      smokingPolicy: 'not_allowed',
+      quietHoursRule: 'yes',
+      quietHoursStart: '11:00 PM',
+      quietHoursEnd: '06:00 AM',
+      minimumStay: '3 Months',
+      noticePeriodDays: 30,
+      requiresEmploymentOrCollegeProof: true,
+      requiresIdProof: true
+    },
+    verification: {
+      isVerified: true,
+      lastVerifiedDate: '18 September 2026',
+      level: 'comprehensive',
+      checks: {
+        ownerIdentity: true,
+        propertyDetails: true,
+        documents: true,
+        photosReviewed: true,
+        availabilityConfirmed: true
+      }
     }
   },
   {
@@ -558,11 +649,31 @@ Each bunk pod features high-grade blackout privacy curtains, universal charging 
       { name: 'Birla Temple Jaipur', distance: '1.2 km (12 min walk)' },
       { name: 'Central Park Jaipur', distance: '2.0 km (6 min drive)' }
     ],
-    owner: {
-      name: 'Vikram Choudhary',
-      role: 'Verified Hostel Operator',
-      responseTime: 'Under 15 mins',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
+    rules: {
+      suitableFor: ['students', 'bachelors'],
+      genderPreference: 'male_only',
+      timingType: 'curfew',
+      gateClosingTime: '11:00 PM',
+      foodPolicy: 'breakfast_only',
+      foodNotes: 'Complimentary Hot Breakfast',
+      smokingPolicy: 'not_allowed',
+      alcoholPolicy: 'not_allowed',
+      quietHoursRule: 'yes',
+      quietHoursStart: '10:30 PM',
+      quietHoursEnd: '06:30 AM',
+      requiresIdProof: true,
+      minimumStay: '1 Month',
+      noticePeriodDays: 15
+    },
+    verification: {
+      isVerified: true,
+      lastVerifiedDate: '15 September 2026',
+      level: 'standard',
+      checks: {
+        ownerIdentity: true,
+        propertyDetails: true,
+        photosReviewed: true
+      }
     }
   },
   {
