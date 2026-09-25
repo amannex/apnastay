@@ -7,6 +7,7 @@ import PropertyBreadcrumb from './PropertyBreadcrumb';
 import PropertyGallerySection from './PropertyGallerySection';
 import PropertyHeroSection from './PropertyHeroSection';
 import PropertyActionsSection from './PropertyActionsSection';
+import MobileBottomBar from './MobileBottomBar';
 import PropertySnapshotSection from './PropertySnapshotSection';
 import PropertyDescriptionSection from './PropertyDescriptionSection';
 import PropertyHighlightsSection from './PropertyHighlightsSection';
@@ -25,7 +26,7 @@ interface PropertyDetailContainerProps {
 
 export default function PropertyDetailContainer({ property }: PropertyDetailContainerProps) {
   return (
-    <article className="min-h-screen bg-[#FAFAFA] pt-6 pb-20">
+    <article className="min-h-screen bg-[#FAFAFA] pt-6 pb-28 lg:pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* BREADCRUMB & BACK NAVIGATION */}
         <PropertyBreadcrumb property={property} />
@@ -46,7 +47,7 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start pt-2">
           {/* LEFT 2 COLUMNS: CORE PROPERTY DETAILS & CONTENT */}
           <div className="lg:col-span-2 space-y-8">
-            {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero) */}
+            {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
             <div className="block lg:hidden">
               <PropertyActionsSection property={property} />
             </div>
@@ -93,6 +94,9 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
           <SimilarPropertiesSection property={property} />
         </div>
       </div>
+
+      {/* MOBILE STICKY BOTTOM ACTION BAR */}
+      <MobileBottomBar property={property} />
     </article>
   );
 }

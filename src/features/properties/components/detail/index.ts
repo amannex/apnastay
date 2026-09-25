@@ -3,6 +3,8 @@ export { default as PropertyBreadcrumb } from './PropertyBreadcrumb';
 export { default as PropertyGallerySection } from './PropertyGallerySection';
 export { default as PropertyHeroSection } from './PropertyHeroSection';
 export { default as PropertyActionsSection } from './PropertyActionsSection';
+export { default as MobileBottomBar } from './MobileBottomBar';
+export { default as ContactOwnerModal } from './ContactOwnerModal';
 export { default as PropertySnapshotSection } from './PropertySnapshotSection';
 export { default as PropertyDescriptionSection } from './PropertyDescriptionSection';
 export { default as PropertyHighlightsSection } from './PropertyHighlightsSection';
