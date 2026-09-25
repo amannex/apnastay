@@ -48,15 +48,27 @@ export interface NormalizedSpecs {
   bedrooms?: number;
   bathrooms?: number;
   sqft?: number;
+  builtUpArea?: number | string;
   furnishing?: string;
   floor?: string | number;
   totalFloors?: string | number;
+  propertyAge?: string;
+  facing?: string;
   parking?: string;
+  waterSupply?: string;
+  powerBackup?: string;
   roomType?: string;
+  bedType?: string;
   sharingType?: string;
   genderPreference?: string;
   foodPolicy?: string;
+  laundry?: string;
   curfewOrTiming?: string;
+  locker?: string;
+  commonAreas?: string;
+  security?: string;
+  minimumStay?: string;
+  noticePeriod?: string;
   plotArea?: string;
   occupancyCapacity?: number | string;
 }
@@ -304,6 +316,14 @@ export function normalizeProperty(raw: any): NormalizedProperty {
   const plotArea = raw.specs?.plotArea || raw.plotArea;
   const occupancyCapacity = firstUnit?.capacity || raw.specs?.occupancyCapacity || raw.specs?.capacity;
 
+  // Dynamic property-type fields
+  const builtUpArea = raw.specs?.builtUpArea ?? raw.builtUpArea;
+  const propertyAge = raw.specs?.propertyAge ?? raw.propertyAge ?? raw.specs?.age;
+  const facing = raw.specs?.facing ?? raw.facing;
+  const bedType = raw.specs?.bedType ?? raw.bedType ?? firstUnit?.bedType;
+  const minimumStay = raw.specs?.minimumStay ?? raw.rules?.minimumStay ?? raw.minimumStay;
+  const noticePeriod = raw.rules?.noticePeriodDays ? `${raw.rules.noticePeriodDays} Days` : (raw.specs?.noticePeriod ?? raw.noticePeriod);
+
   // Amenities resolution
   const rawAmenities = raw.amenities || [];
   const amenities: NormalizedAmenity[] = rawAmenities.map((a: any) => {
@@ -321,6 +341,13 @@ export function normalizeProperty(raw: any): NormalizedProperty {
       verified: a.verified !== false
     };
   });
+
+  const waterSupply = raw.specs?.waterSupply ?? raw.waterSupply ?? (amenities.some((a) => /water\s*supply/i.test(a.name)) ? '24/7 Water Supply' : undefined);
+  const powerBackup = raw.specs?.powerBackup ?? raw.powerBackup ?? (amenities.some((a) => /power\s*backup|inverter/i.test(a.name)) ? '100% DG Backup' : undefined);
+  const laundry = raw.specs?.laundry ?? raw.laundry ?? (amenities.some((a) => /laundry|washing/i.test(a.name)) ? 'Available' : undefined);
+  const locker = raw.specs?.locker ?? raw.locker ?? (amenities.some((a) => /locker/i.test(a.name)) ? 'Locker Provided' : undefined);
+  const commonAreas = raw.specs?.commonAreas ?? raw.commonAreas ?? (amenities.some((a) => /common|lounge/i.test(a.name)) ? 'Common Lounge & Dining' : undefined);
+  const security = raw.specs?.security ?? raw.security ?? (amenities.some((a) => /security|cctv|guard/i.test(a.name)) ? '24/7 Security & CCTV' : undefined);
 
   // Rules resolution
   const rulesList: NormalizedRule[] = [];
@@ -505,15 +532,27 @@ export function normalizeProperty(raw: any): NormalizedProperty {
       bedrooms: isPgOrHostel ? undefined : (bedrooms ? Number(bedrooms) : undefined),
       bathrooms: bathrooms ? Number(bathrooms) : undefined,
       sqft: sqft ? Number(sqft) : undefined,
+      builtUpArea: typeof builtUpArea === 'number' || typeof builtUpArea === 'string' ? builtUpArea : undefined,
       furnishing: typeof furnishing === 'string' ? furnishing : undefined,
       floor,
       totalFloors,
+      propertyAge: typeof propertyAge === 'string' ? propertyAge : undefined,
+      facing: typeof facing === 'string' ? facing : undefined,
       parking: typeof parking === 'string' ? parking : undefined,
+      waterSupply: typeof waterSupply === 'string' ? waterSupply : undefined,
+      powerBackup: typeof powerBackup === 'string' ? powerBackup : undefined,
       roomType: typeof roomType === 'string' ? roomType : undefined,
+      bedType: typeof bedType === 'string' ? bedType : undefined,
       sharingType: typeof sharingType === 'string' ? sharingType : undefined,
       genderPreference: typeof genderPreference === 'string' ? genderPreference : undefined,
       foodPolicy: typeof foodPolicy === 'string' ? foodPolicy : undefined,
+      laundry: typeof laundry === 'string' ? laundry : undefined,
       curfewOrTiming: typeof curfewOrTiming === 'string' ? curfewOrTiming : undefined,
+      locker: typeof locker === 'string' ? locker : undefined,
+      commonAreas: typeof commonAreas === 'string' ? commonAreas : undefined,
+      security: typeof security === 'string' ? security : undefined,
+      minimumStay: typeof minimumStay === 'string' ? minimumStay : undefined,
+      noticePeriod: typeof noticePeriod === 'string' ? noticePeriod : undefined,
       plotArea: typeof plotArea === 'string' || typeof plotArea === 'number' ? String(plotArea) : undefined,
       occupancyCapacity: occupancyCapacity ? String(occupancyCapacity) : undefined
     },

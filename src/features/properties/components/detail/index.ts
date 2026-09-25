@@ -18,3 +18,4 @@ export { default as OwnerCard } from './OwnerCard';
 export { default as SimilarPropertiesSection } from './SimilarPropertiesSection';
 export { default as PropertyPageSkeleton } from './PropertyPageSkeleton';
 export { default as PropertyErrorView } from './PropertyErrorView';
+export * from './propertyDetailsConfig';

@@ -99,8 +99,15 @@ export const STATIC_PROPERTIES: Property[] = [
       bedrooms: 1,
       bathrooms: 1,
       sqft: 650,
+      builtUpArea: 780,
       floor: '6th Floor (Elevator)',
-      furnishing: 'Fully Furnished (Herman Miller WFH Desk & Bed)'
+      totalFloors: 10,
+      furnishing: 'Fully Furnished (Herman Miller WFH Desk & Bed)',
+      propertyAge: '2 Years (New Construction)',
+      facing: 'East Facing (Morning Sun)',
+      parking: 'Dedicated Covered Car Parking',
+      waterSupply: '24/7 Municipal & Borewell Supply',
+      powerBackup: '100% Full DG Backup'
     },
     description: `A sun-drenched, designer 1 BHK apartment situated on the 6th floor in the heart of Vijay Nagar, Indore. Engineered specifically for remote tech professionals and corporate executives who prioritize acoustic tranquility, rapid fiber connectivity, and seamless move-in readiness.
 
@@ -442,6 +449,177 @@ Located less than 10 minutes walking distance from World Trade Park and Jawahar 
       matchScore: 98,
       commuteTag: '6 min walk to Osho Gardens',
       acousticsScore: '31 dB Lush Green Canopy'
+    }
+  },
+  {
+    id: 'prop-107',
+    title: 'Stanza Living Executive Coliving & PG',
+    neighborhood: 'Bhawarkua, Indore',
+    city: 'Indore',
+    price: 9500,
+    currency: '₹',
+    period: '/month',
+    propertyType: 'pg',
+    roomType: 'Deluxe Twin Sharing Room',
+    rating: 4.88,
+    reviewsCount: 47,
+    verified: true,
+    isInstantBook: true,
+    images: [
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80'
+    ],
+    costBreakdown: {
+      monthlyRent: 9500,
+      maintenance: 0,
+      brokerage: 0,
+      securityDeposit: 15000,
+      totalMoveIn: 24500
+    },
+    specs: {
+      roomType: 'Deluxe Twin Sharing Room',
+      sharingType: '2 Sharing',
+      genderPreference: 'Co-Ed / Any',
+      foodPolicy: '3 Meals Included (North & South Indian)',
+      laundry: 'Weekly Laundry & Ironing Included',
+      curfewOrTiming: 'No Curfew (24/7 Biometric Access)',
+      minimumStay: '3 Months',
+      noticePeriod: '30 Days'
+    },
+    description: `A contemporary, fully managed PG residence in Bhawarkua, Indore. Tailored for university scholars and young tech professionals seeking hassle-free co-living with nutritious daily meals, blazing fast broadband, and bi-weekly housekeeping.
+
+Rooms come equipped with individual orthopedic mattresses, dedicated study desks, private wardrobes, and split air-conditioning. Common recreational areas include a rooftop dining cafeteria, a table-tennis lounge, and 24/7 security surveillance.`,
+    amenities: [
+      { name: 'High-Speed Wi-Fi', icon: 'Wifi', verified: true },
+      { name: 'Daily Food & Meals', icon: 'Soup', verified: true },
+      { name: 'Regular Housekeeping', icon: 'Brush', verified: true },
+      { name: 'Laundry Service', icon: 'Sparkles', verified: true },
+      { name: 'Air Conditioning', icon: 'Wind', verified: true },
+      { name: '24/7 Biometric Security', icon: 'ShieldCheck', verified: true }
+    ],
+    nearby: [
+      { name: 'Indore University Campus', distance: '400 m (5 min walk)' },
+      { name: 'Bhawarkua Bus Station', distance: '250 m (3 min walk)' }
+    ],
+    owner: {
+      name: 'Pooja Agarwal',
+      role: 'Verified ApnaStay Coliving Partner',
+      responseTime: 'Under 10 mins',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+    }
+  },
+  {
+    id: 'prop-108',
+    title: 'The Scholar Youth Backpackers Hostel',
+    neighborhood: 'Raja Park, Jaipur',
+    city: 'Jaipur',
+    price: 6500,
+    currency: '₹',
+    period: '/month',
+    propertyType: 'hostel',
+    roomType: '4-Bed Dormitory',
+    rating: 4.85,
+    reviewsCount: 36,
+    verified: true,
+    isInstantBook: true,
+    images: [
+      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80'
+    ],
+    costBreakdown: {
+      monthlyRent: 6500,
+      maintenance: 0,
+      brokerage: 0,
+      securityDeposit: 6500,
+      totalMoveIn: 13000
+    },
+    specs: {
+      bedType: 'Bunk Bed with Privacy Curtain',
+      sharingType: '4-Bed Dormitory',
+      foodPolicy: 'Complimentary Hot Breakfast',
+      locker: 'Personal Digital RFID Locker',
+      laundry: 'Self-Service Coin Laundromat',
+      commonAreas: 'Rooftop Cafe, Study Pods & Cinema Lounge',
+      curfewOrTiming: 'Gate Closes at 11:00 PM',
+      security: '24/7 Security Personnel & Biometric Turnstiles'
+    },
+    description: `A vibrant, safe, and social youth hostel located in Raja Park, Jaipur. Designed specifically for competitive exam aspirants, interns, and traveling remote workers looking for budget-friendly communal living.
+
+Each bunk pod features high-grade blackout privacy curtains, universal charging stations, individual warm reading lights, and private electronic lockers. Enjoy complimentary breakfast, study pods, and a rooftop cafe with scenic Pink City sunsets.`,
+    amenities: [
+      { name: '300 Mbps Mesh Wi-Fi', icon: 'Wifi', verified: true },
+      { name: 'Daily Hot Breakfast', icon: 'Soup', verified: true },
+      { name: 'RFID Secure Lockers', icon: 'Key', verified: true },
+      { name: 'Self Laundromat', icon: 'Sparkles', verified: true },
+      { name: 'Rooftop Cafe & Lounge', icon: 'Utensils', verified: true },
+      { name: '24/7 Security Guard', icon: 'ShieldCheck', verified: true }
+    ],
+    nearby: [
+      { name: 'Birla Temple Jaipur', distance: '1.2 km (12 min walk)' },
+      { name: 'Central Park Jaipur', distance: '2.0 km (6 min drive)' }
+    ],
+    owner: {
+      name: 'Vikram Choudhary',
+      role: 'Verified Hostel Operator',
+      responseTime: 'Under 15 mins',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
+    }
+  },
+  {
+    id: 'prop-109',
+    title: 'The Palm Grove Independent Heritage Villa',
+    neighborhood: 'Race Course, Coimbatore',
+    city: 'Coimbatore',
+    price: 45000,
+    currency: '₹',
+    period: '/month',
+    propertyType: 'independent_house',
+    roomType: '4 BHK Luxury Independent Villa',
+    rating: 4.99,
+    reviewsCount: 22,
+    verified: true,
+    isInstantBook: true,
+    images: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80'
+    ],
+    costBreakdown: {
+      monthlyRent: 45000,
+      maintenance: 2500,
+      brokerage: 0,
+      securityDeposit: 90000,
+      totalMoveIn: 137500
+    },
+    specs: {
+      bedrooms: 4,
+      bathrooms: 4,
+      plotArea: '3,600 sq.ft.',
+      builtUpArea: '3,100 sq.ft.',
+      totalFloors: 'G+1 (2 Floors)',
+      parking: 'Covered Garage (2 Cars + 2 Bikes)',
+      furnishing: 'Fully Furnished (Solid Teak Wood)',
+      waterSupply: '24/7 Dual Line Municipal & Reverse Osmosis'
+    },
+    description: `An expansive private sanctuary located on Race Course Road, Coimbatore's most prestigious green boulevard. This standalone two-story architectural villa offers complete independence, gated perimeter fencing, and manicured private palm lawns.
+
+Features 4 lavish en-suite bedrooms, high double-height ceilings, a designer modular kitchen, a servant quarter, and solar-assisted water heating. Ideal for senior executives, expat families, and discerning tenants who demand privacy and exclusivity.`,
+    amenities: [
+      { name: 'Private Landscaped Lawn', icon: 'Sun', verified: true },
+      { name: 'Covered Garage Parking', icon: 'Car', verified: true },
+      { name: 'Modular Island Kitchen', icon: 'Utensils', verified: true },
+      { name: 'Solar Water Heating', icon: 'Sun', verified: true },
+      { name: '100% Full DG Backup', icon: 'Zap', verified: true },
+      { name: '24/7 CCTV & Video Doorphone', icon: 'ShieldCheck', verified: true }
+    ],
+    nearby: [
+      { name: 'Race Course Promenade', distance: '150 m (2 min walk)' },
+      { name: 'Coimbatore Golf Club', distance: '3.5 km (8 min drive)' }
+    ],
+    owner: {
+      name: 'Rameshwaram Chettiar',
+      role: 'Direct Property Owner',
+      responseTime: 'Under 1 hour',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
     }
   }
 ];
