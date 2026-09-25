@@ -123,7 +123,11 @@ export function getRoleRedirectUrl(user: UserProfile | null | undefined, customR
       return '/owner/dashboard';
     }
     if (role === 'tenant') {
-      // Disallow owners paths for tenants
+      // Allow tenants to access property creation wizard (listing their stay)
+      if (customRedirect === '/owner/dashboard/properties/new' || customRedirect.startsWith('/owner/dashboard/properties/new')) {
+        return customRedirect;
+      }
+      // Disallow generic owners paths for tenants
       if (customRedirect.startsWith('/owner')) {
         return '/properties';
       }

@@ -92,7 +92,7 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
               <li><Link href="/how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
               <li><Link href="/upcoming-features" className="hover:text-white transition-colors">Upcoming Features</Link></li>
               <li><Link href="/properties" className="hover:text-white transition-colors">Find ApnaStay</Link></li>
-              <li><Link href="/owner/dashboard/properties/new" className="hover:text-white transition-colors">List ApnaStay</Link></li>
+              <li><Link href="/list-apnastay" className="hover:text-white transition-colors">List ApnaStay</Link></li>
               <li><Link href="/why-apnastay" className="hover:text-white transition-colors">₹0 Brokerage Promise</Link></li>
               <li><Link href="/permission-matrix" className="hover:text-white transition-colors text-emerald-400 font-semibold">🔒 RBAC Matrix Suite</Link></li>
               <li><Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link></li>

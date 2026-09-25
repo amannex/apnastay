@@ -58,6 +58,11 @@ export default function Navbar({
 
   const isActiveRoute = (path) => pathname === path;
 
+  // Owner Walkthrough: If already logged in -> Step 1 of property registration; otherwise -> Owner Signup
+  const listApnaStayUrl = currentUser
+    ? '/owner/dashboard/properties/new'
+    : '/register?role=property_owner&redirect=/owner/dashboard/properties/new';
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -142,7 +147,7 @@ export default function Navbar({
 
               {/* List Apna Stay Button */}
               <Link
-                href="/owner/dashboard/properties/new"
+                href={listApnaStayUrl}
                 className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs hover:shadow-apple-xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95"
               >
                 List Apna Stay
@@ -465,7 +470,7 @@ export default function Navbar({
                 </Link>
 
                 <Link
-                  href="/owner/dashboard/properties/new"
+                  href={listApnaStayUrl}
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-2.5 px-4 rounded-xl bg-[#E1224D] text-white text-center text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
                 >
