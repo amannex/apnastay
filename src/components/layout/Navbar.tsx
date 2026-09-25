@@ -82,69 +82,71 @@ export default function Navbar({
             </span>
           </Link>
 
-          {/* MAIN MULTI-PAGE DESKTOP NAVIGATION (PROPER GAP & REFINED FONT SIZE) */}
-          <div className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-semibold tracking-tight text-[#374151]">
-            <Link
-              href="/about"
-              className={`whitespace-nowrap transition-colors duration-200 ${
-                isActiveRoute('/about') || isActiveRoute('/who-we-are')
-                  ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#E1224D]'
-              }`}
-            >
-              Who We Are
-            </Link>
-            <Link
-              href="/cities"
-              className={`whitespace-nowrap transition-colors duration-200 ${
-                isActiveRoute('/cities') ? 'text-[#E1224D] font-bold' : 'hover:text-[#E1224D]'
-              }`}
-            >
-              Cities
-            </Link>
-            <Link
-              href="/how-it-works"
-              className={`whitespace-nowrap transition-colors duration-200 ${
-                isActiveRoute('/how-it-works') || isActiveRoute('/why-apnastay')
-                  ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#E1224D]'
-              }`}
-            >
-              How It Works
-            </Link>
-            <Link
-              href="/upcoming-features"
-              className={`whitespace-nowrap transition-colors duration-200 ${
-                isActiveRoute('/upcoming-features')
-                  ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#E1224D]'
-              }`}
-            >
-              Coming soon
-            </Link>
-          </div>
+          {/* MAIN DESKTOP NAVIGATION & ACTION BUTTONS WITH UNIFORM EVEN SPACING */}
+          <div className="hidden lg:flex items-center gap-8 xl:gap-10">
+            {/* The Four Multi-Page Text Menus (Font Size 15px: increased by 1 from 14px) */}
+            <div className="flex items-center gap-8 xl:gap-10 text-[15px] font-semibold tracking-tight text-[#374151]">
+              <Link
+                href="/about"
+                className={`whitespace-nowrap transition-colors duration-200 ${
+                  isActiveRoute('/about') || isActiveRoute('/who-we-are')
+                    ? 'text-[#E1224D] font-bold'
+                    : 'hover:text-[#E1224D]'
+                }`}
+              >
+                Who We Are
+              </Link>
+              <Link
+                href="/cities"
+                className={`whitespace-nowrap transition-colors duration-200 ${
+                  isActiveRoute('/cities') ? 'text-[#E1224D] font-bold' : 'hover:text-[#E1224D]'
+                }`}
+              >
+                Cities
+              </Link>
+              <Link
+                href="/how-it-works"
+                className={`whitespace-nowrap transition-colors duration-200 ${
+                  isActiveRoute('/how-it-works') || isActiveRoute('/why-apnastay')
+                    ? 'text-[#E1224D] font-bold'
+                    : 'hover:text-[#E1224D]'
+                }`}
+              >
+                How It Works
+              </Link>
+              <Link
+                href="/upcoming-features"
+                className={`whitespace-nowrap transition-colors duration-200 ${
+                  isActiveRoute('/upcoming-features')
+                    ? 'text-[#E1224D] font-bold'
+                    : 'hover:text-[#E1224D]'
+                }`}
+              >
+                Coming soon
+              </Link>
+            </div>
 
-          {/* RIGHT ACTION BUTTONS: FIND APNA STAY (BUTTON) → LIST APNA STAY (BUTTON) → COMPARE → ACCOUNT (ICON ONLY) */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 whitespace-nowrap">
-            {/* Find Apna Stay Button */}
-            <Link
-              href="/properties"
-              className={`hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95 border ${
-                isActiveRoute('/properties')
-                  ? 'bg-rose-50 text-[#E1224D] border-[#E1224D]/40 font-bold'
-                  : 'bg-white hover:bg-rose-50/60 text-[#1A1A1A] hover:text-[#E1224D] border-[#EDEDED] hover:border-[#E1224D]/30'
-              }`}
-            >
-              Find Apna Stay
-            </Link>
+            {/* ACTION BUTTONS: FIND APNA STAY (BUTTON) → LIST APNA STAY (BUTTON) → COMPARE → ACCOUNT (ICON ONLY) */}
+            <div className="flex items-center gap-5 lg:gap-6 xl:gap-8 shrink-0 whitespace-nowrap">
+              {/* Find Apna Stay Button */}
+              <Link
+                href="/properties"
+                className={`inline-flex items-center justify-center px-4 py-2 rounded-full text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95 border ${
+                  isActiveRoute('/properties')
+                    ? 'bg-rose-50 text-[#E1224D] border-[#E1224D]/40 font-bold'
+                    : 'bg-white hover:bg-rose-50/60 text-[#1A1A1A] hover:text-[#E1224D] border-[#EDEDED] hover:border-[#E1224D]/30'
+                }`}
+              >
+                Find Apna Stay
+              </Link>
 
-            {/* List Apna Stay Button */}
-            <Link
-              href="/owner/dashboard/properties/new"
-              className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs hover:shadow-apple-xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95"
-            >
-              List Apna Stay
-            </Link>
+              {/* List Apna Stay Button */}
+              <Link
+                href="/owner/dashboard/properties/new"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs hover:shadow-apple-xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95"
+              >
+                List Apna Stay
+              </Link>
 
             {/* Compare Button with Counter */}
             <button
@@ -308,10 +310,31 @@ export default function Navbar({
               </Link>
             )}
 
-            {/* MOBILE HAMBURGER MENU ICON (lg:hidden) */}
+            </div>
+          </div>
+
+          {/* MOBILE ACTIONS & HAMBURGER (lg:hidden) */}
+          <div className="flex lg:hidden items-center gap-2 shrink-0">
+            {currentUser ? (
+              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-rose-50 flex items-center justify-center text-[#E1224D] border border-[#EDEDED]">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={userDisplayName} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-4 h-4 text-[#E1224D]" />
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-[#E1224D] border border-rose-200/80 flex items-center justify-center transition-all shadow-2xs"
+                title="Account / Sign In"
+              >
+                <User className="w-3.5 h-3.5 text-[#E1224D]" />
+              </Link>
+            )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-[#1A1A1A] transition-all flex items-center justify-center shrink-0"
+              className="p-2 rounded-full bg-[#FAFAFA] hover:bg-[#F0F2F5] border border-[#EDEDED] text-[#1A1A1A] transition-all flex items-center justify-center shrink-0"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5 text-[#E1224D]" /> : <Menu className="w-5 h-5 text-[#1A1A1A]" />}
