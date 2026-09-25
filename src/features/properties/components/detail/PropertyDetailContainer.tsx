@@ -30,17 +30,23 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         {/* BREADCRUMB & BACK NAVIGATION */}
         <PropertyBreadcrumb property={property} />
 
-        {/* PROPERTY IMAGE GALLERY FOUNDATION */}
-        <PropertyGallerySection property={property} />
+        {/* HERO & GALLERY: RESPONSIVE ORDERING */}
+        {/* Desktop: Hero Information -> Gallery */}
+        {/* Mobile: Gallery (first) -> Hero Information (second) */}
+        <div className="flex flex-col">
+          <div className="order-2 lg:order-1 pb-4">
+            <PropertyHeroSection property={property} />
+          </div>
+          <div className="order-1 lg:order-2 pb-6">
+            <PropertyGallerySection property={property} />
+          </div>
+        </div>
 
         {/* MAIN RESPONSIVE CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start pt-2">
           {/* LEFT 2 COLUMNS: CORE PROPERTY DETAILS & CONTENT */}
           <div className="lg:col-span-2 space-y-8">
-            {/* HERO INFORMATION */}
-            <PropertyHeroSection property={property} />
-
-            {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
+            {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero) */}
             <div className="block lg:hidden">
               <PropertyActionsSection property={property} />
             </div>

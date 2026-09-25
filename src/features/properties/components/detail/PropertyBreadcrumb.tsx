@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Home, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import type { NormalizedProperty } from '../../adapter';
 
 interface PropertyBreadcrumbProps {
@@ -15,48 +15,50 @@ export default function PropertyBreadcrumb({ property }: PropertyBreadcrumbProps
   const title = property.title || 'Residence';
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+    <div className="flex items-center justify-between gap-3 pb-3">
       {/* Breadcrumb Trail */}
-      <nav aria-label="Breadcrumb" className="flex items-center space-x-1.5 text-xs text-[#6B7280]">
+      <nav aria-label="Breadcrumb" className="flex items-center space-x-1.5 text-xs text-[#6B7280] overflow-x-auto scrollbar-none py-1">
         <Link
-          href="/"
-          className="hover:text-[#E1224D] transition-colors inline-flex items-center gap-1 font-medium"
+          href="/properties"
+          className="hover:text-[#ED3258] transition-colors font-semibold text-gray-700 whitespace-nowrap"
         >
-          <Home className="w-3.5 h-3.5" />
-          <span>Home</span>
+          Find ApnaStay
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
 
         <Link
           href={`/properties?city=${encodeURIComponent(city.toLowerCase())}`}
-          className="hover:text-[#E1224D] transition-colors font-medium capitalize"
+          className="hover:text-[#ED3258] transition-colors font-medium capitalize whitespace-nowrap"
         >
           {city}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
 
-        {locality && (
+        {locality ? (
           <>
-            <span className="truncate max-w-[120px] text-gray-600 hidden md:inline">
+            <span className="truncate max-w-[140px] text-gray-700 font-medium">
               {locality}
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0 hidden md:inline" />
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 shrink-0 hidden sm:inline" />
+            <span className="text-[#1A1A1A] font-semibold truncate max-w-[180px] lg:max-w-xs hidden sm:inline">
+              {title}
+            </span>
           </>
+        ) : (
+          <span className="text-[#1A1A1A] font-semibold truncate max-w-[180px] lg:max-w-xs">
+            {title}
+          </span>
         )}
-
-        <span className="text-[#1A1A1A] font-semibold truncate max-w-[160px] sm:max-w-xs">
-          {title}
-        </span>
       </nav>
 
       {/* Back button */}
-      <div>
+      <div className="shrink-0 hidden sm:block">
         <Link
           href="/properties"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#E1224D] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#ED3258] transition-colors py-1 px-2.5 rounded-lg hover:bg-gray-100"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to properties</span>
+          <span>All Properties</span>
         </Link>
       </div>
     </div>
