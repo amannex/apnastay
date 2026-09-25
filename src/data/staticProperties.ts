@@ -135,9 +135,11 @@ Building privileges include 24/7 biometric and NFC smart-lock entry, dedicated e
     ],
     owner: {
       name: 'Aditya Sharma',
-      role: 'Verified ApnaStay Partner',
-      responseTime: 'Under 10 mins',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+      role: 'Property Owner',
+      responseTime: 'within 2 hours',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      verified: true,
+      memberSince: '2026'
     },
     auditTimeline: [
       { date: 'July 24, 2026', event: 'Acoustics & Wi-Fi Speed Certified by ApnaStay Field Engineer', status: 'pass' },
@@ -492,9 +494,9 @@ Located less than 10 minutes walking distance from World Trade Park and Jawahar 
     ],
     owner: {
       name: 'Rohan Deshmukh',
-      role: 'Verified ApnaStay Partner',
-      responseTime: 'Under 5 mins',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80'
+      role: 'Property Owner',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+      verified: false
     },
     auditTimeline: [
       { date: 'July 28, 2026', event: 'Wi-Fi speed & acoustic seal verified by ApnaStay Engineer', status: 'pass' }

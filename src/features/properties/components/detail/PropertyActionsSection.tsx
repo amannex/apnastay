@@ -8,11 +8,13 @@ import {
   ShieldCheck,
   CheckCircle2,
   Clock,
-  Sparkles
+  Sparkles,
+  Share2
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import type { NormalizedProperty } from '../../adapter';
 import ContactOwnerModal from './ContactOwnerModal';
+import PropertyShareModal from './PropertyShareModal';
 
 interface PropertyActionsSectionProps {
   property: NormalizedProperty;
@@ -23,6 +25,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
   const isWishlisted = wishlistIds.includes(property.id);
 
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [visitScheduled, setVisitScheduled] = useState(false);
 
   const { pricing, availability } = property;
@@ -121,12 +124,12 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           </button>
         </div>
 
-        {/* WISHLIST TOGGLE BUTTON */}
-        <div className="pt-4 border-t border-gray-100 flex items-center justify-center">
+        {/* WISHLIST & SHARE ACTIONS */}
+        <div className="pt-4 border-t border-gray-100 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => onToggleWishlist(property.id)}
-            className={`w-full py-2.5 px-4 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
               isWishlisted
                 ? 'border-rose-200 bg-rose-50/70 text-[#ED3258]'
                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
@@ -138,7 +141,17 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
                 isWishlisted ? 'fill-[#ED3258] text-[#ED3258]' : 'text-gray-400'
               }`}
             />
-            <span>{isWishlisted ? '♥ Saved' : '♡ Save'}</span>
+            <span>{isWishlisted ? 'Saved' : 'Save'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShareModalOpen(true)}
+            className="py-2.5 px-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+            aria-label="Share this property"
+          >
+            <Share2 className="w-4 h-4 text-gray-500" />
+            <span>Share</span>
           </button>
         </div>
 
@@ -154,6 +167,13 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
         property={property}
         isOpen={contactModalOpen}
         onClose={() => setContactModalOpen(false)}
+      />
+
+      {/* SHARE MODAL */}
+      <PropertyShareModal
+        property={property}
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
       />
     </>
   );

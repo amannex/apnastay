@@ -726,14 +726,16 @@ export function normalizeProperty(raw: any): NormalizedProperty {
   const houseRules = rulesList.filter((rule) => rule.category === 'house_rules');
   const tenantRequirements = rulesList.filter((rule) => rule.category === 'tenant_requirements');
 
-  // Owner resolution
+  // Owner resolution (strictly authentic backend data, zero fabrication)
   const owner: NormalizedOwner = {
-    name: raw.owner?.name || 'Verified Property Partner',
+    name: raw.owner?.name || 'Property Owner',
     role: raw.owner?.role || 'Property Owner',
     avatar: raw.owner?.avatar || undefined,
-    verified: raw.owner?.verified !== false,
-    responseTime: raw.owner?.responseTime || 'Within 2 hours',
-    memberSince: raw.owner?.memberSince || '2026'
+    verified: raw.owner?.verified !== undefined
+      ? Boolean(raw.owner.verified)
+      : (raw.verified === true),
+    responseTime: raw.owner?.responseTime || undefined,
+    memberSince: raw.owner?.memberSince || undefined
   };
 
   // Verification resolution (Strictly data-driven, future-ready)

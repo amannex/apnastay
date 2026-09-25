@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { MapPin, ShieldCheck, Calendar, Heart, Share2, Check } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import type { NormalizedProperty } from '../../adapter';
+import PropertyShareModal from './PropertyShareModal';
 
 interface PropertyHeroSectionProps {
   property: NormalizedProperty;
@@ -13,36 +14,29 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
   const { wishlistIds, onToggleWishlist, authenticated, onOpenAuthModal } = useApp();
   const isWishlisted = wishlistIds.includes(property.id);
 
-  const [copied, setCopied] = useState(false);
-  const [wishlistToast, setWishlistToast] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [wishlistToast, setWishlistToast] = useState<string | null>(null);
 
   const { title, propertyTypeLabel, location, verification, availability } = property;
 
   const handleToggleWishlist = () => {
     onToggleWishlist(property.id);
-    setWishlistToast(true);
-    setTimeout(() => setWishlistToast(false), 2000);
+    if (!isWishlisted) {
+      if (authenticated) {
+        setWishlistToast('Saved to your account!');
+      } else {
+        setWishlistToast('Saved to device! Sign in to sync across devices.');
+      }
+    } else {
+      setWishlistToast('Removed from saved properties');
+    }
+
+    setTimeout(() => setWishlistToast(null), 3000);
   };
 
-  const handleShare = async () => {
-    if (typeof window !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: property.title,
-          text: `Check out ${property.title} on ApnaStay — India's Zero-Brokerage Platform!`,
-          url: window.location.href,
-        });
-        return;
-      } catch (err) {
-        // Fallback to clipboard
-      }
-    }
-
-    if (typeof window !== 'undefined' && navigator.clipboard) {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
+  const handleShareClick = () => {
+    // If mobile navigator.share is supported, we can either invoke it or open modal
+    setIsShareModalOpen(true);
   };
 
   return (
@@ -55,7 +49,7 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
             {propertyTypeLabel}
           </span>
 
-          {/* Verification Badge */}
+          {/* Verification Badge - Data-driven, never decorative */}
           {verification.isVerified && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -75,29 +69,20 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           {/* Share Action */}
           <button
             type="button"
-            onClick={handleShare}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+            onClick={handleShareClick}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
             aria-label="Share this property"
-            title="Share property link"
+            title="Share property via WhatsApp, Copy Link, etc."
           >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-700 font-bold">Link Copied!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5 text-gray-500" />
-                <span>Share</span>
-              </>
-            )}
+            <Share2 className="w-3.5 h-3.5 text-gray-500" />
+            <span>Share</span>
           </button>
 
           {/* Wishlist Action */}
           <button
             type="button"
             onClick={handleToggleWishlist}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 ${
               isWishlisted
                 ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
@@ -115,8 +100,17 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
 
           {/* Transient Visual Feedback */}
           {wishlistToast && (
-            <div className="absolute right-0 -bottom-9 bg-[#1A1A1A] text-white text-[11px] font-medium px-3 py-1 rounded-lg shadow-md whitespace-nowrap z-20 animate-fade-in">
-              {isWishlisted ? 'Saved to wishlist!' : 'Removed from wishlist'}
+            <div className="absolute right-0 -bottom-10 bg-[#1A1A1A] text-white text-[11px] font-medium px-3.5 py-1.5 rounded-xl shadow-lg whitespace-nowrap z-20 animate-fade-in flex items-center gap-2">
+              <span>{wishlistToast}</span>
+              {!authenticated && !isWishlisted && (
+                <button
+                  type="button"
+                  onClick={onOpenAuthModal}
+                  className="underline text-rose-300 hover:text-white font-bold cursor-pointer"
+                >
+                  Sign in
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -142,6 +136,13 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           <span className="text-gray-400 hidden md:inline">• PIN: {location.pincode}</span>
         )}
       </div>
+
+      {/* Share Modal Dialog */}
+      <PropertyShareModal
+        property={property}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </section>
   );
 }
