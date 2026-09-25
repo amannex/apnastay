@@ -66,8 +66,8 @@ export default function Navbar({
           : 'bg-transparent py-4 sm:py-6'
       }`}
     >
-      {/* 10% REDUCED HEADER WIDTH (1600px -> 1440px) FOR OPTIMAL VISUAL BALANCE */}
-      <div className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ALIGNED WITH WEBSITE LAYOUT CONTENT (max-w-7xl) */}
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center justify-between gap-3 sm:gap-6">
 
           {/* BRAND LOGO (NEVER WRAPS) */}
