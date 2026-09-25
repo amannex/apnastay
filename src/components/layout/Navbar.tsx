@@ -66,8 +66,9 @@ export default function Navbar({
           : 'bg-transparent py-4 sm:py-6'
       }`}
     >
-      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between gap-2 sm:gap-4">
+      {/* 10% REDUCED HEADER WIDTH (1600px -> 1440px) FOR OPTIMAL VISUAL BALANCE */}
+      <div className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="flex items-center justify-between gap-3 sm:gap-6">
 
           {/* BRAND LOGO (NEVER WRAPS) */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0 whitespace-nowrap">
@@ -81,75 +82,77 @@ export default function Navbar({
             </span>
           </Link>
 
-          {/* MAIN MULTI-PAGE DESKTOP NAVIGATION (EXACT ORDER REQUESTED) */}
-          <div className="hidden lg:flex items-center gap-3 xl:gap-5 text-xs xl:text-sm font-medium text-[#374151]">
+          {/* MAIN MULTI-PAGE DESKTOP NAVIGATION (PROPER GAP & REFINED FONT SIZE) */}
+          <div className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-semibold tracking-tight text-[#374151]">
             <Link
               href="/about"
-              className={`whitespace-nowrap transition-colors ${
+              className={`whitespace-nowrap transition-colors duration-200 ${
                 isActiveRoute('/about') || isActiveRoute('/who-we-are')
                   ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#1A1A1A]'
+                  : 'hover:text-[#E1224D]'
               }`}
             >
               Who We Are
             </Link>
             <Link
               href="/cities"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/cities') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
+              className={`whitespace-nowrap transition-colors duration-200 ${
+                isActiveRoute('/cities') ? 'text-[#E1224D] font-bold' : 'hover:text-[#E1224D]'
               }`}
             >
               Cities
             </Link>
             <Link
               href="/how-it-works"
-              className={`whitespace-nowrap transition-colors ${
+              className={`whitespace-nowrap transition-colors duration-200 ${
                 isActiveRoute('/how-it-works') || isActiveRoute('/why-apnastay')
                   ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#1A1A1A]'
+                  : 'hover:text-[#E1224D]'
               }`}
             >
               How It Works
             </Link>
             <Link
               href="/upcoming-features"
-              className={`whitespace-nowrap transition-colors ${
+              className={`whitespace-nowrap transition-colors duration-200 ${
                 isActiveRoute('/upcoming-features')
                   ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#1A1A1A]'
+                  : 'hover:text-[#E1224D]'
               }`}
             >
-              Upcoming Features
-            </Link>
-            <Link
-              href="/properties"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/properties') ? 'text-[#E1224D] font-bold' : 'hover:text-[#1A1A1A]'
-              }`}
-            >
-              Find ApnaStay
-            </Link>
-            <Link
-              href="/owner/dashboard/properties/new"
-              className={`whitespace-nowrap transition-colors ${
-                isActiveRoute('/owner/dashboard/properties/new') || isActiveRoute('/list-apnastay')
-                  ? 'text-[#E1224D] font-bold'
-                  : 'hover:text-[#1A1A1A]'
-              }`}
-            >
-              List ApnaStay
+              Coming soon
             </Link>
           </div>
 
-          {/* RIGHT ACTION BUTTONS: COMPARE → ACCOUNT */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 whitespace-nowrap">
+          {/* RIGHT ACTION BUTTONS: FIND APNA STAY (BUTTON) → LIST APNA STAY (BUTTON) → COMPARE → ACCOUNT (ICON ONLY) */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 whitespace-nowrap">
+            {/* Find Apna Stay Button */}
+            <Link
+              href="/properties"
+              className={`hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95 border ${
+                isActiveRoute('/properties')
+                  ? 'bg-rose-50 text-[#E1224D] border-[#E1224D]/40 font-bold'
+                  : 'bg-white hover:bg-rose-50/60 text-[#1A1A1A] hover:text-[#E1224D] border-[#EDEDED] hover:border-[#E1224D]/30'
+              }`}
+            >
+              Find Apna Stay
+            </Link>
+
+            {/* List Apna Stay Button */}
+            <Link
+              href="/owner/dashboard/properties/new"
+              className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs hover:shadow-apple-xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95"
+            >
+              List Apna Stay
+            </Link>
+
             {/* Compare Button with Counter */}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenCompare?.();
               }}
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 text-[#374151] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] text-xs xl:text-sm font-medium shrink-0 cursor-pointer"
+              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-black/5 text-[#374151] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] text-xs xl:text-sm font-semibold shrink-0 cursor-pointer"
               title="Compare Properties"
               aria-label="Compare Properties"
             >
@@ -165,61 +168,42 @@ export default function Navbar({
               )}
             </button>
 
-            {/* Wishlist Counter Button (Slightly secondary utility) */}
-            <button
-              onClick={onOpenWishlist}
-              className="relative hidden md:inline-flex p-2 rounded-full hover:bg-black/5 text-[#374151] hover:text-[#E1224D] transition-colors border border-transparent hover:border-[#EDEDED] shrink-0"
-              title="Saved Residences"
-              aria-label="View Saved Residences"
-            >
-              <Heart className="w-4 h-4" />
-              {wishlistCount > 0 && (
-                <span suppressHydrationWarning={true} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
-                  {wishlistCount}
-                </span>
-              )}
-            </button>
-
-            {/* UNIFIED USER PROFILE & ROLE SWITCHER / ACCOUNT DROPDOWN */}
+            {/* UNIFIED USER PROFILE / ACCOUNT BUTTON (ICON ONLY - NO TEXT WRITTEN) */}
             {currentUser ? (
               <div ref={profileMenuRef} className="relative block shrink-0">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className={`relative flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition-all shadow-xs shrink-0 cursor-pointer border ${
+                  className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer border ${
                     profileMenuOpen
                       ? 'border-[#E1224D] ring-2 ring-[#E1224D]/20 bg-rose-50'
                       : 'border-[#EDEDED] hover:border-[#D1D5DB] bg-white/90 hover:bg-white'
                   }`}
                   title={`${userDisplayName} (${roleLabel})`}
-                  aria-label="User Account Menu"
+                  aria-label="Account Menu"
                   aria-expanded={profileMenuOpen}
                 >
-                  <div className="relative w-7 h-7 rounded-full overflow-hidden bg-rose-50 flex items-center justify-center text-[#E1224D]">
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={userDisplayName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-3.5 h-3.5 text-[#E1224D]" />
-                    )}
-                    {/* Role status badge dot */}
-                    <span
-                      className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-white ${
-                        currentUser?.role?.includes('owner')
-                          ? 'bg-[#E1224D]'
-                          : currentUser?.role?.includes('admin')
-                          ? 'bg-purple-600'
-                          : 'bg-emerald-500'
-                      }`}
-                      title={roleLabel}
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={userDisplayName}
+                      className="w-full h-full rounded-full object-cover"
                     />
-                  </div>
-                  <span className="hidden sm:inline text-xs font-semibold text-[#1A1A1A] max-w-[80px] truncate">
-                    Account
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#6B7280] hidden sm:inline" />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-rose-50 flex items-center justify-center text-[#E1224D]">
+                      <User className="w-4 h-4 text-[#E1224D]" />
+                    </div>
+                  )}
+                  {/* Role status badge dot */}
+                  <span
+                    className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                      currentUser?.role?.includes('owner')
+                        ? 'bg-[#E1224D]'
+                        : currentUser?.role?.includes('admin')
+                        ? 'bg-purple-600'
+                        : 'bg-emerald-500'
+                    }`}
+                    title={roleLabel}
+                  />
                 </button>
 
                 {profileMenuOpen && (
@@ -235,7 +219,7 @@ export default function Navbar({
                       <p className="text-[10px] text-[#6B7280] truncate">{currentUser.email}</p>
                     </div>
 
-                    {/* Navigation Links based on real authenticated role */}
+                    {/* Navigation Links based on role */}
                     <div className="py-1 space-y-0.5">
                       {currentUser?.role?.includes('owner') ? (
                         <>
@@ -267,14 +251,6 @@ export default function Navbar({
                             <span>Tenant Dashboard</span>
                           </Link>
                           <Link
-                            href="/favorites"
-                            onClick={() => setProfileMenuOpen(false)}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
-                          >
-                            <Heart className="w-4 h-4 text-[#6B7280]" />
-                            <span>Saved Wishlist</span>
-                          </Link>
-                          <Link
                             href="/my-visits"
                             onClick={() => setProfileMenuOpen(false)}
                             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors"
@@ -284,6 +260,25 @@ export default function Navbar({
                           </Link>
                         </>
                       )}
+
+                      {/* WISHLIST INSIDE ACCOUNT DROPDOWN (ACCESSIBLE TO ALL USERS) */}
+                      <button
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          onOpenWishlist?.();
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs font-medium text-[#1A1A1A] hover:bg-[#FAFAFA] transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Heart className="w-4 h-4 text-[#E1224D]" />
+                          <span>Saved Wishlist</span>
+                        </div>
+                        {wishlistCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-[#E1224D] text-white text-[10px] font-bold">
+                            {wishlistCount}
+                          </span>
+                        )}
+                      </button>
                     </div>
 
                     {/* Logout Action */}
@@ -305,11 +300,11 @@ export default function Navbar({
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs font-semibold transition-all shadow-xs shrink-0 whitespace-nowrap"
-                title="Account Login / Register"
+                className="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 text-[#E1224D] border border-rose-200/80 flex items-center justify-center transition-all shadow-2xs hover:scale-105 active:scale-95 shrink-0"
+                title="Account / Sign In"
+                aria-label="Account"
               >
-                <User className="w-3.5 h-3.5" />
-                <span>Account</span>
+                <User className="w-4 h-4 text-[#E1224D]" />
               </Link>
             )}
 
@@ -327,7 +322,7 @@ export default function Navbar({
         {/* MOBILE NAVIGATION MENU DRAWER (lg:hidden) */}
         {mobileMenuOpen && (
           <div className="lg:hidden mt-2 animate-slide-up">
-            <div className="bg-white rounded-3xl p-4 shadow-2xl border border-[#EDEDED] flex flex-col gap-1.5">
+            <div className="bg-white rounded-3xl p-4 shadow-2xl border border-[#EDEDED] flex flex-col gap-2">
               <div className="flex items-center justify-between pb-2 border-b border-[#EDEDED] px-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
                   ApnaStay Navigation
@@ -384,12 +379,12 @@ export default function Navbar({
                     className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#E1224D] text-white text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors text-center"
                   >
                     <User className="w-3.5 h-3.5" />
-                    <span>Account • Sign In / Register</span>
+                    <span>Sign In / Register</span>
                   </Link>
                 )}
               </div>
 
-              {/* NEW MENUS IN MOBILE DRAWER */}
+              {/* NAVIGATION LINKS */}
               <Link
                 href="/about"
                 onClick={() => setMobileMenuOpen(false)}
@@ -433,31 +428,29 @@ export default function Navbar({
                     : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
                 }`}
               >
-                <span>Upcoming Features</span>
+                <span>Coming soon</span>
               </Link>
 
-              <Link
-                href="/properties"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/properties') ? 'bg-rose-50 text-[#E1224D]' : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
-              >
-                <span>Find ApnaStay</span>
-              </Link>
+              {/* BUTTON MENUS IN MOBILE DRAWER */}
+              <div className="pt-2 flex flex-col gap-2">
+                <Link
+                  href="/properties"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-2.5 px-4 rounded-xl border border-[#EDEDED] text-center text-xs font-bold text-[#1A1A1A] hover:bg-rose-50 hover:text-[#E1224D] hover:border-[#E1224D]/30 transition-colors"
+                >
+                  Find Apna Stay
+                </Link>
 
-              <Link
-                href="/owner/dashboard/properties/new"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all ${
-                  isActiveRoute('/owner/dashboard/properties/new') || isActiveRoute('/list-apnastay')
-                    ? 'bg-rose-50 text-[#E1224D]'
-                    : 'hover:bg-[#FAFAFA] text-[#1A1A1A]'
-                }`}
-              >
-                <span>List ApnaStay</span>
-              </Link>
+                <Link
+                  href="/owner/dashboard/properties/new"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#E1224D] text-white text-center text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
+                >
+                  List Apna Stay
+                </Link>
+              </div>
 
+              {/* ACTION UTILITIES: COMPARE & WISHLIST */}
               <div className="pt-2 mt-1 border-t border-[#EDEDED] flex flex-col gap-2">
                 <button
                   onClick={() => {
@@ -486,7 +479,7 @@ export default function Navbar({
                 >
                   <div className="flex items-center gap-2">
                     <Heart className="w-4 h-4 text-[#E1224D]" />
-                    <span>Saved Residences</span>
+                    <span>Saved Residences (Wishlist)</span>
                   </div>
                   {wishlistCount > 0 && (
                     <span className="w-5 h-5 rounded-full bg-[#E1224D] text-white text-[10px] font-bold flex items-center justify-center">
@@ -513,3 +506,4 @@ export default function Navbar({
     </header>
   );
 }
+
