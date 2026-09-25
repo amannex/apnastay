@@ -30,9 +30,9 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
         </div>
 
         {/* FOOTER LINKS & BRAND */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 pb-16 border-b border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10 pb-16 border-b border-white/10">
           {/* Brand Col */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 sm:col-span-2">
             <Link href="/" className="flex items-center gap-3.5 mb-4 group">
               <img
                 src="/logo-icon.png"
@@ -49,18 +49,28 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
               </div>
             </Link>
             <p className="text-white/70 text-sm max-w-sm leading-relaxed mb-6">
-              India's premium Apple, Airbnb, and Linear inspired rental platform. Built with interactive 3D storytelling, ₹0 brokerage guarantees, and instant NFC smart-lock tours across Tier-2 and Tier-1 hubs.
+              India's premium rental platform. Built with ₹0 brokerage guarantees, 25-point engineering audits, and instant NFC smart-lock tours across Tier-2 tech hubs.
             </p>
-            <div className="flex items-center gap-2 text-xs text-white/80 font-semibold">
+            <div className="flex items-center gap-2 text-xs text-white/80 font-semibold mb-5">
               <ShieldCheck className="w-4 h-4 text-[#E1224D]" />
               <span>25-Point Physical Inspection Guaranteed</span>
             </div>
+
+            {/* ApnaStay Journal Callout Pill */}
+            <Link
+              href="/journal"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white hover:bg-white/10 hover:border-white/25 transition-all group/j"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#E1224D] animate-pulse" />
+              <span className="font-semibold text-rose-300">ApnaStay Journal:</span>
+              <span className="text-white/80 group-hover/j:text-white">Read Indian Living & Legal Guides →</span>
+            </Link>
           </div>
 
-          {/* Links Col 1: Indian Tier-2 Cities */}
+          {/* Links Col 1: Explore Cities */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-4">
-              Explore Tier-2 Hubs
+              Explore Cities
             </h4>
             <ul className="space-y-2.5 text-sm text-white/80">
               <li><Link href="/cities" className="hover:text-white transition-colors">Indore (248 Homes)</Link></li>
@@ -69,31 +79,42 @@ export default function Footer({ onExploreClick }: { onExploreClick?: () => void
               <li><Link href="/cities" className="hover:text-white transition-colors">Kochi (162 Homes)</Link></li>
               <li><Link href="/cities" className="hover:text-white transition-colors">Chandigarh (210 Homes)</Link></li>
               <li><Link href="/cities" className="hover:text-white transition-colors">Pune (312 Homes)</Link></li>
+              <li><Link href="/cities" className="text-rose-400 font-semibold hover:text-rose-300 transition-colors">View All Cities →</Link></li>
             </ul>
           </div>
 
-          {/* Links Col 2 */}
+          {/* Links Col 2: Platform */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-4">
               ApnaStay Platform
             </h4>
             <ul className="space-y-2.5 text-sm text-white/80">
+              <li><Link href="/how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
+              <li><Link href="/upcoming-features" className="hover:text-white transition-colors">Upcoming Features</Link></li>
+              <li><Link href="/properties" className="hover:text-white transition-colors">Find ApnaStay</Link></li>
+              <li><Link href="/owner/dashboard/properties/new" className="hover:text-white transition-colors">List ApnaStay</Link></li>
               <li><Link href="/why-apnastay" className="hover:text-white transition-colors">₹0 Brokerage Promise</Link></li>
-              <li><Link href="/properties" className="hover:text-white transition-colors">Verified Indian Listings</Link></li>
-              <li><Link href="/why-apnastay" className="hover:text-white transition-colors">Aadhaar / PAN E-Sign</Link></li>
-              <li><Link href="/why-apnastay" className="hover:text-white transition-colors">Instant NFC Self-Tour</Link></li>
-              <li><Link href="/permission-matrix" className="hover:text-white transition-colors text-emerald-400 font-semibold">🔒 Phase 24 RBAC Matrix Suite</Link></li>
+              <li><Link href="/permission-matrix" className="hover:text-white transition-colors text-emerald-400 font-semibold">🔒 RBAC Matrix Suite</Link></li>
               <li><Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
-          {/* Links Col 3 */}
+          {/* Links Col 3: ApnaStay Journal & Company */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white/50 mb-4">
-              Company
+              Journal & Company
             </h4>
             <ul className="space-y-2.5 text-sm text-white/80">
-              <li><Link href="/journal" className="hover:text-white transition-colors">ApnaStay Journal</Link></li>
+              <li>
+                <Link href="/journal" className="hover:text-white transition-colors font-bold text-rose-300 flex items-center gap-1.5">
+                  <span>ApnaStay Journal</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-200">Articles</span>
+                </Link>
+              </li>
+              <li><Link href="/journal" className="hover:text-white transition-colors text-xs text-white/60">Rent Agreement Guides</Link></li>
+              <li><Link href="/journal" className="hover:text-white transition-colors text-xs text-white/60">Security Deposit Rights</Link></li>
+              <li><Link href="/journal" className="hover:text-white transition-colors text-xs text-white/60">Acoustic Soundproofing</Link></li>
+              <li className="pt-2 border-t border-white/10"><Link href="/about" className="hover:text-white transition-colors">Who We Are</Link></li>
               <li><a href="#" className="hover:text-white transition-colors">Partner with ApnaStay</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
