@@ -58,8 +58,8 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
         </h2>
       </div>
 
-      {/* 2-COLUMN AIRBNB-STYLE NEARBY PLACES LIST */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-2">
+      {/* SINGLE COLUMN AIRBNB-STYLE NEARBY PLACES LIST (SINGLE ROW PER ITEM) */}
+      <div className="grid grid-cols-1 gap-y-4 sm:gap-y-5 pt-2">
         {nearbyPlaces.map((place, idx) => {
           const IconComponent = getNearbyPlaceIcon(place.name);
           return (
