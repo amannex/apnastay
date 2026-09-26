@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import type { NormalizedProperty } from '../../adapter';
 import PropertyInteractiveMap from './PropertyInteractiveMap';
@@ -9,7 +11,21 @@ interface PropertyLocationSectionProps {
 export default function PropertyLocationSection({ property }: PropertyLocationSectionProps) {
   const { location } = property;
 
-  const localityLine = location.displayLocation || location.locality || (location.city ? `${location.city}${location.state ? `, ${location.state}` : ''}` : 'Location upon request');
+  const locationParts = [
+    location.locality,
+    location.city,
+    location.state,
+    'India'
+  ].filter(Boolean) as string[];
+
+  // Deduplicate parts (in case locality already contains city or state)
+  const dedupedParts: string[] = [];
+  for (const part of locationParts) {
+    if (!dedupedParts.some(p => p.toLowerCase().includes(part.toLowerCase()) || part.toLowerCase().includes(p.toLowerCase()))) {
+      dedupedParts.push(part);
+    }
+  }
+  const fullLocationText = dedupedParts.length > 0 ? dedupedParts.join(', ') : (location.displayLocation || 'India');
 
   return (
     <section
@@ -18,20 +34,24 @@ export default function PropertyLocationSection({ property }: PropertyLocationSe
     >
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-          Location
+          You will be stay here
         </h2>
+        <p className="text-base text-gray-700 font-normal mt-1">
+          {fullLocationText}
+        </p>
       </div>
 
       {/* Interactive Map */}
-      <div>
+      <div className="pt-1">
         <PropertyInteractiveMap
           latitude={location.latitude}
           longitude={location.longitude}
-          displayLocation={localityLine}
+          displayLocation={fullLocationText}
           isApproximate={location.hideExactAddress}
         />
       </div>
     </section>
   );
 }
+
 
