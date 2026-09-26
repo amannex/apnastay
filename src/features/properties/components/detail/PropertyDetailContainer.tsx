@@ -47,12 +47,12 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
           {/* LEFT: CORE PROPERTY DETAILS & CONTENT */}
           <div className="flex-1 min-w-0 max-w-full">
             {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
-            <div className="block lg:hidden pb-6 border-b border-gray-100">
+            <div className="block lg:hidden pb-6 border-b border-gray-200">
               <PropertyActionsSection property={property} />
             </div>
 
             {/* SCROLLABLE CONTENT SECTIONS DIVIDED BY CLEAN SEPARATORS (No top border on first item) */}
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-200">
               {/* PROPERTY SNAPSHOT */}
               <PropertySnapshotSection property={property} />
 
@@ -89,7 +89,7 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         </div>
 
         {/* SIMILAR PROPERTIES (FULL WIDTH BOTTOM SECTION) */}
-        <div className="pt-10 sm:pt-14 border-t border-gray-100 mt-8 sm:mt-12">
+        <div className="pt-10 sm:pt-14 border-t border-gray-200 mt-8 sm:mt-12">
           <SimilarPropertiesSection property={property} />
         </div>
       </div>
