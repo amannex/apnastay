@@ -44,43 +44,46 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         </div>
 
         {/* MAIN RESPONSIVE CONTENT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 xl:gap-16 items-start pt-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16 xl:gap-20 2xl:gap-24 items-start pt-2">
           {/* LEFT 2 COLUMNS: CORE PROPERTY DETAILS & CONTENT */}
-          <div className="lg:col-span-2 divide-y divide-gray-100">
+          <div className="lg:col-span-2">
             {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
-            <div className="block lg:hidden pb-6">
+            <div className="block lg:hidden pb-6 border-b border-gray-100">
               <PropertyActionsSection property={property} />
             </div>
 
-            {/* PROPERTY SNAPSHOT */}
-            <PropertySnapshotSection property={property} />
+            {/* SCROLLABLE CONTENT SECTIONS DIVIDED BY CLEAN SEPARATORS (No top border on first item) */}
+            <div className="divide-y divide-gray-100">
+              {/* PROPERTY SNAPSHOT */}
+              <PropertySnapshotSection property={property} />
 
-            {/* ABOUT THIS PROPERTY */}
-            <PropertyDescriptionSection property={property} />
+              {/* ABOUT THIS PROPERTY */}
+              <PropertyDescriptionSection property={property} />
 
-            {/* WHY THIS PROPERTY (DATA-DRIVEN HIGHLIGHTS) */}
-            <PropertyHighlightsSection property={property} />
+              {/* WHY THIS PROPERTY (DATA-DRIVEN HIGHLIGHTS) */}
+              <PropertyHighlightsSection property={property} />
 
-            {/* AMENITIES & FACILITIES */}
-            <PropertyAmenitiesSection property={property} />
+              {/* AMENITIES & FACILITIES */}
+              <PropertyAmenitiesSection property={property} />
 
-            {/* PROPERTY DETAILS & SPECIFICATIONS */}
-            <PropertyDetailsSection property={property} />
+              {/* PROPERTY DETAILS & SPECIFICATIONS */}
+              <PropertyDetailsSection property={property} />
 
-            {/* LOCATION & NEIGHBORHOOD */}
-            <PropertyLocationSection property={property} />
+              {/* LOCATION & NEIGHBORHOOD */}
+              <PropertyLocationSection property={property} />
 
-            {/* NEARBY PLACES */}
-            <NearbyPlacesSection property={property} />
+              {/* NEARBY PLACES */}
+              <NearbyPlacesSection property={property} />
 
-            {/* HOUSE RULES / REQUIREMENTS */}
-            <HouseRulesSection property={property} />
+              {/* HOUSE RULES / REQUIREMENTS */}
+              <HouseRulesSection property={property} />
 
-            {/* VERIFICATION & TRUST INFORMATION */}
-            <VerificationCard property={property} />
+              {/* VERIFICATION & TRUST INFORMATION */}
+              <VerificationCard property={property} />
 
-            {/* OWNER INFORMATION */}
-            <OwnerCard property={property} />
+              {/* OWNER INFORMATION */}
+              <OwnerCard property={property} />
+            </div>
           </div>
 
           {/* RIGHT 1 COLUMN: DESKTOP STICKY ACTION CARD */}
