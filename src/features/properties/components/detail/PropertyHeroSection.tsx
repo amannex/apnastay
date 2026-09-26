@@ -46,16 +46,17 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           {title}
         </h1>
 
-        {/* Action Buttons: Save to Wishlist & Share - Clean Airbnb style */}
-        <div className="flex items-center gap-1 sm:gap-2 relative self-start sm:self-auto">
+        {/* Action Buttons: Save to Wishlist & Share */}
+        <div className="flex items-center gap-2 relative self-start sm:self-auto">
           {/* Share Action */}
           <button
             type="button"
             onClick={handleShareClick}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 text-xs sm:text-sm font-semibold text-gray-900 underline underline-offset-4 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
             aria-label="Share this property"
+            title="Share property"
           >
-            <Share2 className="w-4 h-4 text-gray-900" />
+            <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
             <span>Share</span>
           </button>
 
@@ -63,12 +64,17 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           <button
             type="button"
             onClick={handleToggleWishlist}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 text-xs sm:text-sm font-semibold text-gray-900 underline underline-offset-4 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+            className={`inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-black ${
+              isWishlisted
+                ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
+                : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
+            }`}
             aria-label={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+            title={isWishlisted ? 'Saved in Wishlist' : 'Save to Wishlist'}
           >
             <Heart
-              className={`w-4 h-4 transition-transform ${
-                isWishlisted ? 'fill-[#E1224D] text-[#E1224D]' : 'text-gray-900'
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${
+                isWishlisted ? 'fill-[#ED3258] text-[#ED3258] scale-110' : 'text-gray-600'
               }`}
             />
             <span>{isWishlisted ? 'Saved' : 'Save'}</span>

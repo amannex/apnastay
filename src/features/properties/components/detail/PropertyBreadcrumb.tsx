@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import type { NormalizedProperty } from '../../adapter';
 
 interface PropertyBreadcrumbProps {
@@ -50,17 +50,6 @@ export default function PropertyBreadcrumb({ property }: PropertyBreadcrumbProps
           </span>
         )}
       </nav>
-
-      {/* Back button */}
-      <div className="shrink-0 hidden sm:block">
-        <Link
-          href="/properties"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-black transition-colors py-1 px-2.5 rounded-lg hover:bg-gray-100"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>All Properties</span>
-        </Link>
-      </div>
     </div>
   );
 }
