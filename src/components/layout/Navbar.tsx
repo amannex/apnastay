@@ -58,6 +58,11 @@ export default function Navbar({
 
   const isActiveRoute = (path) => pathname === path;
 
+  // Owner Walkthrough: If already logged in -> Step 1 of property registration; otherwise -> Owner Signup
+  const listApnaStayUrl = currentUser
+    ? '/owner/dashboard/properties/new'
+    : '/register?role=property_owner&redirect=/owner/dashboard/properties/new';
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -67,8 +72,8 @@ export default function Navbar({
       }`}
     >
       {/* BALANCED HEADER WIDTH (1360px) - EXPANDED SLIGHTLY BEYOND 1280px CONTENT */}
-      <div className="max-w-[1360px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between gap-3 sm:gap-6">
+      <div className="max-w-[1360px] w-full mx-auto px-4 sm:px-6 lg:px-6 xl:px-8">
+        <nav className="flex items-center justify-between gap-3 sm:gap-4 xl:gap-6">
 
           {/* BRAND LOGO (NEVER WRAPS) */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0 whitespace-nowrap">
@@ -83,9 +88,9 @@ export default function Navbar({
           </Link>
 
           {/* MAIN DESKTOP NAVIGATION & ACTION BUTTONS WITH UNIFORM EVEN SPACING */}
-          <div className="hidden lg:flex items-center gap-8 xl:gap-10">
-            {/* The Four Multi-Page Text Menus (Font Size 15px: increased by 1 from 14px) */}
-            <div className="flex items-center gap-8 xl:gap-10 text-[15px] font-semibold tracking-tight text-[#374151]">
+          <div className="hidden lg:flex items-center gap-5 xl:gap-10">
+            {/* The Four Multi-Page Text Menus (Font Size 14px on lg, 15px on xl) */}
+            <div className="flex items-center gap-4 xl:gap-8 text-sm xl:text-[15px] font-semibold tracking-tight text-[#374151]">
               <Link
                 href="/about"
                 className={`whitespace-nowrap transition-colors duration-200 ${
@@ -127,7 +132,7 @@ export default function Navbar({
             </div>
 
             {/* ACTION BUTTONS: FIND APNA STAY (BUTTON) → LIST APNA STAY (BUTTON) → COMPARE → ACCOUNT (ICON ONLY) */}
-            <div className="flex items-center gap-5 lg:gap-6 xl:gap-8 shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-3 lg:gap-3.5 xl:gap-6 shrink-0 whitespace-nowrap">
               {/* Find Apna Stay Button */}
               <Link
                 href="/properties"
@@ -142,7 +147,7 @@ export default function Navbar({
 
               {/* List Apna Stay Button */}
               <Link
-                href="/owner/dashboard/properties/new"
+                href={listApnaStayUrl}
                 className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#E1224D] hover:bg-[#C71B42] text-white text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs hover:shadow-apple-xs whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-95"
               >
                 List Apna Stay
@@ -465,7 +470,7 @@ export default function Navbar({
                 </Link>
 
                 <Link
-                  href="/owner/dashboard/properties/new"
+                  href={listApnaStayUrl}
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-2.5 px-4 rounded-xl bg-[#E1224D] text-white text-center text-xs font-bold shadow-sm hover:bg-[#C71B42] transition-colors"
                 >

@@ -44,7 +44,7 @@
   --color-error-light: #FEF2F2;
 
   /* --- TYPOGRAPHY FAMILIES --- */
-  --font-primary: var(--font-next-outfit), 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
+  --font-primary: var(--font-next-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
   --font-sans: var(--font-next-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
 
   /* --- APPLE-STYLE ELEVATION & SHADOWS --- */

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   X,
   Star,
@@ -22,10 +23,12 @@ import {
   Sun,
   Wind,
   Shirt,
-  Coffee
+  Coffee,
+  ArrowRight
 } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, RoundedBox } from '@react-three/drei';
+import { slugify } from '@/features/properties/adapter';
 
 // Mini 3D Room Viewer component inside the modal
 function MiniRoomModel() {
@@ -436,21 +439,29 @@ export default function PropertyModal({
         <div className="p-6 border-t border-[#EDEDED] bg-[#FAFAFA] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <p className="text-xl font-bold text-[#1A1A1A]">
-              ${property.price}
+              ₹{property.price?.toLocaleString?.() || property.price}
               <span className="text-xs font-normal text-[#6B7280]"> / month</span>
             </p>
             <p className="text-xs font-semibold text-emerald-600">
-              $0 brokerage • Instant NFC Smart-Lock Tour Ready
+              ₹0 brokerage • Instant NFC Smart-Lock Tour Ready
             </p>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Link
+              href={`/${(property.city || 'indore').toLowerCase()}/${slugify(property.title || property.id)}`}
+              onClick={onClose}
+              className="px-5 py-3 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition-colors flex items-center gap-1.5"
+            >
+              <span>View Full Page</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
             <button
               onClick={() => {
                 onClose();
                 onBookVisit(property);
               }}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#E1224D] text-white text-sm font-semibold shadow-apple hover:bg-[#C71B42] transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#E1224D] text-white text-xs sm:text-sm font-semibold shadow-apple hover:bg-[#C71B42] transition-all flex items-center justify-center gap-2"
             >
               <Key className="w-4 h-4" />
               Book Instant NFC Visit

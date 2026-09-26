@@ -296,7 +296,13 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500 mt-6 text-center lg:text-left">
             Don&apos;t have an account?{' '}
             <Link
-              href="/register"
+              href={
+                redirectParam
+                  ? `/register?redirect=${encodeURIComponent(redirectParam)}${
+                      redirectParam.includes('/owner') ? '&role=property_owner' : ''
+                    }`
+                  : '/register'
+              }
               className="text-[#E1224D] font-bold hover:underline transition-all"
             >
               Sign up

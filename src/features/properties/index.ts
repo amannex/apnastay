@@ -13,6 +13,8 @@ export * from './validation';
 export * from './errorMessages';
 export * from './backend';
 export * from './api';
+export * from './adapter';
+export * from './recommendations';
 
 // Wizard & Dashboard Components
 export { default as StepPropertyType } from './components/wizard/StepPropertyType';

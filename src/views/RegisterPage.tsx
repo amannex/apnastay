@@ -27,14 +27,29 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams?.get('redirect');
+  const roleParam = searchParams?.get('role');
+  const isOwnerIntent =
+    roleParam === 'owner' ||
+    roleParam === 'property_owner' ||
+    roleParam === 'host' ||
+    Boolean(redirectParam?.includes('/owner'));
+
   const { handleLoginSuccess } = useApp();
   const { register } = useAuth();
 
   // Multi-step state: Step 1 (Role) -> Step 2 (Details) -> Step 3 (Security)
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  // Selected role: 'tenant' or 'property_owner'
-  const [role, setRole] = useState<'tenant' | 'property_owner'>('tenant');
+  // Selected role: 'tenant' or 'property_owner' (pre-select property_owner when coming from List Apna Stay flow)
+  const [role, setRole] = useState<'tenant' | 'property_owner'>(
+    isOwnerIntent ? 'property_owner' : 'tenant'
+  );
+
+  React.useEffect(() => {
+    if (isOwnerIntent) {
+      setRole('property_owner');
+    }
+  }, [isOwnerIntent]);
 
   // Registration input fields
   const [firstName, setFirstName] = useState('');
@@ -189,9 +204,15 @@ export default function RegisterPage() {
       }
 
       const registeredUser = res.data;
-      const isOwner = registeredUser.role === 'apnastay_owner' || registeredUser.role === 'owner';
+      const isOwner =
+        registeredUser.role === 'apnastay_owner' ||
+        registeredUser.role === 'owner' ||
+        registeredUser.role === 'property_owner';
+
       setSuccessMessage(
-        isOwner
+        redirectParam?.includes('/properties/new')
+          ? 'Account created! Redirecting to property registration...'
+          : isOwner
           ? 'Account created! Redirecting to owner dashboard...'
           : 'Account created! Redirecting...'
       );
@@ -231,7 +252,11 @@ export default function RegisterPage() {
         <div className="flex items-center gap-2 text-xs sm:text-sm">
           <span className="text-gray-500 hidden sm:inline">Already registered?</span>
           <Link
-            href="/login"
+            href={
+              redirectParam
+                ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+                : '/login'
+            }
             className="font-bold text-[#E1224D] hover:text-[#C71B42] hover:underline transition-colors cursor-pointer"
           >
             Sign in
@@ -318,13 +343,18 @@ export default function RegisterPage() {
         {/* HEADER TEXT (MINIMAL & SIMPLE)                                         */}
         {/* ----------------------------------------------------------------------- */}
         <div className="text-center mb-6">
+          {isOwnerIntent && step === 1 && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200/80 text-[11px] font-bold text-[#E1224D] mb-3 animate-fade-in">
+              <span>✨ Host Onboarding · Step 1 to List Your Stay</span>
+            </div>
+          )}
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] tracking-tight">
             {step === 1 && 'Choose your account type'}
             {step === 2 && 'Personal details'}
             {step === 3 && 'Set your password'}
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
-            {step === 1 && 'Select how you want to use ApnaStay.'}
+            {step === 1 && (isOwnerIntent ? 'Property Owner selected to start listing your space.' : 'Select how you want to use ApnaStay.')}
             {step === 2 && 'Please enter your name and contact details.'}
             {step === 3 && 'Create a secure password to protect your account.'}
           </p>
@@ -437,6 +467,21 @@ export default function RegisterPage() {
                 <span>Continue</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              {/* Already registered quick link on step 1 */}
+              <div className="mt-4 text-center">
+                <span className="text-xs text-gray-500">Already have an account? </span>
+                <Link
+                  href={
+                    redirectParam
+                      ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+                      : '/login'
+                  }
+                  className="text-xs font-bold text-[#E1224D] hover:underline cursor-pointer"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
           )}
 

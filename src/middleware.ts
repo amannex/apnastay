@@ -47,8 +47,15 @@ export function middleware(request: NextRequest) {
       (wpCookie && wpCookie.value && wpCookie.value !== 'deleted')
     );
 
-    // 1. Unauthenticated user -> redirect immediately to login
+    // 1. Unauthenticated user -> redirect immediately to signup/login
     if (!isAuthenticated) {
+      // If attempting to register/list a property, route directly to owner signup
+      if (pathname.includes('/properties/new')) {
+        const registerUrl = new URL('/register', request.url);
+        registerUrl.searchParams.set('role', 'property_owner');
+        registerUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(registerUrl);
+      }
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);

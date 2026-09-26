@@ -77,35 +77,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [maxPrice, setMaxPrice] = useState(50000);
   const [roomType, setRoomType] = useState('all');
 
-  const [wishlistIds, setWishlistIds] = useState<string[]>(['prop-101']);
-  const isWishlistLoaded = useRef(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('apnastay_wishlist');
-      if (saved) {
-        setWishlistIds(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.error('Failed to load wishlist from localStorage', e);
-    } finally {
-      isWishlistLoaded.current = true;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && isWishlistLoaded.current) {
-      try {
-        localStorage.setItem('apnastay_wishlist', JSON.stringify(wishlistIds));
-      } catch (e) {
-        console.error('Failed to save wishlist to localStorage', e);
-      }
-    }
-  }, [wishlistIds]);
-
-  const [compareIds, setCompareIds] = useState<string[]>(['prop-101', 'prop-102']);
-  const [activeRole, setActiveRole] = useState('tenant');
-
   // Consume centralized authentication state from AuthContext
   const {
     user,
@@ -116,6 +87,61 @@ export function AppProvider({ children }: { children: ReactNode }) {
     logout,
     refreshUser
   } = useAuth();
+
+  const [wishlistIds, setWishlistIds] = useState<string[]>(['prop-101']);
+  const isWishlistLoaded = useRef(false);
+
+  // Load wishlist from local storage on mount (or user account)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const guestSaved = localStorage.getItem('apnastay_wishlist');
+        if (guestSaved) {
+          setWishlistIds(JSON.parse(guestSaved));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load wishlist from localStorage', e);
+    } finally {
+      isWishlistLoaded.current = true;
+    }
+  }, []);
+
+  // Synchronize wishlist when user profile updates (migrate guest wishlist to account)
+  useEffect(() => {
+    if (!isWishlistLoaded.current || typeof window === 'undefined') return;
+    try {
+      if (user && user.id) {
+        const userKey = `apnastay_wishlist_user_${user.id}`;
+        const userSaved = localStorage.getItem(userKey);
+        if (userSaved) {
+          setWishlistIds(JSON.parse(userSaved));
+        } else {
+          // Sync current guest wishlist into new user account
+          localStorage.setItem(userKey, JSON.stringify(wishlistIds));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to sync user wishlist', e);
+    }
+  }, [user]);
+
+  // Persist wishlist whenever wishlistIds or user changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isWishlistLoaded.current) {
+      try {
+        localStorage.setItem('apnastay_wishlist', JSON.stringify(wishlistIds));
+        if (user && user.id) {
+          localStorage.setItem(`apnastay_wishlist_user_${user.id}`, JSON.stringify(wishlistIds));
+        }
+      } catch (e) {
+        console.error('Failed to save wishlist to localStorage', e);
+      }
+    }
+  }, [wishlistIds, user]);
+
+  const [compareIds, setCompareIds] = useState<string[]>(['prop-101', 'prop-102']);
+  const [activeRole, setActiveRole] = useState('tenant');
 
   // Synchronize active role whenever centralized user profile updates
   useEffect(() => {
