@@ -236,7 +236,7 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
               className="flex items-center gap-2.5"
             >
               <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-black shrink-0" />
-              <span className="text-sm sm:text-base font-medium text-gray-600">
+              <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)]">
                 {item.value}
               </span>
             </div>

@@ -163,7 +163,7 @@ export default function PropertyAmenitiesSection({ property }: PropertyAmenities
                 className="flex items-center gap-4 text-[#1A1A1A]"
               >
                 <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
-                <span className="text-sm sm:text-base font-normal text-gray-800">
+                <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)]">
                   {amenity.name}
                 </span>
               </div>
