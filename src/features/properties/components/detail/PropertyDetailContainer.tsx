@@ -15,7 +15,6 @@ import PropertyDetailsSection from './PropertyDetailsSection';
 import PropertyLocationSection from './PropertyLocationSection';
 import NearbyPlacesSection from './NearbyPlacesSection';
 import HouseRulesSection from './HouseRulesSection';
-import VerificationCard from './VerificationCard';
 import OwnerCard from './OwnerCard';
 import SimilarPropertiesSection from './SimilarPropertiesSection';
 
@@ -73,9 +72,6 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
 
               {/* HOUSE RULES / REQUIREMENTS */}
               <HouseRulesSection property={property} />
-
-              {/* VERIFICATION & TRUST INFORMATION */}
-              <VerificationCard property={property} />
 
               {/* OWNER INFORMATION */}
               <OwnerCard property={property} />
