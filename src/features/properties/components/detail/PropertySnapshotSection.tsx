@@ -230,13 +230,12 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 sm:gap-x-8 pt-1">
         {snapshotItems.map((item) => {
           const Icon = item.icon;
-          const isFloor = item.id === 'floor' || item.id === 'floors';
           return (
             <div
               key={item.id}
               className="flex items-center gap-2.5"
             >
-              <Icon className={`${isFloor ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-5 sm:h-5'} text-black shrink-0`} />
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-black shrink-0" />
               <span className="text-sm sm:text-base font-medium text-gray-600">
                 {item.value}
               </span>
