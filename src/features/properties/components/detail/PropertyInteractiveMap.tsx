@@ -22,6 +22,44 @@ export default function PropertyInteractiveMap({
   const [isVisible, setIsVisible] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
+  const [placeholderText, setPlaceholderText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Typewriter animation for placeholder: "Search nearby places, etc.."
+  useEffect(() => {
+    const fullText = 'Search nearby places, etc..';
+    let currentIndex = 0;
+    let isDeleting = false;
+    let timer: NodeJS.Timeout;
+
+    const animateText = () => {
+      if (!isDeleting) {
+        currentIndex++;
+        setPlaceholderText(fullText.slice(0, currentIndex));
+        if (currentIndex === fullText.length) {
+          timer = setTimeout(() => {
+            isDeleting = true;
+            animateText();
+          }, 2400);
+          return;
+        }
+        timer = setTimeout(animateText, 85);
+      } else {
+        currentIndex--;
+        setPlaceholderText(fullText.slice(0, currentIndex));
+        if (currentIndex === 0) {
+          isDeleting = false;
+          timer = setTimeout(animateText, 500);
+          return;
+        }
+        timer = setTimeout(animateText, 45);
+      }
+    };
+
+    timer = setTimeout(animateText, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const hasCoords = typeof latitude === 'number' && typeof longitude === 'number' && !isNaN(latitude) && !isNaN(longitude);
 
@@ -146,6 +184,15 @@ export default function PropertyInteractiveMap({
     ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayLocation)}`;
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim() || 'nearby places';
+    const url = hasCoords
+      ? `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${latitude},${longitude},15z`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${query} in ${displayLocation}`)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   // Missing location coordinates fallback
   if (!hasCoords || mapError) {
     return (
@@ -207,11 +254,38 @@ export default function PropertyInteractiveMap({
           className="h-[340px] sm:h-[420px] w-full z-0 bg-gray-100"
         />
 
-        {/* Top-Left: Search Pill overlay */}
-        <div className="absolute top-4 left-4 z-10 hidden sm:flex items-center gap-2.5 px-4 py-2.5 bg-white rounded-full shadow-md border border-gray-200/80 text-sm text-gray-700 pointer-events-auto">
+        {/* Top-Left: Wider Search Bar overlay with typewriter animation */}
+        <form
+          onSubmit={handleSearchSubmit}
+          className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10 flex items-center gap-2.5 w-72 sm:w-80 md:w-96 max-w-[calc(100%-4.5rem)] px-4 py-2.5 sm:py-3 bg-white/95 backdrop-blur-xs rounded-full shadow-md hover:shadow-lg border border-gray-200/90 text-sm text-gray-800 transition-all focus-within:ring-2 focus-within:ring-black/10 focus-within:border-gray-400 pointer-events-auto"
+        >
           <Search className="w-4 h-4 text-gray-500 shrink-0" />
-          <span className="font-normal text-gray-600">Try a local café</span>
-        </div>
+          <div className="relative flex-1 flex items-center overflow-hidden min-w-0">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-transparent border-none outline-none text-xs sm:text-sm text-gray-800 font-normal focus:outline-none focus:ring-0 p-0 z-10"
+              aria-label="Search nearby places"
+            />
+            {!searchQuery && (
+              <div className="absolute inset-0 flex items-center pointer-events-none select-none text-gray-500 text-xs sm:text-sm font-normal truncate">
+                <span>{placeholderText}</span>
+                <span className="inline-block w-0.5 h-3.5 bg-gray-500 animate-pulse ml-0.5" />
+              </div>
+            )}
+          </div>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="text-xs text-gray-400 hover:text-gray-700 p-0.5"
+              aria-label="Clear search query"
+            >
+              ✕
+            </button>
+          )}
+        </form>
       </div>
 
       {/* Bottom info below the map */}
