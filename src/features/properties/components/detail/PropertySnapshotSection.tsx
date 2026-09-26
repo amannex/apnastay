@@ -7,9 +7,7 @@ import {
   Maximize2,
   Sofa,
   Building,
-  Car,
   Calendar,
-  Compass,
   Users,
   UserCheck,
   Utensils,
@@ -29,7 +27,7 @@ interface SnapshotItem {
 }
 
 export default function PropertySnapshotSection({ property }: PropertySnapshotSectionProps) {
-  const { specs, availability, propertyType, propertyTypeLabel } = property;
+  const { specs, availability, propertyType } = property;
 
   const rawType = (propertyType || '').toLowerCase();
   const isPgOrHostel =
@@ -156,15 +154,6 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
         icon: Building
       });
     }
-
-    if (specs.parking) {
-      snapshotItems.push({
-        id: 'parking',
-        label: 'Parking',
-        value: specs.parking,
-        icon: Car
-      });
-    }
   } else {
     // 3. Apartment / Builder Floor / Flat / Studio
     if (specs.bedrooms !== undefined && specs.bedrooms !== null) {
@@ -195,10 +184,11 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
     }
 
     if (specs.furnishing) {
+      const cleanFurnishing = specs.furnishing.replace(/\s*\(.*?\)/g, '').trim() || specs.furnishing;
       snapshotItems.push({
         id: 'furnishing',
         label: 'Furnishing',
-        value: specs.furnishing,
+        value: cleanFurnishing,
         icon: Sofa
       });
     }
@@ -212,25 +202,6 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
         icon: Building
       });
     }
-
-    if (specs.parking) {
-      snapshotItems.push({
-        id: 'parking',
-        label: 'Parking',
-        value: specs.parking,
-        icon: Car
-      });
-    }
-  }
-
-  // Common relevant fields if not already included
-  if (snapshotItems.length < 6) {
-    snapshotItems.push({
-      id: 'propertyType',
-      label: 'Property Type',
-      value: propertyTypeLabel,
-      icon: Compass
-    });
   }
 
   snapshotItems.push({
@@ -249,38 +220,25 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       aria-label="Property snapshot specifications"
       className="py-6 sm:py-8 space-y-4"
     >
-      <div className="flex items-center justify-between">
+      <div>
         <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
           Property Snapshot
         </h2>
-        <span className="text-xs font-semibold text-[#6B7280]">
-          {propertyTypeLabel}
-        </span>
       </div>
 
-      {/* RESPONSIVE SNAPSHOT GRID */}
-      {/* Desktop: 3 column balanced tile grid with generous padding */}
-      {/* Mobile: 2 column scannable card layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-4 pt-1">
+      {/* CLEAN UNBOXED SNAPSHOT SPECIFICATIONS */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 sm:gap-x-8 pt-1">
         {snapshotItems.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.id}
-              className="p-3 sm:p-4 rounded-2xl bg-gray-50/80 border border-gray-100 flex flex-col justify-between hover:bg-gray-100/60 transition-colors"
+              className="flex items-center gap-2.5 text-[#1A1A1A]"
             >
-              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                <span className="text-[11px] sm:text-xs font-medium text-[#6B7280] truncate mr-1">
-                  {item.label}
-                </span>
-                <div className="p-1 sm:p-1.5 rounded-lg bg-white text-gray-900 shadow-2xs shrink-0 border border-gray-100">
-                  <Icon className="w-3.5 h-3.5" />
-                </div>
-              </div>
-
-              <div className="text-xs sm:text-sm md:text-base font-extrabold text-[#1A1A1A] tracking-tight truncate">
+              <span className="text-sm sm:text-base font-semibold text-[#1A1A1A]">
                 {item.value}
-              </div>
+              </span>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 shrink-0" />
             </div>
           );
         })}
