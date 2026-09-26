@@ -43,10 +43,10 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
           </div>
         </div>
 
-        {/* MAIN RESPONSIVE CONTENT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16 xl:gap-20 2xl:gap-24 items-start pt-2">
-          {/* LEFT 2 COLUMNS: CORE PROPERTY DETAILS & CONTENT */}
-          <div className="lg:col-span-2">
+        {/* MAIN RESPONSIVE CONTENT LAYOUT */}
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-10 lg:gap-24 xl:gap-36 2xl:gap-44 pt-2">
+          {/* LEFT: CORE PROPERTY DETAILS & CONTENT */}
+          <div className="flex-1 min-w-0 max-w-full">
             {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
             <div className="block lg:hidden pb-6 border-b border-gray-100">
               <PropertyActionsSection property={property} />
@@ -86,8 +86,8 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
             </div>
           </div>
 
-          {/* RIGHT 1 COLUMN: DESKTOP STICKY ACTION CARD */}
-          <aside aria-label="Booking and pricing actions" className="hidden lg:block lg:col-span-1 sticky top-28">
+          {/* RIGHT: DESKTOP STICKY ACTION CARD */}
+          <aside aria-label="Booking and pricing actions" className="hidden lg:block w-[350px] xl:w-[370px] shrink-0 sticky top-28">
             <PropertyActionsSection property={property} />
           </aside>
         </div>

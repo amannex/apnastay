@@ -259,9 +259,9 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       </div>
 
       {/* RESPONSIVE SNAPSHOT GRID */}
-      {/* Desktop: 3 to 4 column balanced tile grid */}
+      {/* Desktop: 3 column balanced tile grid with generous padding */}
       {/* Mobile: 2 column scannable card layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 pt-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-4 pt-1">
         {snapshotItems.map((item) => {
           const Icon = item.icon;
           return (
