@@ -360,7 +360,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                     }
                   }}
                   className="relative h-full overflow-hidden cursor-pointer group/sub2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
-                  aria-label={`Photo 3 of ${validImages.length}${validImages.length > 3 ? ` with ${validImages.length - 3} more photos` : ''}`}
+                  aria-label={`Photo 3 of ${validImages.length}`}
                 >
                   <img
                     src={validImages[2]}
@@ -371,18 +371,6 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                     className="w-full h-full object-cover group-hover/sub2:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover/sub2:bg-black/15 transition-colors" />
-
-                  {/* If more than 3 images, overlay "+N more photos" badge */}
-                  {validImages.length > 3 && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-opacity group-hover/sub2:bg-black/50">
-                      <div className="text-center px-2">
-                        <Camera className="w-5 h-5 mx-auto mb-1 text-white" />
-                        <span className="text-sm font-extrabold tracking-wide">
-                          +{validImages.length - 3} More
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -392,9 +380,9 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
           <button
             type="button"
             onClick={() => openLightbox(0)}
-            className="absolute bottom-4 right-4 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/80 backdrop-blur-md text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+            className="absolute bottom-3 right-3 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/90 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
-            <Camera className="w-4 h-4 text-gray-900" />
+            <Camera className="w-3.5 h-3.5 text-gray-900" />
             <span>View All Photos ({validImages.length})</span>
           </button>
         </div>
