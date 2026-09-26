@@ -69,12 +69,6 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
 
               {/* NEARBY PLACES */}
               <NearbyPlacesSection property={property} />
-
-              {/* LOCATION & NEIGHBORHOOD */}
-              <PropertyLocationSection property={property} />
-
-              {/* OWNER INFORMATION */}
-              <OwnerCard property={property} />
             </div>
           </div>
 
@@ -84,9 +78,18 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
           </aside>
         </div>
 
-        {/* SIMILAR PROPERTIES (FULL WIDTH BOTTOM SECTION) */}
-        <div className="pt-10 sm:pt-14 border-t border-gray-200 mt-8 sm:mt-12">
-          <SimilarPropertiesSection property={property} />
+        {/* FULL WIDTH SECTIONS DIVIDED BY CLEAN SEPARATORS */}
+        <div className="divide-y divide-gray-200 border-t border-gray-200 mt-8 sm:mt-12">
+          {/* LOCATION & NEIGHBORHOOD (FULL WIDTH) */}
+          <PropertyLocationSection property={property} />
+
+          {/* OWNER INFORMATION (FULL WIDTH) */}
+          <OwnerCard property={property} />
+
+          {/* SIMILAR PROPERTIES (FULL WIDTH) */}
+          <div className="pt-10 sm:pt-14">
+            <SimilarPropertiesSection property={property} />
+          </div>
         </div>
       </div>
 
