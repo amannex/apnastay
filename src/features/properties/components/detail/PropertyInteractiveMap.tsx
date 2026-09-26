@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { MapPin, Navigation, ExternalLink, ShieldCheck } from 'lucide-react';
+import { MapPin, Navigation, ExternalLink } from 'lucide-react';
 
 interface PropertyInteractiveMapProps {
   latitude?: number;
@@ -88,8 +88,8 @@ export default function PropertyInteractiveMap({
           attributionControl: true
         });
 
-        // Add zoom control at top-right
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        // Add zoom control at bottom-right so it doesn't collide with top-right location badge
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         // OpenStreetMap clean tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -180,7 +180,7 @@ export default function PropertyInteractiveMap({
   // Missing location coordinates fallback
   if (!hasCoords || mapError) {
     return (
-      <div className="relative h-60 sm:h-72 rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-center p-6 space-y-3">
+      <div className="relative h-[285px] sm:h-[352px] rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-center p-6 space-y-3">
         <div className="p-3.5 rounded-full bg-white text-[#E1224D] shadow-sm">
           <Navigation className="w-6 h-6" />
         </div>
@@ -225,15 +225,26 @@ export default function PropertyInteractiveMap({
         </div>
       )}
 
-      {/* Map container DOM */}
+      {/* Map container DOM: increased height by 10% (from 256px/320px to 285px/352px) */}
       <div
         ref={mapContainerRef}
         aria-label={`Interactive map showing ${displayLocation}`}
-        className="h-64 sm:h-80 w-full z-0 bg-gray-100"
+        className="h-[285px] sm:h-[352px] w-full z-0 bg-gray-100"
       />
 
-      {/* External Map Link button overlay */}
-      <div className="absolute bottom-3 left-3 z-10">
+      {/* Top right corner: Location badge (Vijay Nagar, Indore) */}
+      <div className="absolute top-3 right-3 z-10 pointer-events-none">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200/80 text-xs sm:text-sm font-semibold text-gray-900">
+          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E1224D] shrink-0" />
+          <span>{displayLocation}</span>
+        </div>
+      </div>
+
+      {/* Left bottom overlays: Notice + Google Maps link */}
+      <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-5rem)] sm:max-w-none">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-xs text-xs font-normal text-gray-700 rounded-xl shadow-sm border border-gray-200/80">
+          <span>Exact location will be provided after booking.</span>
+        </div>
         <a
           href={mapsSearchUrl}
           target="_blank"
@@ -244,16 +255,6 @@ export default function PropertyInteractiveMap({
           <ExternalLink className="w-3 h-3" />
         </a>
       </div>
-
-      {/* Approximate notice badge overlay */}
-      {isApproximate && (
-        <div className="absolute top-3 left-3 z-10">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/95 backdrop-blur-xs rounded-lg shadow-2xs border border-gray-200/80 text-[11px] font-medium text-gray-700">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Approximate Location</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
