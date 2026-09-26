@@ -259,26 +259,50 @@ export default function PropertyAmenitiesModal({
         </div>
 
         {/* Scrollable Categorized Amenities Content */}
-        <div className="overflow-y-auto px-6 sm:px-8 py-6 space-y-8 divide-y divide-gray-100">
-          <div>
+        <div className="overflow-y-auto px-6 sm:px-8 py-6 space-y-6">
+          <div className="pb-1">
             <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-              What this place offers
+              Amenities and facilities
             </h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              Verified amenities and inclusions provided for this ApnaStay
-            </p>
           </div>
 
           {/* Categorized amenity blocks */}
-          {activeCategories.map((category) => {
-            const items = grouped.get(category.id) || [];
-            return (
-              <div key={category.id} className="pt-6 first:pt-0 space-y-3">
+          <div className="space-y-8">
+            {activeCategories.map((category) => {
+              const items = grouped.get(category.id) || [];
+              return (
+                <div key={category.id} className="space-y-3">
+                  <h3 className="text-base sm:text-lg font-bold text-[#1A1A1A]">
+                    {category.title}
+                  </h3>
+                  <div className="divide-y divide-gray-100">
+                    {items.map((amenity, idx) => {
+                      const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
+                      return (
+                        <div
+                          key={`${amenity.name}-${idx}`}
+                          className="flex items-center gap-4 py-3.5 first:pt-1 last:pb-1"
+                        >
+                          <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                          <span className="text-sm sm:text-base font-normal text-gray-800">
+                            {amenity.name}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Additional / Other amenities if any */}
+            {otherItems.length > 0 && (
+              <div className="space-y-3">
                 <h3 className="text-base sm:text-lg font-bold text-[#1A1A1A]">
-                  {category.title}
+                  Additional Amenities & Inclusions
                 </h3>
                 <div className="divide-y divide-gray-100">
-                  {items.map((amenity, idx) => {
+                  {otherItems.map((amenity, idx) => {
                     const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
                     return (
                       <div
@@ -294,33 +318,8 @@ export default function PropertyAmenitiesModal({
                   })}
                 </div>
               </div>
-            );
-          })}
-
-          {/* Additional / Other amenities if any */}
-          {otherItems.length > 0 && (
-            <div className="pt-6 space-y-3">
-              <h3 className="text-base sm:text-lg font-bold text-[#1A1A1A]">
-                Additional Amenities & Inclusions
-              </h3>
-              <div className="divide-y divide-gray-100">
-                {otherItems.map((amenity, idx) => {
-                  const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
-                  return (
-                    <div
-                      key={`${amenity.name}-${idx}`}
-                      className="flex items-center gap-4 py-3.5 first:pt-1 last:pb-1"
-                    >
-                      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
-                      <span className="text-sm sm:text-base font-normal text-gray-800">
-                        {amenity.name}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
