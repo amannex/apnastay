@@ -77,7 +77,7 @@ function getRuleIcon(rule: NormalizedRule): LucideIcon {
 }
 
 function formatRuleText(rule: NormalizedRule): { label: string; value: string } {
-  const label = (rule.label || '').trim();
+  let label = (rule.label || '').trim();
   let value = (rule.value || '').trim();
 
   // If value is empty or same as label
@@ -89,13 +89,18 @@ function formatRuleText(rule: NormalizedRule): { label: string; value: string } 
   if (value.toLowerCase().startsWith(label.toLowerCase())) {
     const remainder = value.slice(label.length).replace(/^[:\s-]+/, '').trim();
     if (remainder) {
-      return { label, value: remainder };
+      value = remainder;
     }
   }
 
   // If value is "Visitors permitted until 10:00 PM" and label is "Visitors"
   if (label.toLowerCase() === 'visitors' && /^visitors\s+/i.test(value)) {
-    return { label: 'Visitors', value: value.replace(/^visitors\s+/i, '').trim() };
+    value = value.replace(/^visitors\s+/i, '').trim();
+  }
+
+  // Capitalize first character of value for clean typography
+  if (value.length > 0) {
+    value = value.charAt(0).toUpperCase() + value.slice(1);
   }
 
   return { label, value };
@@ -128,20 +133,26 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
             <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">
               Living Guidelines
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-1">
+            <div className="space-y-4 sm:space-y-5 pt-2">
               {houseRules.map((rule, idx) => {
                 const IconComponent = getRuleIcon(rule);
                 const { label, value } = formatRuleText(rule);
                 return (
                   <div
                     key={`${rule.id || rule.label}-${idx}`}
-                    className="flex items-center gap-4 text-[#1A1A1A]"
+                    className="flex items-center justify-between text-[#1A1A1A] gap-4"
                   >
-                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
-                    <span className="text-sm sm:text-base font-normal">
-                      <span className="text-[rgb(31,41,55)]">{label}: </span>
-                      {value && <span className="text-[rgb(107,114,128)]">{value}</span>}
-                    </span>
+                    <div className="flex items-center gap-4 min-w-0">
+                      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                      <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)] truncate">
+                        {label}
+                      </span>
+                    </div>
+                    {value && (
+                      <span className="text-sm sm:text-base font-normal text-[rgb(107,114,128)] shrink-0 text-right">
+                        {value}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -155,20 +166,26 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
             <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">
               Tenant & Stay Requirements
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-1">
+            <div className="space-y-4 sm:space-y-5 pt-2">
               {tenantRequirements.map((rule, idx) => {
                 const IconComponent = getRuleIcon(rule);
                 const { label, value } = formatRuleText(rule);
                 return (
                   <div
                     key={`${rule.id || rule.label}-${idx}`}
-                    className="flex items-center gap-4 text-[#1A1A1A]"
+                    className="flex items-center justify-between text-[#1A1A1A] gap-4"
                   >
-                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
-                    <span className="text-sm sm:text-base font-normal">
-                      <span className="text-[rgb(31,41,55)]">{label}: </span>
-                      {value && <span className="text-[rgb(107,114,128)]">{value}</span>}
-                    </span>
+                    <div className="flex items-center gap-4 min-w-0">
+                      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                      <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)] truncate">
+                        {label}
+                      </span>
+                    </div>
+                    {value && (
+                      <span className="text-sm sm:text-base font-normal text-[rgb(107,114,128)] shrink-0 text-right">
+                        {value}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -178,20 +195,26 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
 
         {/* Fallback if allRules exists but not categorized into subsets */}
         {houseRules.length === 0 && tenantRequirements.length === 0 && allRules.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-1">
+          <div className="space-y-4 sm:space-y-5 pt-2">
             {allRules.map((rule, idx) => {
               const IconComponent = getRuleIcon(rule);
               const { label, value } = formatRuleText(rule);
               return (
                 <div
                   key={`${rule.id || rule.label}-${idx}`}
-                  className="flex items-center gap-4 text-[#1A1A1A]"
+                  className="flex items-center justify-between text-[#1A1A1A] gap-4"
                 >
-                  <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
-                  <span className="text-sm sm:text-base font-normal">
-                    <span className="text-[rgb(31,41,55)]">{label}: </span>
-                    {value && <span className="text-[rgb(107,114,128)]">{value}</span>}
-                  </span>
+                  <div className="flex items-center gap-4 min-w-0">
+                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                    <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)] truncate">
+                      {label}
+                    </span>
+                  </div>
+                  {value && (
+                    <span className="text-sm sm:text-base font-normal text-[rgb(107,114,128)] shrink-0 text-right">
+                      {value}
+                    </span>
+                  )}
                 </div>
               );
             })}
