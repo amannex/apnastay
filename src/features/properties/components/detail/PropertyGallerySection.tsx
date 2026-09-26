@@ -380,10 +380,10 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
           <button
             type="button"
             onClick={() => openLightbox(0)}
-            className="absolute bottom-3 right-3 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/90 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+            className="absolute bottom-3 right-3 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200/90 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
             <Camera className="w-3.5 h-3.5 text-gray-900" />
-            <span>View All Photos ({validImages.length})</span>
+            <span>View All Photos</span>
           </button>
         </div>
       </section>
