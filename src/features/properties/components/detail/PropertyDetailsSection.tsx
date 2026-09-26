@@ -17,13 +17,13 @@ export default function PropertyDetailsSection({ property }: PropertyDetailsSect
 
   return (
     <section
-      aria-label="Property specifications"
+      aria-label="Additional info about property"
       className="py-6 sm:py-8 space-y-4"
     >
       <div className="flex items-center justify-between pb-1">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-            Property Specifications
+            Additional Info about Property
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             Verified configuration for this {property.propertyTypeLabel.toLowerCase()}

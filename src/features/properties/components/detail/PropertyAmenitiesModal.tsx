@@ -278,7 +278,7 @@ export default function PropertyAmenitiesModal({
               const items = grouped.get(category.id) || [];
               return (
                 <div key={category.id} className="space-y-3">
-                  <h3 className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
+                  <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">
                     {category.title}
                   </h3>
                   <div className="divide-y divide-gray-200 border-b border-gray-200">
@@ -304,7 +304,7 @@ export default function PropertyAmenitiesModal({
             {/* Additional / Other amenities if any */}
             {otherItems.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
+                <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">
                   Additional Amenities & Inclusions
                 </h3>
                 <div className="divide-y divide-gray-200 border-b border-gray-200">
