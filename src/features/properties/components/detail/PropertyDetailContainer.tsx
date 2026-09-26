@@ -10,7 +10,6 @@ import PropertyActionsSection from './PropertyActionsSection';
 import MobileBottomBar from './MobileBottomBar';
 import PropertySnapshotSection from './PropertySnapshotSection';
 import PropertyDescriptionSection from './PropertyDescriptionSection';
-import PropertyHighlightsSection from './PropertyHighlightsSection';
 import PropertyAmenitiesSection from './PropertyAmenitiesSection';
 import PropertyDetailsSection from './PropertyDetailsSection';
 import PropertyLocationSection from './PropertyLocationSection';
@@ -59,9 +58,6 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
 
               {/* ABOUT THIS PROPERTY */}
               <PropertyDescriptionSection property={property} />
-
-              {/* WHY THIS PROPERTY (DATA-DRIVEN HIGHLIGHTS) */}
-              <PropertyHighlightsSection property={property} />
 
               {/* AMENITIES & FACILITIES */}
               <PropertyAmenitiesSection property={property} />
