@@ -267,7 +267,7 @@ export default function PropertyAmenitiesModal({
         {/* Scrollable Categorized Amenities Content */}
         <div className="overflow-y-auto px-6 sm:px-8 py-6 space-y-6">
           <div className="pb-1">
-            <h2 className="text-xl sm:text-2xl font-regular text-[#1A1A1A]">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#1A1A1A]">
               Amenities and facilities
             </h2>
           </div>
@@ -281,13 +281,13 @@ export default function PropertyAmenitiesModal({
                   <h3 className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
                     {category.title}
                   </h3>
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-gray-200 border-b border-gray-200">
                     {items.map((amenity, idx) => {
                       const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
                       return (
                         <div
                           key={`${amenity.name}-${idx}`}
-                          className="flex items-center gap-4 py-4.5 sm:py-5 first:pt-1.5 last:pb-1.5"
+                          className="flex items-center gap-4 py-4.5 sm:py-5 first:pt-1.5"
                         >
                           <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
                           <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)]">
@@ -307,13 +307,13 @@ export default function PropertyAmenitiesModal({
                 <h3 className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
                   Additional Amenities & Inclusions
                 </h3>
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-200 border-b border-gray-200">
                   {otherItems.map((amenity, idx) => {
                     const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
                     return (
                       <div
                         key={`${amenity.name}-${idx}`}
-                        className="flex items-center gap-4 py-4.5 sm:py-5 first:pt-1.5 last:pb-1.5"
+                        className="flex items-center gap-4 py-4.5 sm:py-5 first:pt-1.5"
                       >
                         <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
                         <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)]">
