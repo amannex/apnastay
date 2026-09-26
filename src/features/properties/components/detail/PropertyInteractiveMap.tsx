@@ -197,7 +197,7 @@ export default function PropertyInteractiveMap({
   if (!hasCoords || mapError) {
     return (
       <div className="space-y-3">
-        <div className="relative h-[340px] sm:h-[420px] rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-center p-6 space-y-3">
+        <div className="relative h-[420px] sm:h-[500px] lg:h-[540px] rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-center p-6 space-y-3">
           <div className="p-3.5 rounded-full bg-white text-[#E1224D] shadow-sm">
             <Navigation className="w-6 h-6" />
           </div>
@@ -247,11 +247,11 @@ export default function PropertyInteractiveMap({
           </div>
         )}
 
-        {/* Map container DOM */}
+        {/* Map container DOM: increased height */}
         <div
           ref={mapContainerRef}
           aria-label={`Interactive map showing ${displayLocation}`}
-          className="h-[340px] sm:h-[420px] w-full z-0 bg-gray-100"
+          className="h-[420px] sm:h-[500px] lg:h-[540px] w-full z-0 bg-gray-100"
         />
 
         {/* Top-Left: Wider Search Bar overlay with typewriter animation */}

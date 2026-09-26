@@ -30,19 +30,19 @@ export default function PropertyLocationSection({ property }: PropertyLocationSe
   return (
     <section
       aria-label="Location and neighborhood"
-      className="py-6 sm:py-8 space-y-4"
+      className="py-6 sm:py-8 space-y-6"
     >
-      <div>
+      <div className="space-y-2.5 sm:space-y-3">
         <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
           You will be stay here
         </h2>
-        <p className="text-base text-gray-700 font-normal mt-1">
+        <p className="text-base text-gray-700 font-normal">
           {fullLocationText}
         </p>
       </div>
 
       {/* Interactive Map */}
-      <div className="pt-1">
+      <div>
         <PropertyInteractiveMap
           latitude={location.latitude}
           longitude={location.longitude}
