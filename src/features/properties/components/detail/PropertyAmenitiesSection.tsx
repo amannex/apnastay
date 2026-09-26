@@ -183,7 +183,7 @@ export default function PropertyAmenitiesSection({ property }: PropertyAmenities
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200/80 text-sm sm:text-base font-semibold text-gray-900 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200/80 text-sm sm:text-base font-medium text-gray-900 transition-colors cursor-pointer"
             >
               Show all {availableAmenities.length} amenities
             </button>
