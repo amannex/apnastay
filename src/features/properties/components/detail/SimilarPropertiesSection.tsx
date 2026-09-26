@@ -72,7 +72,9 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
                   {imageSrc ? (
                     <img
                       src={imageSrc}
-                      alt={item.title}
+                      alt={`${item.title} - Verified rental property in ${item.neighborhood || item.city}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -99,12 +101,12 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
                         e.stopPropagation();
                         onToggleWishlist(item.id);
                       }}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
                         isWishlisted
                           ? 'bg-[#E1224D] text-white shadow-md'
                           : 'bg-white/90 backdrop-blur-xs text-[#6B7280] hover:text-[#E1224D]'
                       }`}
-                      aria-label={isWishlisted ? 'Saved' : 'Save to wishlist'}
+                      aria-label={isWishlisted ? `Remove ${item.title} from wishlist` : `Save ${item.title} to wishlist`}
                       title={isWishlisted ? 'Saved in wishlist' : 'Save to wishlist'}
                     >
                       <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />

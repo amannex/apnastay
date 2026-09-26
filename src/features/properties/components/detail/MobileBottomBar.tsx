@@ -46,7 +46,7 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
             <button
               type="button"
               onClick={() => onToggleWishlist(property.id)}
-              className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
+              className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
                 isWishlisted
                   ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
                   : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -65,7 +65,7 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
             <button
               type="button"
               onClick={() => setContactModalOpen(true)}
-              className="py-2.5 sm:py-3 px-3.5 sm:px-5 rounded-xl sm:rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
+              className="py-2.5 sm:py-3 px-3.5 sm:px-5 rounded-xl sm:rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
             >
               <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>Contact Owner</span>

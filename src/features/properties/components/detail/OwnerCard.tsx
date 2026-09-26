@@ -85,7 +85,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
           <button
             type="button"
             onClick={() => setIsContactModalOpen(true)}
-            className="w-full py-3.5 px-5 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white font-bold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+            className="w-full py-3.5 px-5 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white font-bold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
           >
             <MessageSquare className="w-4 h-4" />
             <span>Contact Owner</span>

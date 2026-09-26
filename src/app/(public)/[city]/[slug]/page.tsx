@@ -18,6 +18,29 @@ export async function generateStaticParams() {
   }));
 }
 
+function buildSeoTitle(property: import('@/features/properties/adapter').NormalizedProperty): string {
+  const parts: string[] = [];
+
+  if (property.specs?.bedrooms) {
+    parts.push(`${property.specs.bedrooms} BHK`);
+  }
+
+  if (property.specs?.furnishing) {
+    const f = property.specs.furnishing.toLowerCase();
+    if (f.includes('fully')) parts.push('Fully Furnished');
+    else if (f.includes('semi')) parts.push('Semi Furnished');
+    else if (f.includes('unfurnish')) parts.push('Unfurnished');
+  }
+
+  parts.push(property.propertyTypeLabel || 'Apartment');
+
+  const loc = property.location.locality
+    ? `${property.location.locality}, ${property.location.city}`
+    : property.location.displayLocation;
+
+  return `${parts.join(' ')} in ${loc} | ApnaStay`;
+}
+
 export async function generateMetadata({ params }: CityPropertyPageProps): Promise<Metadata> {
   const { city, slug } = await params;
   const property = await resolveProperty(slug, city);
@@ -25,12 +48,13 @@ export async function generateMetadata({ params }: CityPropertyPageProps): Promi
   if (!property) {
     return {
       title: 'Property Not Found | ApnaStay',
-      description: 'The requested rental property could not be found.',
+      description: 'The requested rental property could not be found on ApnaStay.',
     };
   }
 
-  const title = `${property.title} - ${property.pricing.rentDisplay}/mo in ${property.location.displayLocation} | ApnaStay`;
-  const description = `Rent ${property.propertyTypeLabel} in ${property.location.displayLocation} with zero brokerage. Verified, physically audited, and direct owner lease.`;
+  const title = buildSeoTitle(property);
+  const bedText = property.specs?.bedrooms ? `${property.specs.bedrooms} BHK ` : '';
+  const description = `Rent ${bedText}${property.propertyTypeLabel.toLowerCase()} in ${property.location.displayLocation} for ${property.pricing.rentDisplay}/mo with ₹0 brokerage. Verified 25-point engineering audit, direct owner lease, and high-speed Wi-Fi.`;
   const canonicalUrl = `${siteConfig.url}/${property.location.city.toLowerCase()}/${property.slug}`;
 
   return {
@@ -42,7 +66,8 @@ export async function generateMetadata({ params }: CityPropertyPageProps): Promi
       'zero brokerage flat india',
       'apnastay property',
       property.propertyTypeLabel.toLowerCase(),
-    ],
+      property.location.locality ? `${property.location.locality.toLowerCase()} flats` : '',
+    ].filter(Boolean),
     alternates: {
       canonical: canonicalUrl,
     },
@@ -51,13 +76,14 @@ export async function generateMetadata({ params }: CityPropertyPageProps): Promi
       description,
       url: canonicalUrl,
       siteName: 'ApnaStay India',
+      locale: 'en_IN',
       type: 'article',
       images: [
         {
           url: property.coverImage,
           width: 1200,
           height: 630,
-          alt: property.title,
+          alt: `${property.title} in ${property.location.displayLocation}`,
         },
       ],
     },
@@ -115,17 +141,24 @@ export default async function CityPropertyPage({ params }: CityPropertyPageProps
     );
   }
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateListing',
+  const propertyLd = {
+    '@type': ['RealEstateListing', 'Accommodation'],
     name: property.title,
     description: property.description,
     url: `${siteConfig.url}/${property.location.city.toLowerCase()}/${property.slug}`,
     datePosted: '2026-07-01',
+    image: property.images,
     offers: {
       '@type': 'Offer',
       price: property.pricing.monthlyRent,
       priceCurrency: 'INR',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: property.pricing.monthlyRent,
+        priceCurrency: 'INR',
+        unitText: 'MONTH',
+      },
+      businessFunction: 'http://purl.org/goodrelations/v1#LeaseOut',
       availability: property.isAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       validFrom: property.availability.availableFrom || '2026-07-01',
     },
@@ -134,16 +167,80 @@ export default async function CityPropertyPage({ params }: CityPropertyPageProps
       streetAddress: property.location.displayLocation,
       addressLocality: property.location.city,
       addressRegion: property.location.state || undefined,
+      postalCode: property.location.pincode || undefined,
       addressCountry: 'IN',
     },
-    image: property.images,
+    ...(property.location.latitude && property.location.longitude
+      ? {
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: property.location.latitude,
+            longitude: property.location.longitude,
+          },
+        }
+      : {}),
+    ...(property.specs?.bedrooms ? { numberOfRooms: property.specs.bedrooms } : {}),
+    ...(property.specs?.bathrooms ? { numberOfBathroomsTotal: property.specs.bathrooms } : {}),
+    ...(property.specs?.sqft
+      ? {
+          floorSize: {
+            '@type': 'QuantitativeValue',
+            value: property.specs.sqft,
+            unitCode: 'FTK',
+          },
+        }
+      : {}),
+    ...(property.amenities?.length > 0
+      ? {
+          amenityFeature: property.amenities.map((a) => ({
+            '@type': 'LocationFeatureSpecification',
+            name: a.name,
+            value: true,
+          })),
+        }
+      : {}),
+  };
+
+  const breadcrumbLd = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteConfig.url,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Properties',
+        item: `${siteConfig.url}/properties`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: property.location.city,
+        item: `${siteConfig.url}/properties?city=${encodeURIComponent(property.location.city.toLowerCase())}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: property.title,
+        item: `${siteConfig.url}/${property.location.city.toLowerCase()}/${property.slug}`,
+      },
+    ],
+  };
+
+  const jsonLdGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [propertyLd, breadcrumbLd],
   };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
       <PropertyDetailContainer property={property} />
     </>

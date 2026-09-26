@@ -147,6 +147,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
     <>
       <section aria-label="Property photo gallery" className="relative group">
         {/* ================================================================== */}
+        {/* ================================================================== */}
         {/* 1. MOBILE SWIPE-FRIENDLY GALLERY (< md screens)                     */}
         {/* ================================================================== */}
         <div className="block md:hidden relative rounded-3xl overflow-hidden bg-gray-900 shadow-sm aspect-[4/3] sm:aspect-[16/9]">
@@ -158,12 +159,24 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
             {validImages.map((img, idx) => (
               <div
                 key={idx}
+                role="button"
+                tabIndex={0}
                 onClick={() => openLightbox(idx)}
-                className="w-full h-full shrink-0 snap-center relative cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openLightbox(idx);
+                  }
+                }}
+                className="w-full h-full shrink-0 snap-center relative cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                aria-label={`View photo ${idx + 1} of ${validImages.length} in full screen`}
               >
                 <img
                   src={img}
-                  alt={`${property.title} - View ${idx + 1}`}
+                  alt={`${property.title} - Photo ${idx + 1} of ${validImages.length} in ${property.location.displayLocation}`}
+                  fetchPriority={idx === 0 ? "high" : "auto"}
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  decoding="async"
                   onError={() => handleImageError(img)}
                   className="w-full h-full object-cover"
                 />
@@ -184,7 +197,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                 <button
                   type="button"
                   onClick={() => scrollMobileTo(mobileActiveIndex - 1)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
                   aria-label="Previous photo"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -194,7 +207,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                 <button
                   type="button"
                   onClick={() => scrollMobileTo(mobileActiveIndex + 1)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
                   aria-label="Next photo"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -207,7 +220,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
           <button
             type="button"
             onClick={() => openLightbox(mobileActiveIndex)}
-            className="absolute top-3 right-3 p-2 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-black/75 transition-colors"
+            className="absolute top-3 right-3 p-2 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-black/75 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
             aria-label="View photo in fullscreen"
           >
             <Maximize2 className="w-4 h-4" />
@@ -222,12 +235,24 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
           {/* CASE A: 1 IMAGE ONLY */}
           {validImages.length === 1 && (
             <div
+              role="button"
+              tabIndex={0}
               onClick={() => openLightbox(0)}
-              className="relative aspect-[21/9] max-h-[460px] w-full overflow-hidden cursor-pointer"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openLightbox(0);
+                }
+              }}
+              className="relative aspect-[21/9] max-h-[460px] w-full overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+              aria-label={`View photo of ${property.title} in fullscreen`}
             >
               <img
                 src={validImages[0]}
-                alt={`${property.title} - Main photo`}
+                alt={`${property.title} - Main photograph in ${property.location.displayLocation}`}
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
                 onError={() => handleImageError(validImages[0])}
                 className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
               />
@@ -244,12 +269,24 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
               {validImages.map((img, idx) => (
                 <div
                   key={idx}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => openLightbox(idx)}
-                  className="relative h-full overflow-hidden cursor-pointer group/item"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openLightbox(idx);
+                    }
+                  }}
+                  className="relative h-full overflow-hidden cursor-pointer group/item focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                  aria-label={`View photo ${idx + 1} of 2 in fullscreen`}
                 >
                   <img
                     src={img}
-                    alt={`${property.title} - Photo ${idx + 1}`}
+                    alt={`${property.title} - Photo ${idx + 1} of 2 in ${property.location.displayLocation}`}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    decoding="async"
                     onError={() => handleImageError(img)}
                     className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500"
                   />
@@ -264,12 +301,24 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
             <div className="grid grid-cols-3 gap-2 h-[360px] md:h-[400px] lg:h-[480px]">
               {/* Left Column: Primary Big Image (Spans 2 cols) */}
               <div
+                role="button"
+                tabIndex={0}
                 onClick={() => openLightbox(0)}
-                className="col-span-2 relative h-full overflow-hidden cursor-pointer group/main"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openLightbox(0);
+                  }
+                }}
+                className="col-span-2 relative h-full overflow-hidden cursor-pointer group/main focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                aria-label={`Main photo of ${property.title}. Click to enlarge`}
               >
                 <img
                   src={validImages[0]}
-                  alt={`${property.title} - Main presentation`}
+                  alt={`${property.title} - Primary showcase in ${property.location.displayLocation}`}
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
                   onError={() => handleImageError(validImages[0])}
                   className="w-full h-full object-cover group-hover/main:scale-[1.02] transition-transform duration-500"
                 />
@@ -286,12 +335,23 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
               <div className="col-span-1 grid grid-rows-2 gap-2 h-full">
                 {/* Supporting Image 2 */}
                 <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => openLightbox(1)}
-                  className="relative h-full overflow-hidden cursor-pointer group/sub1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openLightbox(1);
+                    }
+                  }}
+                  className="relative h-full overflow-hidden cursor-pointer group/sub1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                  aria-label={`Photo 2 of ${validImages.length} in ${property.location.displayLocation}`}
                 >
                   <img
                     src={validImages[1]}
-                    alt={`${property.title} - Photo 2`}
+                    alt={`${property.title} - Photo 2 of ${validImages.length}`}
+                    loading="lazy"
+                    decoding="async"
                     onError={() => handleImageError(validImages[1])}
                     className="w-full h-full object-cover group-hover/sub1:scale-105 transition-transform duration-500"
                   />
@@ -300,12 +360,23 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
 
                 {/* Supporting Image 3 (or with +N overlay if > 3 images) */}
                 <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => openLightbox(2)}
-                  className="relative h-full overflow-hidden cursor-pointer group/sub2"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openLightbox(2);
+                    }
+                  }}
+                  className="relative h-full overflow-hidden cursor-pointer group/sub2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                  aria-label={`Photo 3 of ${validImages.length}${validImages.length > 3 ? ` with ${validImages.length - 3} more photos` : ''}`}
                 >
                   <img
                     src={validImages[2]}
-                    alt={`${property.title} - Photo 3`}
+                    alt={`${property.title} - Photo 3 of ${validImages.length}`}
+                    loading="lazy"
+                    decoding="async"
                     onError={() => handleImageError(validImages[2])}
                     className="w-full h-full object-cover group-hover/sub2:scale-105 transition-transform duration-500"
                   />
@@ -331,7 +402,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
           <button
             type="button"
             onClick={() => openLightbox(0)}
-            className="absolute bottom-4 right-4 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/80 backdrop-blur-md text-xs font-bold px-4 py-2.5 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer z-10"
+            className="absolute bottom-4 right-4 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/80 backdrop-blur-md text-xs font-bold px-4 py-2.5 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
           >
             <Camera className="w-4 h-4 text-[#ED3258]" />
             <span>View All Photos ({validImages.length})</span>
@@ -380,7 +451,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
               <button
                 type="button"
                 onClick={closeLightbox}
-                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
                 aria-label="Close fullscreen gallery"
               >
                 <X className="w-5 h-5" />
@@ -402,7 +473,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
               <button
                 type="button"
                 onClick={goToPrevious}
-                className="absolute left-2 sm:left-4 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition-all shadow-lg cursor-pointer"
+                className="absolute left-2 sm:left-4 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition-all shadow-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
                 aria-label="Previous photo"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -414,7 +485,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
               <button
                 type="button"
                 onClick={goToNext}
-                className="absolute right-2 sm:right-4 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition-all shadow-lg cursor-pointer"
+                className="absolute right-2 sm:right-4 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white transition-all shadow-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
                 aria-label="Next photo"
               >
                 <ChevronRight className="w-6 h-6" />
@@ -430,7 +501,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                   key={idx}
                   type="button"
                   onClick={() => setLightboxIndex(idx)}
-                  className={`relative h-14 w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  className={`relative h-14 w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
                     lightboxIndex === idx
                       ? 'border-[#ED3258] scale-105 shadow-md'
                       : 'border-transparent opacity-50 hover:opacity-100'
@@ -440,6 +511,8 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                   <img
                     src={thumb}
                     alt={`Thumbnail ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </button>

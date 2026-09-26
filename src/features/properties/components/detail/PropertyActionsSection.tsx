@@ -114,7 +114,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={() => setContactModalOpen(true)}
-            className="w-full py-4 px-4 rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-sm transition-all shadow-md hover:shadow-lg hover:shadow-rose-500/20 flex items-center justify-center gap-2 cursor-pointer group"
+            className="w-full py-4 px-4 rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-sm transition-all shadow-md hover:shadow-lg hover:shadow-rose-500/20 flex items-center justify-center gap-2 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
           >
             <PhoneCall className="w-4 h-4 transition-transform group-hover:scale-110" />
             <span>Contact Owner</span>
@@ -124,7 +124,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={handleScheduleVisit}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold text-xs sm:text-sm border border-gray-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3.5 px-4 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold text-xs sm:text-sm border border-gray-200 transition-colors flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
           >
             <Calendar className="w-4 h-4 text-[#ED3258]" />
             <span>{visitScheduled ? '✓ Visit Scheduled' : 'Schedule Visit'}</span>
@@ -136,7 +136,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={() => onToggleWishlist(property.id)}
-            className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
+            className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
               isWishlisted
                 ? 'border-rose-200 bg-rose-50/70 text-[#ED3258]'
                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
@@ -154,7 +154,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={() => setShareModalOpen(true)}
-            className="py-2.5 px-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+            className="py-2.5 px-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
             aria-label="Share this property"
           >
             <Share2 className="w-4 h-4 text-gray-500" />

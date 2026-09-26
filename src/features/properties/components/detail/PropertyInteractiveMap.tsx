@@ -16,15 +16,43 @@ export default function PropertyInteractiveMap({
   displayLocation,
   isApproximate = true
 }: PropertyInteractiveMapProps) {
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
 
   const hasCoords = typeof latitude === 'number' && typeof longitude === 'number' && !isNaN(latitude) && !isNaN(longitude);
 
+  // Lazy-load map only when it scrolls within 300px of viewport
   useEffect(() => {
-    if (!hasCoords || !mapContainerRef.current) return;
+    if (!hasCoords || !mapWrapperRef.current) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    observer.observe(mapWrapperRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasCoords]);
+
+  useEffect(() => {
+    if (!hasCoords || !isVisible || !mapContainerRef.current) return;
 
     let isCancelled = false;
 
@@ -143,7 +171,7 @@ export default function PropertyInteractiveMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [latitude, longitude, displayLocation, isApproximate, hasCoords]);
+  }, [latitude, longitude, displayLocation, isApproximate, hasCoords, isVisible]);
 
   const mapsSearchUrl = hasCoords
     ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
@@ -176,7 +204,27 @@ export default function PropertyInteractiveMap({
   }
 
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-gray-200 shadow-2xs group">
+    <div
+      ref={mapWrapperRef}
+      role="region"
+      aria-label={`Interactive map of ${displayLocation}`}
+      className="relative rounded-2xl overflow-hidden border border-gray-200 shadow-2xs group"
+    >
+      {/* Loading Placeholder / Skeleton while waiting for intersection / Leaflet */}
+      {(!isVisible || !mapLoaded) && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-1 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center text-gray-400 gap-2.5 pointer-events-none"
+        >
+          <div className="w-10 h-10 rounded-full bg-white/80 shadow-xs flex items-center justify-center text-[#E1224D] animate-pulse">
+            <MapPin className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-medium text-gray-500">
+            Loading interactive location map...
+          </span>
+        </div>
+      )}
+
       {/* Map container DOM */}
       <div
         ref={mapContainerRef}
@@ -190,7 +238,7 @@ export default function PropertyInteractiveMap({
           href={mapsSearchUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-xs text-xs font-semibold text-gray-700 hover:text-[#E1224D] rounded-xl shadow-sm border border-gray-200/80 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-xs text-xs font-semibold text-gray-700 hover:text-[#E1224D] rounded-xl shadow-sm border border-gray-200/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
         >
           <span>Open in Google Maps</span>
           <ExternalLink className="w-3 h-3" />

@@ -70,7 +70,7 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           <button
             type="button"
             onClick={handleShareClick}
-            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-[11px] sm:text-xs font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-[11px] sm:text-xs font-semibold text-gray-700 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
             aria-label="Share this property"
             title="Share property via WhatsApp, Copy Link, etc."
           >
@@ -82,7 +82,7 @@ export default function PropertyHeroSection({ property }: PropertyHeroSectionPro
           <button
             type="button"
             onClick={handleToggleWishlist}
-            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 ${
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
               isWishlisted
                 ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
