@@ -26,6 +26,7 @@ import {
   Info
 } from 'lucide-react';
 import type { NormalizedProperty } from '../../adapter';
+import PropertyAmenitiesModal from './PropertyAmenitiesModal';
 
 interface PropertyAmenitiesSectionProps {
   property: NormalizedProperty;
@@ -112,7 +113,7 @@ function getAmenityIcon(name: string, iconHint?: string): AmenityIconComponent {
 }
 
 export default function PropertyAmenitiesSection({ property }: PropertyAmenitiesSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Only display amenities that are actually present with valid names
   const availableAmenities = (property.amenities || []).filter(
@@ -137,54 +138,59 @@ export default function PropertyAmenitiesSection({ property }: PropertyAmenities
     );
   }
 
-  // Show first 10 items initially (5 per column) unless expanded
-  const displayedAmenities = isExpanded
-    ? availableAmenities
-    : availableAmenities.slice(0, 10);
+  // Show first 10 items on page (5 per column)
+  const displayedAmenities = availableAmenities.slice(0, 10);
 
   return (
-    <section
-      aria-label="Amenities & facilities"
-      className="py-6 sm:py-8 space-y-6"
-    >
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-          Amenities & Facilities
-        </h2>
-      </div>
-
-      {/* 2-COLUMN AIRBNB-STYLE AMENITIES LIST */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-2">
-        {displayedAmenities.map((amenity, idx) => {
-          const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
-          return (
-            <div
-              key={`${amenity.name}-${idx}`}
-              className="flex items-center gap-4 text-[#1A1A1A]"
-            >
-              <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
-              <span className="text-sm sm:text-base font-normal text-gray-800">
-                {amenity.name}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* SHOW ALL AMENITIES BUTTON */}
-      {availableAmenities.length > 10 && (
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200/80 text-sm sm:text-base font-semibold text-gray-900 transition-colors cursor-pointer"
-          >
-            {isExpanded
-              ? 'Show less amenities'
-              : `Show all ${availableAmenities.length} amenities`}
-          </button>
+    <>
+      <section
+        aria-label="Amenities & facilities"
+        className="py-6 sm:py-8 space-y-6"
+      >
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+            Amenities & Facilities
+          </h2>
         </div>
-      )}
-    </section>
+
+        {/* 2-COLUMN AIRBNB-STYLE AMENITIES LIST */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-2">
+          {displayedAmenities.map((amenity, idx) => {
+            const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
+            return (
+              <div
+                key={`${amenity.name}-${idx}`}
+                className="flex items-center gap-4 text-[#1A1A1A]"
+              >
+                <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                <span className="text-sm sm:text-base font-normal text-gray-800">
+                  {amenity.name}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* SHOW ALL AMENITIES BUTTON (OPENS CATEGORIZED MODAL) */}
+        {availableAmenities.length > 10 && (
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200/80 text-sm sm:text-base font-semibold text-gray-900 transition-colors cursor-pointer"
+            >
+              Show all {availableAmenities.length} amenities
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* CATEGORIZED AMENITIES MODAL */}
+      <PropertyAmenitiesModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        amenities={availableAmenities}
+      />
+    </>
   );
 }
