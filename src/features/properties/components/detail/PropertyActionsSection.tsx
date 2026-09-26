@@ -39,7 +39,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
 
   return (
     <>
-      <div className="bg-white rounded-3xl p-5 sm:p-7 border border-[#EDEDED] shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-200/90 shadow-apple space-y-6">
         {/* PRICE DISPLAY */}
         <div className="space-y-2 pb-5 border-b border-gray-100">
           <div className="flex items-baseline justify-between flex-wrap gap-2">

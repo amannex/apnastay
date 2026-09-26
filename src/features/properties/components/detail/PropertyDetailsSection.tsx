@@ -18,11 +18,11 @@ export default function PropertyDetailsSection({ property }: PropertyDetailsSect
   return (
     <section
       aria-label="Property specifications"
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="py-6 sm:py-8 space-y-4"
     >
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <h2 className="text-xl font-bold text-[#1A1A1A]">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
             Property Specifications
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">

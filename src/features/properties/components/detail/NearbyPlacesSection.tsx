@@ -51,11 +51,11 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
   return (
     <section
       aria-label="Nearby places and transit"
-      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="py-6 sm:py-8 space-y-4"
     >
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <h2 className="text-xl font-bold text-[#1A1A1A] flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
             <Compass className="w-5 h-5 text-[#E1224D]" />
             <span>Nearby Places</span>
           </h2>
@@ -63,7 +63,7 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
             Key transit hubs, markets, healthcare, and institutions within reach
           </p>
         </div>
-        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
           {nearbyPlaces.length} Locations
         </span>
       </div>

@@ -188,18 +188,18 @@ export default function PropertyAmenitiesSection({ property }: PropertyAmenities
   return (
     <section
       aria-label="Amenities & facilities"
-      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-6"
+      className="py-6 sm:py-8 space-y-6"
     >
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <h2 className="text-xl font-bold text-[#1A1A1A]">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
             Amenities & Facilities
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             Verified features and inclusions available for this stay
           </p>
         </div>
-        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
           {amenities.length} {amenities.length === 1 ? 'Feature' : 'Features'}
         </span>
       </div>

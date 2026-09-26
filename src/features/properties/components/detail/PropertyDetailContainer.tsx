@@ -26,7 +26,7 @@ interface PropertyDetailContainerProps {
 
 export default function PropertyDetailContainer({ property }: PropertyDetailContainerProps) {
   return (
-    <article className="min-h-screen bg-[#FAFAFA] pt-20 sm:pt-24 lg:pt-28 pb-32 sm:pb-36 lg:pb-20">
+    <article className="min-h-screen bg-white pt-20 sm:pt-24 lg:pt-28 pb-32 sm:pb-36 lg:pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* BREADCRUMB & BACK NAVIGATION */}
         <PropertyBreadcrumb property={property} />
@@ -44,11 +44,11 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         </div>
 
         {/* MAIN RESPONSIVE CONTENT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start pt-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 xl:gap-16 items-start pt-2">
           {/* LEFT 2 COLUMNS: CORE PROPERTY DETAILS & CONTENT */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 divide-y divide-gray-100">
             {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}
-            <div className="block lg:hidden">
+            <div className="block lg:hidden pb-6">
               <PropertyActionsSection property={property} />
             </div>
 
@@ -90,7 +90,7 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         </div>
 
         {/* SIMILAR PROPERTIES (FULL WIDTH BOTTOM SECTION) */}
-        <div className="pt-6">
+        <div className="pt-10 sm:pt-14 border-t border-gray-100 mt-8 sm:mt-12">
           <SimilarPropertiesSection property={property} />
         </div>
       </div>

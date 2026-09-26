@@ -76,10 +76,10 @@ export default function PropertyDescriptionSection({ property }: PropertyDescrip
   return (
     <section
       aria-label="About this property"
-      className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="py-6 sm:py-8 space-y-4"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#1A1A1A]">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
           About this property
         </h2>
       </div>

@@ -247,10 +247,10 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
   return (
     <section
       aria-label="Property snapshot specifications"
-      className="bg-white rounded-3xl p-4 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-4"
+      className="py-6 sm:py-8 space-y-4"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
           Property Snapshot
         </h2>
         <span className="text-xs font-semibold text-[#6B7280]">
@@ -267,7 +267,7 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
           return (
             <div
               key={item.id}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#FAFAFA] border border-gray-100 flex flex-col justify-between hover:border-gray-200 transition-colors"
+              className="p-3 sm:p-4 rounded-2xl bg-gray-50/80 border border-gray-100 flex flex-col justify-between hover:bg-gray-100/60 transition-colors"
             >
               <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                 <span className="text-[11px] sm:text-xs font-medium text-[#6B7280] truncate mr-1">

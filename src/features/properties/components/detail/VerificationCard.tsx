@@ -17,7 +17,7 @@ export default function VerificationCard({ property }: VerificationCardProps) {
     return (
       <section
         aria-label="Verification and trust information"
-        className="bg-amber-50/50 rounded-3xl p-5 sm:p-6 lg:p-7 border border-amber-200/80 shadow-sm space-y-4"
+        className="py-6 sm:py-8 space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -25,7 +25,7 @@ export default function VerificationCard({ property }: VerificationCardProps) {
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                 ApnaStay Verification Pending
               </h2>
               <p className="text-xs text-amber-800">
@@ -61,7 +61,7 @@ export default function VerificationCard({ property }: VerificationCardProps) {
   return (
     <section
       aria-label="Verification and trust"
-      className="bg-emerald-50/60 rounded-3xl p-5 sm:p-6 lg:p-7 border border-emerald-200/80 shadow-sm space-y-5"
+      className="py-6 sm:py-8 space-y-5"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -69,7 +69,7 @@ export default function VerificationCard({ property }: VerificationCardProps) {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
               ApnaStay Verification
             </h2>
             <p className="text-xs text-emerald-800">

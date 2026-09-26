@@ -24,7 +24,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
     <>
       <section
         aria-label="Property owner details"
-        className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-5"
+        className="py-6 sm:py-8 space-y-5"
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           {/* Owner Avatar */}
@@ -42,7 +42,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
 
           {/* Name & Role */}
           <div className="min-w-0 flex-1 space-y-1">
-            <h3 className="text-lg font-bold text-[#1A1A1A] truncate">
+            <h3 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] truncate">
               {owner.name}
             </h3>
             <p className="text-xs text-[#6B7280]">

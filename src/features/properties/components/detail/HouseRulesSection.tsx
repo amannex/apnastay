@@ -71,11 +71,11 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
     return (
       <section
         aria-label="House rules & tenant requirements"
-        className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-3"
+        className="py-6 sm:py-8 space-y-3"
       >
         <div className="flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-[#E1224D]" />
-          <h2 className="text-xl font-bold text-[#1A1A1A]">House Rules & Requirements</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">House Rules & Requirements</h2>
         </div>
         <div className="p-4 rounded-2xl bg-[#FAFAFA] border border-gray-100 text-xs sm:text-sm text-[#6B7280]">
           No custom house rules or special tenant restrictions specified by the owner. Standard ApnaStay community etiquette and local tenancy norms apply.
@@ -136,11 +136,11 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
   return (
     <section
       aria-label="House rules & tenant requirements"
-      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-6"
+      className="py-6 sm:py-8 space-y-6"
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-[#1A1A1A] flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#E1224D]" />
             <span>House Rules & Requirements</span>
           </h2>

@@ -231,7 +231,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
         {/* 2. DESKTOP MODERN RESPONSIVE GALLERY (>= md screens)                */}
         {/* Exact Layout: Large Main Image + Stacked Supporting Images        */}
         {/* ================================================================== */}
-        <div className="hidden md:block relative rounded-3xl overflow-hidden bg-gray-100 border border-[#EDEDED] shadow-sm">
+        <div className="hidden md:block relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gray-100">
           {/* CASE A: 1 IMAGE ONLY */}
           {validImages.length === 1 && (
             <div

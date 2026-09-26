@@ -18,11 +18,11 @@ export default function PropertyLocationSection({ property }: PropertyLocationSe
   return (
     <section
       aria-label="Location and neighborhood"
-      className="bg-white rounded-3xl p-5 sm:p-6 lg:p-7 border border-[#EDEDED] shadow-sm space-y-5"
+      className="py-6 sm:py-8 space-y-5"
     >
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <h2 className="text-xl font-bold text-[#1A1A1A]">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
             Location
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
