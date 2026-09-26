@@ -34,9 +34,11 @@ function buildSeoTitle(property: import('@/features/properties/adapter').Normali
 
   parts.push(property.propertyTypeLabel || 'Apartment');
 
-  const loc = property.location.locality
-    ? `${property.location.locality}, ${property.location.city}`
-    : property.location.displayLocation;
+  const loc = property.location.displayLocation || (
+    property.location.locality && property.location.city && !property.location.locality.toLowerCase().includes(property.location.city.toLowerCase())
+      ? `${property.location.locality}, ${property.location.city}`
+      : property.location.locality || property.location.city || 'India'
+  );
 
   return `${parts.join(' ')} in ${loc} | ApnaStay`;
 }

@@ -82,6 +82,16 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
     );
   }
 
+  if (property.status === 'removed' || property.status === 'unlisted') {
+    return (
+      <PropertyErrorView
+        title="This property is no longer available."
+        type="removed"
+        city={property.location.city}
+      />
+    );
+  }
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateListing',
