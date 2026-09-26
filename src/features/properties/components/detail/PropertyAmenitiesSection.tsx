@@ -104,8 +104,14 @@ function getAmenityIcon(name: string, iconHint?: string): AmenityIconComponent {
   }
 
   const cleanName = name.toLowerCase().replace(/[\s-_]+/g, '_');
-  for (const key of Object.keys(AMENITY_ICON_MAP)) {
-    if (cleanName.includes(key)) {
+  // Sort keys by descending length so specific terms (e.g. 'washing_machine') match before short substrings (e.g. 'ac')
+  const sortedKeys = Object.keys(AMENITY_ICON_MAP).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (key === 'ac') {
+      if (/\bac\b|_ac_|^ac_|_ac$/.test(cleanName) || cleanName === 'ac') {
+        return AMENITY_ICON_MAP[key];
+      }
+    } else if (cleanName.includes(key)) {
       return AMENITY_ICON_MAP[key];
     }
   }

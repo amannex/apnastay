@@ -106,8 +106,14 @@ export function getAmenityIcon(name: string, iconHint?: string): AmenityIconComp
   }
 
   const cleanName = name.toLowerCase().replace(/[\s-_]+/g, '_');
-  for (const key of Object.keys(AMENITY_ICON_MAP)) {
-    if (cleanName.includes(key)) {
+  // Sort keys by descending length so specific terms (e.g. 'washing_machine') match before short substrings (e.g. 'ac')
+  const sortedKeys = Object.keys(AMENITY_ICON_MAP).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (key === 'ac') {
+      if (/\bac\b|_ac_|^ac_|_ac$/.test(cleanName) || cleanName === 'ac') {
+        return AMENITY_ICON_MAP[key];
+      }
+    } else if (cleanName.includes(key)) {
       return AMENITY_ICON_MAP[key];
     }
   }
@@ -261,7 +267,7 @@ export default function PropertyAmenitiesModal({
         {/* Scrollable Categorized Amenities Content */}
         <div className="overflow-y-auto px-6 sm:px-8 py-6 space-y-6">
           <div className="pb-1">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+            <h2 className="text-xl sm:text-2xl font-regular text-[#1A1A1A]">
               Amenities and facilities
             </h2>
           </div>
@@ -272,16 +278,16 @@ export default function PropertyAmenitiesModal({
               const items = grouped.get(category.id) || [];
               return (
                 <div key={category.id} className="space-y-3">
-                  <h3 className="text-base sm:text-lg font-bold text-[#1A1A1A]">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
                     {category.title}
                   </h3>
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-gray-200">
                     {items.map((amenity, idx) => {
                       const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
                       return (
                         <div
                           key={`${amenity.name}-${idx}`}
-                          className="flex items-center gap-4 py-3.5 first:pt-1 last:pb-1"
+                          className="flex items-center gap-4 py-4.5 sm:py-5 first:pt-1.5 last:pb-1.5"
                         >
                           <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
                           <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)]">
@@ -298,16 +304,16 @@ export default function PropertyAmenitiesModal({
             {/* Additional / Other amenities if any */}
             {otherItems.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-base sm:text-lg font-bold text-[#1A1A1A]">
+                <h3 className="text-base sm:text-lg font-semibold text-[#1A1A1A]">
                   Additional Amenities & Inclusions
                 </h3>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-200">
                   {otherItems.map((amenity, idx) => {
                     const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
                     return (
                       <div
                         key={`${amenity.name}-${idx}`}
-                        className="flex items-center gap-4 py-3.5 first:pt-1 last:pb-1"
+                        className="flex items-center gap-4 py-4.5 sm:py-5 first:pt-1.5 last:pb-1.5"
                       >
                         <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
                         <span className="text-sm sm:text-base font-normal text-[rgb(31,41,55)]">
