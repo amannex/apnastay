@@ -10,6 +10,7 @@ export { default as PropertyDescriptionSection } from './PropertyDescriptionSect
 export { default as PropertyHighlightsSection } from './PropertyHighlightsSection';
 export { default as PropertyAmenitiesSection } from './PropertyAmenitiesSection';
 export { default as PropertyDetailsSection } from './PropertyDetailsSection';
+export { default as PropertyDetailsModal } from './PropertyDetailsModal';
 export { default as PropertyLocationSection } from './PropertyLocationSection';
 export { default as PropertyInteractiveMap } from './PropertyInteractiveMap';
 export { default as NearbyPlacesSection } from './NearbyPlacesSection';

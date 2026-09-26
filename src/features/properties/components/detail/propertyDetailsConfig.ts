@@ -1,3 +1,28 @@
+import React from 'react';
+import {
+  Bed,
+  Bath,
+  Ruler,
+  Maximize2,
+  Building,
+  Sofa,
+  Calendar,
+  Compass,
+  Car,
+  Receipt,
+  Droplets,
+  Zap,
+  Users,
+  UserCheck,
+  Utensils,
+  WashingMachine,
+  Clock,
+  ShieldCheck,
+  Lock,
+  Shield,
+  Home,
+  Info
+} from 'lucide-react';
 import type { NormalizedProperty } from '../../adapter';
 
 export type AccommodationProfile = 'apartment' | 'pg' | 'hostel' | 'house' | 'default';
@@ -12,6 +37,46 @@ export interface ResolvedPropertyField {
   id: string;
   label: string;
   value: string;
+}
+
+export type FieldIconComponent = React.ComponentType<{ className?: string }>;
+
+export const FIELD_ICON_MAP: Record<string, FieldIconComponent> = {
+  bedrooms: Bed,
+  bathrooms: Bath,
+  carpetArea: Ruler,
+  builtUpArea: Maximize2,
+  floor: Building,
+  totalFloors: Building,
+  furnishing: Sofa,
+  propertyAge: Calendar,
+  facing: Compass,
+  parking: Car,
+  maintenance: Receipt,
+  waterSupply: Droplets,
+  powerBackup: Zap,
+  roomType: Home,
+  sharingType: Users,
+  genderPreference: UserCheck,
+  foodIncluded: Utensils,
+  laundry: WashingMachine,
+  curfew: Clock,
+  deposit: ShieldCheck,
+  minimumStay: Calendar,
+  noticePeriod: Clock,
+  bedType: Bed,
+  sharing: Users,
+  meals: Utensils,
+  locker: Lock,
+  commonAreas: Users,
+  security: Shield,
+  plotArea: Ruler,
+  floors: Building,
+  propertyType: Home
+};
+
+export function getFieldIcon(id: string): FieldIconComponent {
+  return FIELD_ICON_MAP[id] || Info;
 }
 
 /**
