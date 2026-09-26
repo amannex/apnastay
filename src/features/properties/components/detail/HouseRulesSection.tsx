@@ -106,12 +106,19 @@ function formatRuleText(rule: NormalizedRule): { label: string; value: string } 
   return { label, value };
 }
 
-export default function HouseRulesSection({ property }: HouseRulesSectionProps) {
-  const houseRules = property.houseRules || [];
-  const tenantRequirements = property.tenantRequirements || [];
-  const allRules = property.rules || [];
+const EXCLUDED_RULE_KEYWORDS = ['visitor', 'quiet', 'police'];
 
-  if (allRules.length === 0) {
+function isExcludedRule(rule: NormalizedRule): boolean {
+  const text = `${rule.id || ''} ${rule.label || ''} ${rule.value || ''}`.toLowerCase();
+  return EXCLUDED_RULE_KEYWORDS.some((kw) => text.includes(kw));
+}
+
+export default function HouseRulesSection({ property }: HouseRulesSectionProps) {
+  const houseRules = (property.houseRules || []).filter((r) => !isExcludedRule(r));
+  const tenantRequirements = (property.tenantRequirements || []).filter((r) => !isExcludedRule(r));
+  const allRules = (property.rules || []).filter((r) => !isExcludedRule(r));
+
+  if (houseRules.length === 0 && tenantRequirements.length === 0 && allRules.length === 0) {
     return null;
   }
 
