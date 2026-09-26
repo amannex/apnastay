@@ -64,14 +64,14 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
               {/* PROPERTY DETAILS & SPECIFICATIONS */}
               <PropertyDetailsSection property={property} />
 
-              {/* LOCATION & NEIGHBORHOOD */}
-              <PropertyLocationSection property={property} />
+              {/* HOUSE RULES / REQUIREMENTS */}
+              <HouseRulesSection property={property} />
 
               {/* NEARBY PLACES */}
               <NearbyPlacesSection property={property} />
 
-              {/* HOUSE RULES / REQUIREMENTS */}
-              <HouseRulesSection property={property} />
+              {/* LOCATION & NEIGHBORHOOD */}
+              <PropertyLocationSection property={property} />
 
               {/* OWNER INFORMATION */}
               <OwnerCard property={property} />
