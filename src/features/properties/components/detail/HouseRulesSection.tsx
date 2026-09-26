@@ -2,15 +2,15 @@
 
 import React from 'react';
 import {
-  BookOpen,
-  Check,
-  X,
-  Info,
-  Clock,
   Users,
   Home,
   UserCheck,
   Calendar,
+  Clock,
+  FileCheck,
+  ShieldAlert,
+  Briefcase,
+  FileText,
   Dog,
   Cigarette,
   CigaretteOff,
@@ -20,11 +20,7 @@ import {
   Coffee,
   Moon,
   Key,
-  FileCheck,
-  ShieldAlert,
-  Briefcase,
-  FileText,
-  UserCheck2,
+  Info,
   LucideIcon
 } from 'lucide-react';
 import type { NormalizedProperty, NormalizedRule } from '../../adapter';
@@ -55,11 +51,54 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Info
 };
 
-function getRuleIcon(iconName?: string): LucideIcon {
-  if (iconName && ICON_MAP[iconName]) {
-    return ICON_MAP[iconName];
+function getRuleIcon(rule: NormalizedRule): LucideIcon {
+  if (rule.iconName && ICON_MAP[rule.iconName]) {
+    return ICON_MAP[rule.iconName];
   }
+
+  const idOrLabel = `${rule.id || ''} ${rule.label || ''} ${rule.value || ''}`.toLowerCase();
+
+  if (/pet|dog|cat|animal/i.test(idOrLabel)) return Dog;
+  if (/smoke|smoking|cigarette/i.test(idOrLabel)) {
+    return rule.allowed === false ? CigaretteOff : Cigarette;
+  }
+  if (/visitor|guest/i.test(idOrLabel)) return Users;
+  if (/food|cook|kitchen|meal|veg/i.test(idOrLabel)) return Utensils;
+  if (/quiet|night|sleep|sound|noise/i.test(idOrLabel)) return Moon;
+  if (/bachelor|single|student/i.test(idOrLabel)) return UserCheck;
+  if (/minimum|stay|lease|month|duration/i.test(idOrLabel)) return Calendar;
+  if (/notice|period|day|time|curfew|timing/i.test(idOrLabel)) return Clock;
+  if (/police|verify|verification/i.test(idOrLabel)) return ShieldAlert;
+  if (/id|aadhaar|passport|identity|proof/i.test(idOrLabel)) return FileCheck;
+  if (/agreement|contract|stamp/i.test(idOrLabel)) return FileText;
+  if (/work|office|job|employment|corporate|college/i.test(idOrLabel)) return Briefcase;
+
   return Info;
+}
+
+function formatRuleText(rule: NormalizedRule): { label: string; value: string } {
+  const label = (rule.label || '').trim();
+  let value = (rule.value || '').trim();
+
+  // If value is empty or same as label
+  if (!value || value.toLowerCase() === label.toLowerCase()) {
+    return { label, value: '' };
+  }
+
+  // If value starts with the label (e.g. label: "Police Verification", value: "Police Verification Required")
+  if (value.toLowerCase().startsWith(label.toLowerCase())) {
+    const remainder = value.slice(label.length).replace(/^[:\s-]+/, '').trim();
+    if (remainder) {
+      return { label, value: remainder };
+    }
+  }
+
+  // If value is "Visitors permitted until 10:00 PM" and label is "Visitors"
+  if (label.toLowerCase() === 'visitors' && /^visitors\s+/i.test(value)) {
+    return { label: 'Visitors', value: value.replace(/^visitors\s+/i, '').trim() };
+  }
+
+  return { label, value };
 }
 
 export default function HouseRulesSection({ property }: HouseRulesSectionProps) {
@@ -68,118 +107,97 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
   const allRules = property.rules || [];
 
   if (allRules.length === 0) {
-    return (
-      <section
-        aria-label="House rules & tenant requirements"
-        className="py-6 sm:py-8 space-y-3"
-      >
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-gray-900" />
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">House Rules & Requirements</h2>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#FAFAFA] border border-gray-100 text-xs sm:text-sm text-[#6B7280]">
-          No custom house rules or special tenant restrictions specified by the owner. Standard ApnaStay community etiquette and local tenancy norms apply.
-        </div>
-      </section>
-    );
+    return null;
   }
-
-  const renderRuleCard = (rule: NormalizedRule, index: number) => {
-    const IconComponent = getRuleIcon(rule.iconName);
-
-    return (
-      <div
-        key={`${rule.id || rule.label}-${index}`}
-        className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FAFAFA] border border-gray-100 hover:border-gray-200 transition-colors"
-      >
-        <div className="flex items-center gap-2.5 min-w-0 pr-2">
-          <div className="p-2 rounded-xl bg-white border border-gray-100 text-gray-900 shadow-2xs shrink-0">
-            <IconComponent className="w-4 h-4" />
-          </div>
-          <span className="text-xs sm:text-sm text-gray-700 font-medium truncate">
-            {rule.label}
-          </span>
-        </div>
-
-        <div className="shrink-0">
-          {rule.allowed === true && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-900 border border-gray-200">
-              <Check className="w-3.5 h-3.5 text-gray-900" />
-              <span>{rule.value}</span>
-            </span>
-          )}
-
-          {rule.allowed === false && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200 line-through decoration-gray-400">
-              <X className="w-3.5 h-3.5 text-gray-400" />
-              <span>{rule.value}</span>
-            </span>
-          )}
-
-          {rule.allowed === 'restricted' && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
-              <Info className="w-3.5 h-3.5 text-gray-600" />
-              <span>{rule.value}</span>
-            </span>
-          )}
-
-          {rule.allowed === undefined && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
-              {rule.value}
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <section
       aria-label="House rules & tenant requirements"
       className="py-6 sm:py-8 space-y-6"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-gray-900" />
-            <span>House Rules & Requirements</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-[#6B7280] mt-1">
-            Guidelines and move-in terms specified directly by the property owner
-          </p>
-        </div>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+          House Rules & Requirements
+        </h2>
       </div>
 
-      {/* 1. HOUSE RULES SUBSECTION */}
-      {houseRules.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <span>Living Guidelines</span>
+      <div className="space-y-8">
+        {/* 1. LIVING GUIDELINES / HOUSE RULES */}
+        {houseRules.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">
+              Living Guidelines
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-1">
+              {houseRules.map((rule, idx) => {
+                const IconComponent = getRuleIcon(rule);
+                const { label, value } = formatRuleText(rule);
+                return (
+                  <div
+                    key={`${rule.id || rule.label}-${idx}`}
+                    className="flex items-center gap-4 text-[#1A1A1A]"
+                  >
+                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                    <span className="text-sm sm:text-base font-normal">
+                      <span className="text-[rgb(31,41,55)]">{label}: </span>
+                      {value && <span className="text-[rgb(107,114,128)]">{value}</span>}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {houseRules.map((rule, idx) => renderRuleCard(rule, idx))}
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* 2. TENANT & STAY REQUIREMENTS SUBSECTION */}
-      {tenantRequirements.length > 0 && (
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
-            <span>Tenant & Stay Requirements</span>
+        {/* 2. TENANT & STAY REQUIREMENTS */}
+        {tenantRequirements.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-base sm:text-lg font-medium text-[#1A1A1A]">
+              Tenant & Stay Requirements
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-1">
+              {tenantRequirements.map((rule, idx) => {
+                const IconComponent = getRuleIcon(rule);
+                const { label, value } = formatRuleText(rule);
+                return (
+                  <div
+                    key={`${rule.id || rule.label}-${idx}`}
+                    className="flex items-center gap-4 text-[#1A1A1A]"
+                  >
+                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                    <span className="text-sm sm:text-base font-normal">
+                      <span className="text-[rgb(31,41,55)]">{label}: </span>
+                      {value && <span className="text-[rgb(107,114,128)]">{value}</span>}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {tenantRequirements.map((rule, idx) => renderRuleCard(rule, idx))}
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* Fallback if allRules exists but not categorized into subsets */}
-      {houseRules.length === 0 && tenantRequirements.length === 0 && allRules.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {allRules.map((rule, idx) => renderRuleCard(rule, idx))}
-        </div>
-      )}
+        {/* Fallback if allRules exists but not categorized into subsets */}
+        {houseRules.length === 0 && tenantRequirements.length === 0 && allRules.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-1">
+            {allRules.map((rule, idx) => {
+              const IconComponent = getRuleIcon(rule);
+              const { label, value } = formatRuleText(rule);
+              return (
+                <div
+                  key={`${rule.id || rule.label}-${idx}`}
+                  className="flex items-center gap-4 text-[#1A1A1A]"
+                >
+                  <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+                  <span className="text-sm sm:text-base font-normal">
+                    <span className="text-[rgb(31,41,55)]">{label}: </span>
+                    {value && <span className="text-[rgb(107,114,128)]">{value}</span>}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
