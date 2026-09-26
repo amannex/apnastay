@@ -2,7 +2,6 @@
 
 import React from 'react';
 import {
-  Compass,
   Train,
   ShoppingBag,
   Building2,
@@ -51,41 +50,29 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
   return (
     <section
       aria-label="Nearby places and transit"
-      className="py-6 sm:py-8 space-y-4"
+      className="py-6 sm:py-8 space-y-6"
     >
-      <div className="flex items-center justify-between pb-1">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
-            <Compass className="w-5 h-5 text-gray-900" />
-            <span>Nearby Places</span>
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Key transit hubs, markets, healthcare, and institutions within reach
-          </p>
-        </div>
-        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-          {nearbyPlaces.length} Locations
-        </span>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+          Nearby Places
+        </h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+      {/* 2-COLUMN AIRBNB-STYLE NEARBY PLACES LIST */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-2">
         {nearbyPlaces.map((place, idx) => {
           const IconComponent = getNearbyPlaceIcon(place.name);
           return (
             <div
-              key={idx}
-              className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FAFAFA] border border-gray-100 hover:border-gray-200 transition-colors"
+              key={`${place.name}-${idx}`}
+              className="flex items-center gap-4 text-[#1A1A1A]"
             >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 rounded-xl bg-white text-gray-900 border border-gray-100 shadow-2xs shrink-0">
-                  <IconComponent className="w-4 h-4" />
-                </div>
-                <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate" title={place.name}>
-                  {place.name}
-                </span>
-              </div>
-              <span className="text-xs font-bold text-gray-800 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-full shrink-0 ml-2">
-                {place.distance}
+              <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+              <span className="text-sm sm:text-base font-normal">
+                <span className="text-[rgb(31,41,55)]">{place.name}</span>
+                {place.distance && (
+                  <span className="text-[rgb(107,114,128)]"> · {place.distance}</span>
+                )}
               </span>
             </div>
           );
