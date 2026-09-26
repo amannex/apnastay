@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Wifi,
-  Wind,
+  Snowflake,
   ShieldCheck,
   Zap,
   Droplets,
@@ -13,16 +13,19 @@ import {
   Dumbbell,
   Sun,
   Flame,
-  Sparkles,
-  Utensils,
+  UtensilsCrossed,
   ArrowUpDown,
   Refrigerator,
   Soup,
   Brush,
+  WashingMachine,
+  Bath,
+  ShowerHead,
+  Cctv,
   CheckCircle2,
   Info
 } from 'lucide-react';
-import type { NormalizedProperty, NormalizedAmenity } from '../../adapter';
+import type { NormalizedProperty } from '../../adapter';
 
 interface PropertyAmenitiesSectionProps {
   property: NormalizedProperty;
@@ -31,15 +34,15 @@ interface PropertyAmenitiesSectionProps {
 type AmenityIconComponent = React.ComponentType<{ className?: string }>;
 
 const AMENITY_ICON_MAP: Record<string, AmenityIconComponent> = {
-  // Direct icon names (PascalCase converted to lowercase)
+  // Direct icon names
   shieldcheck: ShieldCheck as AmenityIconComponent,
-  utensils: Utensils as AmenityIconComponent,
+  utensils: UtensilsCrossed as AmenityIconComponent,
+  utensilscrossed: UtensilsCrossed as AmenityIconComponent,
   arrowupdown: ArrowUpDown as AmenityIconComponent,
   car: Car as AmenityIconComponent,
-  sparkles: Sparkles as AmenityIconComponent,
   dumbbell: Dumbbell as AmenityIconComponent,
   sun: Sun as AmenityIconComponent,
-  wind: Wind as AmenityIconComponent,
+  wind: Snowflake as AmenityIconComponent,
   zap: Zap as AmenityIconComponent,
   wifi: Wifi as AmenityIconComponent,
   key: Key as AmenityIconComponent,
@@ -49,18 +52,25 @@ const AMENITY_ICON_MAP: Record<string, AmenityIconComponent> = {
   tv: Tv as AmenityIconComponent,
   soup: Soup as AmenityIconComponent,
   brush: Brush as AmenityIconComponent,
+  bath: Bath as AmenityIconComponent,
+  snowflake: Snowflake as AmenityIconComponent,
+  washingmachine: WashingMachine as AmenityIconComponent,
+  cctv: Cctv as AmenityIconComponent,
+  shower: ShowerHead as AmenityIconComponent,
 
   // Semantic keyword mappings
   internet: Wifi as AmenityIconComponent,
   fiber: Wifi as AmenityIconComponent,
   broadband: Wifi as AmenityIconComponent,
-  air_conditioning: Wind as AmenityIconComponent,
-  ac: Wind as AmenityIconComponent,
+  air_conditioning: Snowflake as AmenityIconComponent,
+  air_conditioner: Snowflake as AmenityIconComponent,
+  ac: Snowflake as AmenityIconComponent,
+  cooling: Snowflake as AmenityIconComponent,
   power_backup: Zap as AmenityIconComponent,
   inverter: Zap as AmenityIconComponent,
   water_supply: Droplets as AmenityIconComponent,
+  water: Droplets as AmenityIconComponent,
   security: ShieldCheck as AmenityIconComponent,
-  cctv: ShieldCheck as AmenityIconComponent,
   guard: ShieldCheck as AmenityIconComponent,
   parking: Car as AmenityIconComponent,
   smart_lock: Key as AmenityIconComponent,
@@ -69,17 +79,21 @@ const AMENITY_ICON_MAP: Record<string, AmenityIconComponent> = {
   fitness: Dumbbell as AmenityIconComponent,
   balcony: Sun as AmenityIconComponent,
   geyser: Flame as AmenityIconComponent,
-  washing_machine: Sparkles as AmenityIconComponent,
-  laundry: Sparkles as AmenityIconComponent,
-  kitchen: Utensils as AmenityIconComponent,
+  heater: Flame as AmenityIconComponent,
+  washing_machine: WashingMachine as AmenityIconComponent,
+  washing: WashingMachine as AmenityIconComponent,
+  laundry: WashingMachine as AmenityIconComponent,
+  kitchen: UtensilsCrossed as AmenityIconComponent,
+  cooking: UtensilsCrossed as AmenityIconComponent,
   lift: ArrowUpDown as AmenityIconComponent,
   elevator: ArrowUpDown as AmenityIconComponent,
   fridge: Refrigerator as AmenityIconComponent,
   food: Soup as AmenityIconComponent,
   meal: Soup as AmenityIconComponent,
+  meals: Soup as AmenityIconComponent,
   housekeeping: Brush as AmenityIconComponent,
-  soundproof: ShieldCheck as AmenityIconComponent,
-  acoustic: ShieldCheck as AmenityIconComponent
+  cleaning: Brush as AmenityIconComponent,
+  bathroom: Bath as AmenityIconComponent
 };
 
 function getAmenityIcon(name: string, iconHint?: string): AmenityIconComponent {
@@ -97,149 +111,80 @@ function getAmenityIcon(name: string, iconHint?: string): AmenityIconComponent {
   return CheckCircle2 as AmenityIconComponent;
 }
 
-interface CategoryConfig {
-  id: string;
-  title: string;
-}
-
-const CATEGORY_DEFINITIONS: CategoryConfig[] = [
-  { id: 'basic', title: 'Connectivity & Utilities' },
-  { id: 'comfort', title: 'Comfort & Appliances' },
-  { id: 'building', title: 'Building & Facilities' },
-  { id: 'safety', title: 'Safety & Security' },
-  { id: 'services', title: 'Services & Support' },
-  { id: 'other', title: 'Additional Amenities' }
-];
-
-function classifyAmenityCategory(amenity: NormalizedAmenity): string {
-  if (amenity.category && CATEGORY_DEFINITIONS.some((c) => c.id === amenity.category)) {
-    return amenity.category;
-  }
-
-  const text = (amenity.name + ' ' + (amenity.icon || '')).toLowerCase();
-
-  // 1. Safety & Security (evaluated first to avoid 'cctv' matching 'tv')
-  if (/security|guard|cctv|lock|smart-lock|keyless|camera|intercom|fire/i.test(text)) {
-    return 'safety';
-  }
-
-  // 2. Connectivity & Utilities
-  if (/wifi|fiber|internet|broadband|power|backup|inverter|water|electricity/i.test(text)) {
-    return 'basic';
-  }
-
-  // 3. Comfort & Appliances
-  if (/\bac\b|air condition|geyser|heater|\btv\b|television|fridge|refrigerator|washing|soundproof|acoustic|\bfan\b|oven/i.test(text)) {
-    return 'comfort';
-  }
-
-  // 4. Building & Facilities
-  if (/lift|elevator|parking|car|bike|kitchen|balcony|terrace|gym|fitness|pool|garden|lounge/i.test(text)) {
-    return 'building';
-  }
-
-  // 5. Services & Support
-  if (/food|meal|laundry|housekeeping|clean|cook|maid/i.test(text)) {
-    return 'services';
-  }
-
-  return 'other';
-}
-
 export default function PropertyAmenitiesSection({ property }: PropertyAmenitiesSectionProps) {
-  const amenities = property.amenities || [];
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Only display amenities that are actually present with valid names
+  const availableAmenities = (property.amenities || []).filter(
+    (amenity) => Boolean(amenity && amenity.name && amenity.name.trim())
+  );
 
   // Empty state handling
-  if (amenities.length === 0) {
+  if (availableAmenities.length === 0) {
     return (
       <section
-        aria-label="Amenities and facilities"
-        className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EDEDED] shadow-sm space-y-3"
+        aria-label="Amenities & facilities"
+        className="py-6 sm:py-8 space-y-4"
       >
-        <h2 className="text-xl font-bold text-[#1A1A1A]">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
           Amenities & Facilities
         </h2>
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100 text-gray-500 text-xs sm:text-sm">
+        <div className="flex items-center gap-3 py-3 text-gray-500 text-sm">
           <Info className="w-4 h-4 text-gray-400 shrink-0" />
-          <span>Amenities not provided by the owner for this accommodation.</span>
+          <span>Amenities not specified for this accommodation.</span>
         </div>
       </section>
     );
   }
 
-  // Group amenities by category
-  const groupedMap = new Map<string, NormalizedAmenity[]>();
-  for (const def of CATEGORY_DEFINITIONS) {
-    groupedMap.set(def.id, []);
-  }
-
-  for (const amenity of amenities) {
-    const catId = classifyAmenityCategory(amenity);
-    const list = groupedMap.get(catId) || [];
-    list.push(amenity);
-    groupedMap.set(catId, list);
-  }
-
-  // Filter only categories with at least 1 amenity
-  const activeCategories = CATEGORY_DEFINITIONS.filter(
-    (cat) => (groupedMap.get(cat.id)?.length || 0) > 0
-  );
+  // Show first 10 items initially (5 per column) unless expanded
+  const displayedAmenities = isExpanded
+    ? availableAmenities
+    : availableAmenities.slice(0, 10);
 
   return (
     <section
       aria-label="Amenities & facilities"
       className="py-6 sm:py-8 space-y-6"
     >
-      <div className="flex items-center justify-between pb-1">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-            Amenities & Facilities
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Verified features and inclusions available for this stay
-          </p>
-        </div>
-        <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-          {amenities.length} {amenities.length === 1 ? 'Feature' : 'Features'}
-        </span>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+          Amenities & Facilities
+        </h2>
       </div>
 
-      <div className="space-y-6">
-        {activeCategories.map((category) => {
-          const categoryAmenities = groupedMap.get(category.id) || [];
+      {/* 2-COLUMN AIRBNB-STYLE AMENITIES LIST */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-5 gap-x-8 sm:gap-x-16 pt-2">
+        {displayedAmenities.map((amenity, idx) => {
+          const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
           return (
-            <div key={category.id} className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                {category.title}
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {categoryAmenities.map((amenity, idx) => {
-                  const IconComponent = getAmenityIcon(amenity.name, amenity.icon);
-                  return (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#FAFAFA] border border-gray-100 hover:border-gray-200 transition-colors"
-                    >
-                      <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white text-gray-900 shadow-2xs shrink-0 border border-gray-100">
-                        <IconComponent className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <span
-                          className="text-xs sm:text-sm font-semibold text-gray-800 block truncate"
-                          title={amenity.name}
-                        >
-                          {amenity.name}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            <div
+              key={`${amenity.name}-${idx}`}
+              className="flex items-center gap-4 text-[#1A1A1A]"
+            >
+              <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-black shrink-0 stroke-[1.6]" />
+              <span className="text-sm sm:text-base font-normal text-gray-800">
+                {amenity.name}
+              </span>
             </div>
           );
         })}
       </div>
+
+      {/* SHOW ALL AMENITIES BUTTON */}
+      {availableAmenities.length > 10 && (
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200/80 text-sm sm:text-base font-semibold text-gray-900 transition-colors cursor-pointer"
+          >
+            {isExpanded
+              ? 'Show less amenities'
+              : `Show all ${availableAmenities.length} amenities`}
+          </button>
+        </div>
+      )}
     </section>
   );
 }
