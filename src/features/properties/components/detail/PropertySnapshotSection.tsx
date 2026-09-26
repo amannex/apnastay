@@ -273,7 +273,7 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
                 <span className="text-[11px] sm:text-xs font-medium text-[#6B7280] truncate mr-1">
                   {item.label}
                 </span>
-                <div className="p-1 sm:p-1.5 rounded-lg bg-white text-[#ED3258] shadow-2xs shrink-0">
+                <div className="p-1 sm:p-1.5 rounded-lg bg-white text-gray-900 shadow-2xs shrink-0 border border-gray-100">
                   <Icon className="w-3.5 h-3.5" />
                 </div>
               </div>

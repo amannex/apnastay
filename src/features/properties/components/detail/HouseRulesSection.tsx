@@ -74,7 +74,7 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
         className="py-6 sm:py-8 space-y-3"
       >
         <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-[#E1224D]" />
+          <BookOpen className="w-5 h-5 text-gray-900" />
           <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">House Rules & Requirements</h2>
         </div>
         <div className="p-4 rounded-2xl bg-[#FAFAFA] border border-gray-100 text-xs sm:text-sm text-[#6B7280]">
@@ -93,38 +93,38 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
         className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FAFAFA] border border-gray-100 hover:border-gray-200 transition-colors"
       >
         <div className="flex items-center gap-2.5 min-w-0 pr-2">
-          <div className="p-2 rounded-xl bg-white border border-gray-100 text-gray-600 shadow-2xs shrink-0">
+          <div className="p-2 rounded-xl bg-white border border-gray-100 text-gray-900 shadow-2xs shrink-0">
             <IconComponent className="w-4 h-4" />
           </div>
-          <span className="text-xs sm:text-sm text-[#4B5563] font-medium truncate">
+          <span className="text-xs sm:text-sm text-gray-700 font-medium truncate">
             {rule.label}
           </span>
         </div>
 
         <div className="shrink-0">
           {rule.allowed === true && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-              <Check className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-900 border border-gray-200">
+              <Check className="w-3.5 h-3.5 text-gray-900" />
               <span>{rule.value}</span>
             </span>
           )}
 
           {rule.allowed === false && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200/80">
-              <X className="w-3.5 h-3.5 text-rose-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200 line-through decoration-gray-400">
+              <X className="w-3.5 h-3.5 text-gray-400" />
               <span>{rule.value}</span>
             </span>
           )}
 
           {rule.allowed === 'restricted' && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/80">
-              <Info className="w-3.5 h-3.5 text-amber-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+              <Info className="w-3.5 h-3.5 text-gray-600" />
               <span>{rule.value}</span>
             </span>
           )}
 
           {rule.allowed === undefined && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
               {rule.value}
             </span>
           )}
@@ -141,7 +141,7 @@ export default function HouseRulesSection({ property }: HouseRulesSectionProps) 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#E1224D]" />
+            <BookOpen className="w-5 h-5 text-gray-900" />
             <span>House Rules & Requirements</span>
           </h2>
           <p className="text-xs sm:text-sm text-[#6B7280] mt-1">

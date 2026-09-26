@@ -221,7 +221,7 @@ export default function PropertyAmenitiesSection({ property }: PropertyAmenities
                       key={idx}
                       className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#FAFAFA] border border-gray-100 hover:border-gray-200 transition-colors"
                     >
-                      <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white text-[#E1224D] shadow-2xs shrink-0">
+                      <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white text-gray-900 shadow-2xs shrink-0 border border-gray-100">
                         <IconComponent className="w-4 h-4" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -231,12 +231,6 @@ export default function PropertyAmenitiesSection({ property }: PropertyAmenities
                         >
                           {amenity.name}
                         </span>
-                        {amenity.verified && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 mt-0.5">
-                            <ShieldCheck className="w-3 h-3" />
-                            Verified
-                          </span>
-                        )}
                       </div>
                     </div>
                   );

@@ -56,7 +56,7 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
       <div className="flex items-center justify-between pb-1">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
-            <Compass className="w-5 h-5 text-[#E1224D]" />
+            <Compass className="w-5 h-5 text-gray-900" />
             <span>Nearby Places</span>
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -77,14 +77,14 @@ export default function NearbyPlacesSection({ property }: NearbyPlacesSectionPro
               className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FAFAFA] border border-gray-100 hover:border-gray-200 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 rounded-xl bg-white text-[#E1224D] shadow-2xs shrink-0">
+                <div className="p-2 rounded-xl bg-white text-gray-900 border border-gray-100 shadow-2xs shrink-0">
                   <IconComponent className="w-4 h-4" />
                 </div>
                 <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate" title={place.name}>
                   {place.name}
                 </span>
               </div>
-              <span className="text-xs font-bold text-[#E1224D] bg-rose-50 border border-rose-100/60 px-2.5 py-1 rounded-full shrink-0 ml-2">
+              <span className="text-xs font-bold text-gray-800 bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-full shrink-0 ml-2">
                 {place.distance}
               </span>
             </div>

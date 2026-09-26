@@ -29,7 +29,7 @@ export default function PropertyDetailsSection({ property }: PropertyDetailsSect
             Verified configuration for this {property.propertyTypeLabel.toLowerCase()}
           </p>
         </div>
-        <span className="text-xs font-semibold text-[#E1224D] bg-rose-50 border border-rose-100/80 px-3 py-1 rounded-full">
+        <span className="text-xs font-semibold text-gray-700 bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">
           {property.propertyTypeLabel}
         </span>
       </div>

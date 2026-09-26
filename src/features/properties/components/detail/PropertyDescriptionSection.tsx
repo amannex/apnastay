@@ -40,7 +40,7 @@ function renderParagraph(paragraphText: string, pIndex: number): React.ReactNode
           const cleanItem = line.replace(/^[-*•]\s+/, '');
           return (
             <li key={lIndex} className="flex items-start gap-2 text-sm sm:text-base text-gray-700 leading-relaxed">
-              <span className="text-[#E1224D] font-bold select-none leading-relaxed">•</span>
+              <span className="text-gray-900 font-bold select-none leading-relaxed">•</span>
               <span className="min-w-0 flex-1">{renderFormattedText(cleanItem)}</span>
             </li>
           );
@@ -110,7 +110,7 @@ export default function PropertyDescriptionSection({ property }: PropertyDescrip
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
             aria-controls="property-description-body"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E1224D] hover:text-[#c91d43] transition-colors focus:outline-none focus:ring-2 focus:ring-[#E1224D]/30 rounded-lg py-1 px-1 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-black underline underline-offset-4 transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 rounded-lg py-1 px-1 cursor-pointer"
           >
             <span>{isExpanded ? 'Show less' : 'Read full description'}</span>
             {isExpanded ? (

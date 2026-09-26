@@ -35,7 +35,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
               className="w-16 h-16 rounded-2xl object-cover border border-gray-200 shadow-2xs shrink-0"
             />
           ) : (
-            <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#E1224D] shadow-2xs shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-800 shadow-2xs shrink-0">
               <User className="w-8 h-8" />
             </div>
           )}
@@ -52,8 +52,8 @@ export default function OwnerCard({ property }: OwnerCardProps) {
             {/* Identity Verified Badge - Strictly data-driven */}
             {owner.verified && (
               <div className="pt-0.5">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-900 border border-gray-200 text-xs font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-gray-900" />
                   <span>Identity Verified</span>
                 </span>
               </div>
@@ -73,7 +73,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
 
             {formattedResponseTime && (
               <div className="flex items-center gap-2 text-gray-700">
-                <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                <Clock className="w-4 h-4 text-gray-500 shrink-0" />
                 <span>{formattedResponseTime}</span>
               </div>
             )}
@@ -85,7 +85,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
           <button
             type="button"
             onClick={() => setIsContactModalOpen(true)}
-            className="w-full py-3.5 px-5 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white font-bold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+            className="w-full py-3.5 px-5 rounded-2xl bg-[#1A1A1A] hover:bg-black text-white font-bold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
             <MessageSquare className="w-4 h-4" />
             <span>Contact Owner</span>

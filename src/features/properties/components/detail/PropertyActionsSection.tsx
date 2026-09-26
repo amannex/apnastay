@@ -52,8 +52,8 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
                 /{pricing.billingPeriod}
               </span>
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-gray-800 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200 shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5 text-gray-700" />
               {pricing.brokerageDisplay}
             </span>
           </div>
@@ -61,7 +61,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           {/* AVAILABILITY STATUS */}
           <div className="flex items-center gap-2 pt-0.5">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-800 bg-gray-50 border border-gray-200/80 px-2.5 py-1 rounded-lg">
-              <Clock className="w-3.5 h-3.5 text-[#ED3258]" />
+              <Clock className="w-3.5 h-3.5 text-gray-700" />
               <span>
                 {availability.isImmediate ? 'Available Now' : availability.displayStatus}
               </span>
@@ -95,15 +95,15 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
             </div>
           )}
 
-          <div className="flex justify-between text-emerald-600 font-medium">
+          <div className="flex justify-between text-gray-700 font-medium">
             <span>Brokerage Commission</span>
-            <span className="font-bold">₹0 (Zero Brokerage)</span>
+            <span className="font-bold text-gray-900">₹0 (Zero Brokerage)</span>
           </div>
 
           {pricing.totalMoveInDisplay && (
             <div className="flex justify-between text-gray-900 pt-3 border-t border-gray-100 font-bold">
               <span>Estimated Move-in Total</span>
-              <span className="text-[#ED3258]">{pricing.totalMoveInDisplay}</span>
+              <span className="text-gray-900 font-extrabold">{pricing.totalMoveInDisplay}</span>
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={() => setContactModalOpen(true)}
-            className="w-full py-4 px-4 rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-sm transition-all shadow-md hover:shadow-lg hover:shadow-rose-500/20 flex items-center justify-center gap-2 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+            className="w-full py-4 px-4 rounded-2xl bg-[#E1224D] hover:bg-[#C71B42] text-white font-extrabold text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
             <PhoneCall className="w-4 h-4 transition-transform group-hover:scale-110" />
             <span>Contact Owner</span>
@@ -124,9 +124,9 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={handleScheduleVisit}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold text-xs sm:text-sm border border-gray-200 transition-colors flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+            className="w-full py-3.5 px-4 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold text-xs sm:text-sm border border-gray-200 transition-colors flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
-            <Calendar className="w-4 h-4 text-[#ED3258]" />
+            <Calendar className="w-4 h-4 text-gray-900" />
             <span>{visitScheduled ? '✓ Visit Scheduled' : 'Schedule Visit'}</span>
           </button>
         </div>
@@ -136,16 +136,16 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={() => onToggleWishlist(property.id)}
-            className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
+            className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-black ${
               isWishlisted
-                ? 'border-rose-200 bg-rose-50/70 text-[#ED3258]'
+                ? 'border-gray-900 bg-gray-900 text-white'
                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
             }`}
             aria-label={isWishlisted ? 'Saved in wishlist' : 'Save to wishlist'}
           >
             <Heart
               className={`w-4 h-4 ${
-                isWishlisted ? 'fill-[#ED3258] text-[#ED3258]' : 'text-gray-400'
+                isWishlisted ? 'fill-white text-white' : 'text-gray-400'
               }`}
             />
             <span>{isWishlisted ? 'Saved' : 'Save'}</span>
@@ -154,7 +154,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
           <button
             type="button"
             onClick={() => setShareModalOpen(true)}
-            className="py-2.5 px-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+            className="py-2.5 px-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
             aria-label="Share this property"
           >
             <Share2 className="w-4 h-4 text-gray-500" />
@@ -164,7 +164,7 @@ export default function PropertyActionsSection({ property }: PropertyActionsSect
 
         {/* TRUST BANNER */}
         <div className="pt-2 flex items-center justify-center gap-1.5 text-[11px] text-[#6B7280] text-center">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-gray-900 shrink-0" />
           <span>100% Verified ownership • Direct owner lease</span>
         </div>
       </div>

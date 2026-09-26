@@ -117,10 +117,10 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
     return (
       <section
         aria-label="No property photos"
-        className="rounded-3xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border border-[#EDEDED] p-8 sm:p-12 text-center"
+        className="rounded-3xl overflow-hidden bg-gray-50 border border-gray-200 p-8 sm:p-12 text-center"
       >
         <div className="max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-white text-[#ED3258] shadow-sm flex items-center justify-center mx-auto border border-gray-100">
+          <div className="w-16 h-16 rounded-2xl bg-white text-gray-900 shadow-sm flex items-center justify-center mx-auto border border-gray-100">
             <Building2 className="w-8 h-8" />
           </div>
           <div>
@@ -130,10 +130,6 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
             <p className="text-xs sm:text-sm text-[#6B7280] mt-1 leading-relaxed">
               This residence in {property.location.displayLocation} has been audited by ApnaStay field engineers. Official photographs will be published shortly.
             </p>
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-emerald-800 border border-emerald-200 text-xs font-semibold shadow-2xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            Zero-Brokerage Verified Listing
           </div>
         </div>
       </section>
@@ -323,12 +319,6 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                   className="w-full h-full object-cover group-hover/main:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover/main:bg-black/10 transition-colors" />
-
-                {/* Primary Photo Badge */}
-                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Verified Photograph
-                </div>
               </div>
 
               {/* Right Column: Stack of 2 Supporting Images */}
@@ -344,7 +334,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                       openLightbox(1);
                     }
                   }}
-                  className="relative h-full overflow-hidden cursor-pointer group/sub1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                  className="relative h-full overflow-hidden cursor-pointer group/sub1 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
                   aria-label={`Photo 2 of ${validImages.length} in ${property.location.displayLocation}`}
                 >
                   <img
@@ -369,7 +359,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                       openLightbox(2);
                     }
                   }}
-                  className="relative h-full overflow-hidden cursor-pointer group/sub2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+                  className="relative h-full overflow-hidden cursor-pointer group/sub2 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
                   aria-label={`Photo 3 of ${validImages.length}${validImages.length > 3 ? ` with ${validImages.length - 3} more photos` : ''}`}
                 >
                   <img
@@ -386,7 +376,7 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
                   {validImages.length > 3 && (
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-opacity group-hover/sub2:bg-black/50">
                       <div className="text-center px-2">
-                        <Camera className="w-5 h-5 mx-auto mb-1 text-rose-300" />
+                        <Camera className="w-5 h-5 mx-auto mb-1 text-white" />
                         <span className="text-sm font-extrabold tracking-wide">
                           +{validImages.length - 3} More
                         </span>
@@ -402,9 +392,9 @@ export default function PropertyGallerySection({ property }: PropertyGallerySect
           <button
             type="button"
             onClick={() => openLightbox(0)}
-            className="absolute bottom-4 right-4 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/80 backdrop-blur-md text-xs font-bold px-4 py-2.5 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+            className="absolute bottom-4 right-4 bg-white/95 hover:bg-white text-gray-900 border border-gray-200/80 backdrop-blur-md text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
           >
-            <Camera className="w-4 h-4 text-[#ED3258]" />
+            <Camera className="w-4 h-4 text-gray-900" />
             <span>View All Photos ({validImages.length})</span>
           </button>
         </div>

@@ -28,7 +28,7 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-[#E1224D] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-wider mb-2">
             <Sparkles className="w-3.5 h-3.5" />
             Curated Recommendations
           </div>
@@ -42,7 +42,7 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
 
         <Link
           href={`/properties?city=${encodeURIComponent(property.location.city.toLowerCase())}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E1224D] hover:text-[#b8183d] transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-900 hover:text-black underline underline-offset-4 transition-colors shrink-0"
         >
           <span>Explore all in {property.location.city}</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -85,11 +85,8 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
 
                   {/* Top Badges */}
                   <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-xs text-[#E1224D] text-[10px] font-bold shadow-xs flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" /> Verified
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold shadow-xs">
-                      ₹0 Brokerage
+                    <span className="px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-xs text-gray-900 text-[10px] font-bold shadow-xs flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-gray-900" /> Verified
                     </span>
                   </div>
 
@@ -101,10 +98,10 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
                         e.stopPropagation();
                         onToggleWishlist(item.id);
                       }}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-black ${
                         isWishlisted
-                          ? 'bg-[#E1224D] text-white shadow-md'
-                          : 'bg-white/90 backdrop-blur-xs text-[#6B7280] hover:text-[#E1224D]'
+                          ? 'bg-black text-white shadow-md'
+                          : 'bg-white/90 backdrop-blur-xs text-gray-700 hover:text-black'
                       }`}
                       aria-label={isWishlisted ? `Remove ${item.title} from wishlist` : `Save ${item.title} to wishlist`}
                       title={isWishlisted ? 'Saved in wishlist' : 'Save to wishlist'}
@@ -118,11 +115,11 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div>
                     <p className="text-[11px] font-medium text-[#6B7280] flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#E1224D] shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                       <span className="truncate">{item.neighborhood || item.city}</span>
                     </p>
 
-                    <h3 className="text-sm sm:text-base font-bold text-[#1A1A1A] group-hover:text-[#E1224D] transition-colors line-clamp-1 mt-1.5">
+                    <h3 className="text-sm sm:text-base font-bold text-[#1A1A1A] group-hover:text-black transition-colors line-clamp-1 mt-1.5">
                       {item.title}
                     </h3>
 
@@ -156,7 +153,7 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
                       <span className="text-[11px] text-gray-500 font-normal"> /mo</span>
                     </div>
 
-                    <span className="text-xs font-bold text-[#E1224D] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                    <span className="text-xs font-bold text-gray-900 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                       View <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>

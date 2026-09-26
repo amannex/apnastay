@@ -20,7 +20,7 @@ export default function PropertyBreadcrumb({ property }: PropertyBreadcrumbProps
       <nav aria-label="Breadcrumb" className="flex items-center space-x-1.5 text-xs text-[#6B7280] overflow-x-auto scrollbar-none py-1">
         <Link
           href="/properties"
-          className="hover:text-[#ED3258] transition-colors font-semibold text-gray-700 whitespace-nowrap"
+          className="hover:text-black transition-colors font-semibold text-gray-700 whitespace-nowrap"
         >
           Find ApnaStay
         </Link>
@@ -28,7 +28,7 @@ export default function PropertyBreadcrumb({ property }: PropertyBreadcrumbProps
 
         <Link
           href={`/properties?city=${encodeURIComponent(city.toLowerCase())}`}
-          className="hover:text-[#ED3258] transition-colors font-medium capitalize whitespace-nowrap"
+          className="hover:text-black transition-colors font-medium capitalize whitespace-nowrap"
         >
           {city}
         </Link>
@@ -55,7 +55,7 @@ export default function PropertyBreadcrumb({ property }: PropertyBreadcrumbProps
       <div className="shrink-0 hidden sm:block">
         <Link
           href="/properties"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#ED3258] transition-colors py-1 px-2.5 rounded-lg hover:bg-gray-100"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-black transition-colors py-1 px-2.5 rounded-lg hover:bg-gray-100"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>All Properties</span>

@@ -33,7 +33,7 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
               </span>
               <span className="text-xs text-[#6B7280] font-medium">/mo</span>
             </div>
-            <p className="text-[10px] text-emerald-600 font-semibold truncate hidden xs:block">
+            <p className="text-[10px] text-gray-600 font-semibold truncate hidden xs:block">
               {pricing.depositDisplay
                 ? `Deposit ${pricing.depositDisplay} • ₹0 Brokerage`
                 : '₹0 Brokerage • Verified'}
@@ -46,9 +46,9 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
             <button
               type="button"
               onClick={() => onToggleWishlist(property.id)}
-              className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] ${
+              className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-black ${
                 isWishlisted
-                  ? 'border-rose-200 bg-rose-50 text-[#ED3258]'
+                  ? 'border-gray-900 bg-gray-900 text-white'
                   : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
               }`}
               aria-label={isWishlisted ? 'Saved in wishlist' : 'Save to wishlist'}
@@ -56,7 +56,7 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
             >
               <Heart
                 className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                  isWishlisted ? 'fill-[#ED3258] text-[#ED3258]' : ''
+                  isWishlisted ? 'fill-white text-white' : ''
                 }`}
               />
             </button>
@@ -65,7 +65,7 @@ export default function MobileBottomBar({ property }: MobileBottomBarProps) {
             <button
               type="button"
               onClick={() => setContactModalOpen(true)}
-              className="py-2.5 sm:py-3 px-3.5 sm:px-5 rounded-xl sm:rounded-2xl bg-[#ED3258] hover:bg-[#C71B42] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258]"
+              className="py-2.5 sm:py-3 px-3.5 sm:px-5 rounded-xl sm:rounded-2xl bg-[#E1224D] hover:bg-[#C71B42] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
             >
               <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               <span>Contact Owner</span>
