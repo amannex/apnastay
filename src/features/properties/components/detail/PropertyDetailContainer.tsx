@@ -43,7 +43,7 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
         </div>
 
         {/* MAIN RESPONSIVE CONTENT LAYOUT */}
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-20 xl:gap-[122px] 2xl:gap-[150px] pt-2">
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-20 xl:gap-[100px] 2xl:gap-[150px] pt-2">
           {/* LEFT: CORE PROPERTY DETAILS & CONTENT */}
           <div className="flex-1 min-w-0 max-w-full">
             {/* MOBILE ONLY ACTIONS SECTION (On mobile, actions sit directly below Hero for prompt scannability) */}

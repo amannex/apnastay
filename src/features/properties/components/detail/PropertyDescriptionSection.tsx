@@ -110,7 +110,7 @@ export default function PropertyDescriptionSection({ property }: PropertyDescrip
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
             aria-controls="property-description-body"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-black underline underline-offset-4 transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 rounded-lg py-1 px-1 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-black transition-colors focus:outline-none focus:ring-0 outline-none border-0 border-none cursor-pointer py-1"
           >
             <span>{isExpanded ? 'Show less' : 'Read full description'}</span>
             {isExpanded ? (
