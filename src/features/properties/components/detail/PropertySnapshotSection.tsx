@@ -4,7 +4,7 @@ import React from 'react';
 import {
   Bed,
   Bath,
-  Maximize2,
+  Ruler,
   Sofa,
   Building,
   Calendar,
@@ -125,15 +125,15 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       snapshotItems.push({
         id: 'area',
         label: 'Built-up Area',
-        value: `${specs.sqft.toLocaleString()} sq.ft.`,
-        icon: Maximize2
+        value: `${specs.sqft.toLocaleString()} sq ft`,
+        icon: Ruler
       });
     } else if (specs.plotArea) {
       snapshotItems.push({
         id: 'plotArea',
         label: 'Plot Area',
         value: specs.plotArea,
-        icon: Maximize2
+        icon: Ruler
       });
     }
 
@@ -178,8 +178,8 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       snapshotItems.push({
         id: 'area',
         label: 'Super Area',
-        value: `${specs.sqft.toLocaleString()} sq.ft.`,
-        icon: Maximize2
+        value: `${specs.sqft.toLocaleString()} sq ft`,
+        icon: Ruler
       });
     }
 
@@ -230,12 +230,13 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6 sm:gap-x-8 pt-1">
         {snapshotItems.map((item) => {
           const Icon = item.icon;
+          const isFloor = item.id === 'floor' || item.id === 'floors';
           return (
             <div
               key={item.id}
               className="flex items-center gap-2.5"
             >
-              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 shrink-0" />
+              <Icon className={`${isFloor ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-5 sm:h-5'} text-black shrink-0`} />
               <span className="text-sm sm:text-base font-medium text-gray-600">
                 {item.value}
               </span>
