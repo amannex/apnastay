@@ -24,6 +24,7 @@ export default function PropertyInteractiveMap({
   const [mapError, setMapError] = useState(false);
   const [placeholderText, setPlaceholderText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
   // Typewriter animation for placeholder: "Search nearby places, etc.."
   useEffect(() => {
@@ -265,10 +266,12 @@ export default function PropertyInteractiveMap({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               className="w-full bg-transparent border-none outline-none text-xs sm:text-sm text-gray-800 font-normal focus:outline-none focus:ring-0 p-0 z-10"
               aria-label="Search nearby places"
             />
-            {!searchQuery && (
+            {!searchQuery && !isFocused && (
               <div className="absolute inset-0 flex items-center pointer-events-none select-none text-gray-500 text-xs sm:text-sm font-normal truncate">
                 <span>{placeholderText}</span>
                 <span className="inline-block w-0.5 h-3.5 bg-gray-500 animate-pulse ml-0.5" />
