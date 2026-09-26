@@ -233,12 +233,12 @@ export default function PropertySnapshotSection({ property }: PropertySnapshotSe
           return (
             <div
               key={item.id}
-              className="flex items-center gap-2.5 text-[#1A1A1A]"
+              className="flex items-center gap-2.5"
             >
-              <span className="text-sm sm:text-base font-semibold text-[#1A1A1A]">
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 shrink-0" />
+              <span className="text-sm sm:text-base font-medium text-gray-600">
                 {item.value}
               </span>
-              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 shrink-0" />
             </div>
           );
         })}
