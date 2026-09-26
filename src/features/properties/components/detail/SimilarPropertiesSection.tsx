@@ -24,7 +24,7 @@ export default function SimilarPropertiesSection({ property }: SimilarProperties
   }
 
   return (
-    <section aria-label="Similar property recommendations" className="pt-10 border-t border-gray-200 space-y-6">
+    <section aria-label="Similar property recommendations" className="py-8 sm:py-10 space-y-6">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>

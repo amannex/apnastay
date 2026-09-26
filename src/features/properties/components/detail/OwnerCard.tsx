@@ -63,7 +63,7 @@ export default function OwnerCard({ property }: OwnerCardProps) {
 
         {/* Real Attributes (Member Since & Response Time) - Zero fabrication */}
         {(owner.memberSince || formattedResponseTime) && (
-          <div className="space-y-2 py-3 border-y border-gray-100 text-xs">
+          <div className="space-y-1.5 py-1 text-xs">
             {owner.memberSince && (
               <div className="flex items-center gap-2 text-gray-700">
                 <Calendar className="w-4 h-4 text-gray-400 shrink-0" />

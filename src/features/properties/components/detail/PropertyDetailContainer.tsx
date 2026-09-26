@@ -87,9 +87,7 @@ export default function PropertyDetailContainer({ property }: PropertyDetailCont
           <OwnerCard property={property} />
 
           {/* SIMILAR PROPERTIES (FULL WIDTH) */}
-          <div className="pt-10 sm:pt-14">
-            <SimilarPropertiesSection property={property} />
-          </div>
+          <SimilarPropertiesSection property={property} />
         </div>
       </div>
 
