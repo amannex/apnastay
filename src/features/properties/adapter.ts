@@ -164,7 +164,16 @@ export function slugify(text: string): string {
     .replace(/[^\w-]+/g, '') // Remove all non-word chars
     .replace(/-{2,}/g, '-') // Replace multiple - with single -
     .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
+}
+
+/**
+ * Generates the canonical route URL for a property: /[city]/[slug]
+ */
+export function getPropertyUrl(property: { city?: string; title?: string; id?: string | number } | null | undefined): string {
+  if (!property) return '/properties';
+  const city = slugify(property.city || 'indore');
+  const slug = slugify(property.title || String(property.id || ''));
+  return `/${city}/${slug}`;
 }
 
 /**

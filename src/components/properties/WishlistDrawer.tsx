@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import type { Property } from '../../types';
+import { getPropertyUrl } from '@/features/properties';
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ interface WishlistDrawerProps {
   properties?: Property[];
   onToggleWishlist: (id: string) => void;
   onClearWishlist: () => void;
-  onOpenModal: (property: Property) => void;
+  onOpenModal?: (property: Property) => void;
   onOpenCompare?: () => void;
   onSelectForCompare?: (ids: string[]) => void;
 }
@@ -150,7 +151,11 @@ export default function WishlistDrawer({
                   className="group relative bg-white rounded-2xl border border-[#EDEDED] hover:border-gray-300 transition-all p-3.5 shadow-sm hover:shadow-md flex flex-col sm:flex-row gap-3.5"
                 >
                   {/* Thumbnail Image */}
-                  <div className="relative w-full sm:w-28 h-40 sm:h-28 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                  <Link
+                    href={getPropertyUrl(property)}
+                    onClick={onClose}
+                    className="relative w-full sm:w-28 h-40 sm:h-28 rounded-xl overflow-hidden bg-gray-100 shrink-0 block"
+                  >
                     <img
                       src={imageSrc}
                       alt={property.title}
@@ -164,7 +169,7 @@ export default function WishlistDrawer({
                         <Key className="w-3.5 h-3.5" />
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   {/* Details Column */}
                   <div className="flex-1 flex flex-col justify-between min-w-0">
@@ -181,15 +186,13 @@ export default function WishlistDrawer({
                         </div>
                       </div>
 
-                      <h3
-                        className="text-sm font-bold text-[#1A1A1A] mt-1 truncate group-hover:text-[#E1224D] transition-colors cursor-pointer"
-                        onClick={() => {
-                          onOpenModal(property);
-                          onClose();
-                        }}
+                      <Link
+                        href={getPropertyUrl(property)}
+                        onClick={onClose}
+                        className="block text-sm font-bold text-[#1A1A1A] mt-1 truncate hover:text-[#E1224D] transition-colors"
                       >
                         {property.title}
-                      </h3>
+                      </Link>
 
                       <p className="flex items-center gap-1 text-xs text-[#6B7280] mt-1 truncate">
                         <MapPin className="w-3 h-3 text-[#E1224D] shrink-0" />
@@ -213,15 +216,13 @@ export default function WishlistDrawer({
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => {
-                            onOpenModal(property);
-                            onClose();
-                          }}
-                          className="px-3 py-1.5 rounded-lg bg-[#E1224D] hover:bg-[#c91d43] text-white text-xs font-bold shadow-sm transition-all"
+                        <Link
+                          href={getPropertyUrl(property)}
+                          onClick={onClose}
+                          className="px-3 py-1.5 rounded-lg bg-[#E1224D] hover:bg-[#c91d43] text-white text-xs font-bold shadow-sm transition-all inline-flex items-center"
                         >
                           View Details
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </div>

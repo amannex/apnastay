@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { X, Scale, ShieldCheck, Wifi, MapPin, Key, DollarSign, ArrowRight } from 'lucide-react';
+import { getPropertyUrl } from '@/features/properties';
 
 export default function CompareDrawer({
   isOpen,
@@ -98,12 +100,10 @@ export default function CompareDrawer({
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
-                        <div
-                          onClick={() => {
-                            onClose();
-                            onSelectProperty(prop);
-                          }}
-                          className="cursor-pointer"
+                        <Link
+                          href={getPropertyUrl(prop)}
+                          onClick={onClose}
+                          className="cursor-pointer block"
                         >
                           <img
                             src={prop.images[0]}
@@ -114,7 +114,7 @@ export default function CompareDrawer({
                             {prop.title}
                           </h4>
                           <p className="text-xs text-[#6B7280] line-clamp-1">{prop.neighborhood}</p>
-                        </div>
+                        </Link>
                       </div>
                     </th>
                   ))}
@@ -221,15 +221,13 @@ export default function CompareDrawer({
                   <td className="p-4"></td>
                   {compareList.map((prop) => (
                     <td key={prop.id} className="p-4">
-                      <button
-                        onClick={() => {
-                          onClose();
-                          onSelectProperty(prop);
-                        }}
-                        className="w-full py-2.5 rounded-full bg-[#1A1A1A] text-white text-xs font-bold hover:bg-[#E1224D] transition-colors shadow-sm"
+                      <Link
+                        href={getPropertyUrl(prop)}
+                        onClick={onClose}
+                        className="w-full py-2.5 rounded-full bg-[#1A1A1A] text-white text-xs font-bold hover:bg-[#E1224D] transition-colors shadow-sm inline-flex items-center justify-center text-center"
                       >
                         Inspect Room →
-                      </button>
+                      </Link>
                     </td>
                   ))}
                   {Array.from({ length: 3 - compareList.length }).map((_, idx) => (

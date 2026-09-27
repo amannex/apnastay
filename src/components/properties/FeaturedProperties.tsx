@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Heart, Star, ShieldCheck, Scale, Key, ArrowRight, Sparkles, MapPin } from 'lucide-react';
+import { getPropertyUrl } from '@/features/properties';
 
 export default function FeaturedProperties({
   properties = [] as any[],
@@ -28,9 +30,10 @@ export default function FeaturedProperties({
             const isCompared = compareIds.includes(prop.id);
 
             return (
-              <div
+              <Link
                 key={prop.id}
-                onClick={() => onSelectProperty(prop)}
+                href={getPropertyUrl(prop)}
+                onClick={() => onSelectProperty && onSelectProperty(prop)}
                 className="group bg-white rounded-3xl border border-[#EDEDED] shadow-sm hover:shadow-apple-hover transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between"
               >
                 {/* IMAGE CAROUSEL / WRAPPER */}
@@ -53,9 +56,20 @@ export default function FeaturedProperties({
                   </div>
 
                   {/* TOP RIGHT ACTION BUTTONS (WISHLIST + COMPARE CHECKBOX) */}
-                  <div className="absolute top-4 right-4 flex items-center gap-2 z-10" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="absolute top-4 right-4 flex items-center gap-2 z-10"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  >
                     <button
-                      onClick={() => onToggleCompare(prop.id)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onToggleCompare(prop.id);
+                      }}
                       className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                         isCompared
                           ? 'bg-[#1A1A1A] text-white shadow-md'
@@ -67,7 +81,12 @@ export default function FeaturedProperties({
                     </button>
 
                     <button
-                      onClick={() => onToggleWishlist(prop.id)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onToggleWishlist(prop.id);
+                      }}
                       className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                         isWishlisted
                           ? 'bg-[#E1224D] text-white shadow-md'
@@ -144,7 +163,7 @@ export default function FeaturedProperties({
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
     </div>
