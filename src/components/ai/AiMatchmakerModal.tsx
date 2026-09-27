@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { X, Sparkles, MapPin, DollarSign, Briefcase, Sun, Shield, CheckCircle2, ArrowRight } from 'lucide-react';
+import { getPropertyUrl } from '@/features/properties';
 
 export default function AiMatchmakerModal({
   isOpen,
@@ -262,12 +264,10 @@ export default function AiMatchmakerModal({
 
             <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
               {results.map((prop, idx) => (
-                <div
+                <Link
                   key={prop.id}
-                  onClick={() => {
-                    onClose();
-                    onSelectProperty(prop);
-                  }}
+                  href={getPropertyUrl(prop)}
+                  onClick={onClose}
                   className="p-4 rounded-2xl bg-[#FAFAFA] border border-[#EDEDED] hover:border-[#E1224D] transition-all cursor-pointer flex items-center justify-between gap-4 group"
                 >
                   <div className="flex items-center gap-4">
@@ -287,7 +287,7 @@ export default function AiMatchmakerModal({
                         {prop.title}
                       </h4>
                       <p className="text-xs text-[#6B7280] mt-0.5">
-                        ${prop.price}/mo • $0 brokerage
+                        ₹{prop.price}/mo • ₹0 brokerage
                       </p>
                     </div>
                   </div>
@@ -295,7 +295,7 @@ export default function AiMatchmakerModal({
                   <div className="w-9 h-9 rounded-full bg-white group-hover:bg-[#E1224D] group-hover:text-white text-[#1A1A1A] flex items-center justify-center transition-colors border">
                     <ArrowRight className="w-4 h-4" />
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 

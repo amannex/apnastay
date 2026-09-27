@@ -8,6 +8,7 @@ import type { Property, City } from '../types';
 import { handleRoleRedirect } from '../lib/auth/session';
 import { useAuth } from './AuthContext';
 import type { UserProfile, LoginPayload, RegisterPayload, AuthResponse } from '../features/auth/types';
+import { getPropertyUrl } from '../features/properties';
 
 export interface SearchFilters {
   cities: City[];
@@ -271,7 +272,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     onSelectForCompare: (ids) => setCompareIds(ids),
     onOpenCompare: () => setIsCompareOpen(true),
     onOpenWishlist: () => setIsWishlistOpen(true),
-    onOpenModal: (prop) => setSelectedPropertyModal(prop),
+    onOpenModal: (prop) => {
+      if (prop) {
+        router.push(getPropertyUrl(prop));
+      }
+    },
     onOpenAiMatchmaker: () => setIsAiMatchmakerOpen(true),
     onOpenAuthModal: () => router.push('/login'),
     comparePropertiesList,

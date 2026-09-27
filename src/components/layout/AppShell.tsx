@@ -8,7 +8,6 @@ import Footer from './Footer';
 import { useApp } from '../../context/AppContext';
 import dynamic from 'next/dynamic';
 
-const PropertyModal = dynamic(() => import('../properties/PropertyModal'), { ssr: false });
 const AiMatchmakerModal = dynamic(() => import('../ai/AiMatchmakerModal'), { ssr: false });
 const CompareDrawer = dynamic(() => import('../properties/CompareDrawer'), { ssr: false });
 const WishlistDrawer = dynamic(() => import('../properties/WishlistDrawer'), { ssr: false });
@@ -29,8 +28,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     onOpenAuthModal,
     authToast,
     handleLoginSuccess,
-    selectedPropertyModal,
-    onCloseModal,
     onToggleWishlist,
     onClearWishlist,
     onBookVisit,
@@ -101,13 +98,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Shared Modals & Drawers */}
 
-      <PropertyModal
-        property={selectedPropertyModal}
-        onClose={onCloseModal}
-        isWishlisted={selectedPropertyModal ? wishlistIds.includes(selectedPropertyModal.id) : false}
-        onToggleWishlist={onToggleWishlist}
-        onBookVisit={onBookVisit}
-      />
+
 
       <AiMatchmakerModal
         isOpen={isAiMatchmakerOpen}
