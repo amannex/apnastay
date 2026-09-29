@@ -78,7 +78,7 @@ export const siteConfig = {
     supportEmail: 'support@apnastay.in',
     twitter: 'https://twitter.com/apnastayindia',
     linkedin: 'https://www.linkedin.com/company/apnastayindia',
-    instagram: 'https://www.instagram.com/apnastayindia',
+    instagram: 'https://www.instagram.com/apnastay.in_/',
   },
 } as const;
 

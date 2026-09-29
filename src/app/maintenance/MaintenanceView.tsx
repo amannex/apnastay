@@ -93,7 +93,7 @@ export default function MaintenanceView() {
           className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm text-[#6B7280]"
         >
           <a
-            href="https://www.instagram.com/apnastay/"
+            href="https://www.instagram.com/apnastay.in_/"
             target="_blank"
             rel="noopener noreferrer"
             className="min-h-[44px] inline-flex items-center px-2 hover:text-[#ED3258] transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] focus-visible:ring-offset-2"
