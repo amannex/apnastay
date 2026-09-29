@@ -62,8 +62,9 @@ export function middleware(request: NextRequest) {
 
   const hasBypass = request.cookies.get('apnastay_maintenance_bypass')?.value === 'true';
 
+  // If maintenance mode is active and user has not bypassed it:
   if (isMaintenanceMode && !hasBypass) {
-    // Allow direct access to the maintenance page
+    // If already on /maintenance, serve it directly
     if (pathname === '/maintenance') {
       return NextResponse.next();
     }
@@ -82,16 +83,14 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    // For all other public and protected pages, rewrite to /maintenance with HTTP 503
+    // Redirect all web pages cleanly to /maintenance (307 Temporary Redirect)
     const maintenanceUrl = new URL('/maintenance', request.url);
-    return NextResponse.rewrite(maintenanceUrl, {
-      status: 503,
-      statusText: 'Service Unavailable',
-      headers: {
-        'Retry-After': '3600',
-        'Cache-Control': 'no-store, no-cache, must-revalidate'
-      }
-    });
+    return NextResponse.redirect(maintenanceUrl, 307);
+  }
+
+  // If maintenance mode is OFF but user visits /maintenance, send them to homepage
+  if (!isMaintenanceMode && pathname === '/maintenance') {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // ============================================================================

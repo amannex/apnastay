@@ -24,7 +24,7 @@ export default function MaintenancePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] flex flex-col justify-between selection:bg-[#FFE4EA] selection:text-[#E1224D]">
+    <div className="fixed inset-0 z-[9999] min-h-screen w-full bg-[#FAFAFA] overflow-y-auto flex flex-col justify-between selection:bg-[#FFE4EA] selection:text-[#E1224D]">
       {/* Top Bar with Brand Identity & Live Indicator */}
       <header className="w-full max-w-4xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
