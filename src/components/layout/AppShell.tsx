@@ -48,7 +48,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   } = useApp();
 
   const pathname = usePathname();
-  const isMaintenancePage = pathname === '/maintenance';
+  const isMaintenancePage = Boolean(pathname?.startsWith('/maintenance'));
 
   // Completely bypass AppShell chrome (Navbar, Footer, Drawers, Modals) on maintenance page
   if (isMaintenancePage) {
