@@ -7,21 +7,22 @@ export default function HouseIllustration() {
 
   return (
     <div
-      className="relative w-full max-w-[340px] sm:max-w-[400px] mx-auto flex flex-col items-center justify-center select-none cursor-default group"
+      className="relative w-full max-w-[260px] sm:max-w-[320px] md:max-w-[380px] mx-auto flex flex-col items-center justify-center select-none cursor-default group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       role="img"
-      aria-label="Illustration of an ApnaStay home with moving boxes and an animated key preparing the next stay"
+      aria-label="ApnaStay home illustration with moving boxes and the key preparing your next stay"
     >
-      {/* SVG Canvas */}
+      {/* Scalable SVG Canvas */}
       <svg
         viewBox="0 0 400 300"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto overflow-visible"
+        className="w-full h-auto overflow-visible pointer-events-none"
+        aria-hidden="true"
       >
         <defs>
-          {/* Soft Ground Shadow Gradient */}
+          {/* Ground Ambient Shadow */}
           <radialGradient
             id="groundShadow"
             cx="50%"
@@ -44,12 +45,12 @@ export default function HouseIllustration() {
             fx="50%"
             fy="70%"
           >
-            <stop offset="0%" stopColor="#ED3258" stopOpacity="0.35" />
-            <stop offset="50%" stopColor="#ED3258" stopOpacity="0.12" />
+            <stop offset="0%" stopColor="#ED3258" stopOpacity="0.32" />
+            <stop offset="50%" stopColor="#ED3258" stopOpacity="0.1" />
             <stop offset="100%" stopColor="#ED3258" stopOpacity="0" />
           </radialGradient>
 
-          {/* Roof Gradient for Subtle Soft-Vector Volume */}
+          {/* Roof Subtle Soft-Vector Gradient */}
           <linearGradient id="roofGrad" x1="200" y1="52" x2="200" y2="152" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#FFFFFF" />
             <stop offset="100%" stopColor="#FAFAFA" />
@@ -91,7 +92,6 @@ export default function HouseIllustration() {
 
         {/* 2. Moving Box 1: Left Background (Partially behind house) */}
         <g className="transition-transform duration-300" transform="translate(100, 205)">
-          {/* Main Box Body */}
           <rect
             x="0"
             y="0"
@@ -102,7 +102,6 @@ export default function HouseIllustration() {
             stroke="#D1D5DB"
             strokeWidth="1.5"
           />
-          {/* Tape stripe across box */}
           <path
             d="M 17 0 L 17 38"
             stroke="#9CA3AF"
@@ -110,7 +109,6 @@ export default function HouseIllustration() {
             strokeDasharray="2 1"
             opacity="0.5"
           />
-          {/* Top flap crease */}
           <line
             x1="0"
             y1="8"
@@ -137,7 +135,6 @@ export default function HouseIllustration() {
           />
 
           {/* Rounded Roof (ApnaStay Architectural Inspired Curve) */}
-          {/* Seamless arched gable roof with smooth rounded peak and soft overhang */}
           <path
             d="M 112 142 C 112 142, 134 78, 192 60 C 196 58.5, 204 58.5, 208 60 C 266 78, 288 142, 288 142 C 291 148, 286 154, 280 154 L 120 154 C 114 154, 109 148, 112 142 Z"
             fill="url(#roofGrad)"
@@ -145,13 +142,12 @@ export default function HouseIllustration() {
             strokeWidth="2"
           />
 
-          {/* Roof Ridge Peak Accent (Subtle ApnaStay Pink Accent Dot/Apex) */}
+          {/* Roof Ridge Peak Accent (Subtle ApnaStay Pink Accent Dot) */}
           <circle
             cx="200"
             cy="61"
             r="3.5"
             fill="#ED3258"
-            className="transition-transform duration-300"
           />
 
           {/* Roof Lower Trim Line */}
@@ -218,7 +214,6 @@ export default function HouseIllustration() {
           </g>
 
           {/* Door Entrance Area */}
-          {/* Subtle Pink Entrance Glow (Pulsing in animation loop and expanding on hover) */}
           <ellipse
             cx="200"
             cy="234"
@@ -245,7 +240,7 @@ export default function HouseIllustration() {
             className="transition-colors duration-300"
           />
 
-          {/* Door Handle with brand accent */}
+          {/* Door Handle */}
           <circle
             cx="192"
             cy="226"
@@ -257,7 +252,6 @@ export default function HouseIllustration() {
 
         {/* 4. Moving Box 2: Foreground Right */}
         <g className="transition-transform duration-300" transform="translate(262, 222)">
-          {/* Compact Box Body */}
           <rect
             x="0"
             y="0"
@@ -268,14 +262,12 @@ export default function HouseIllustration() {
             stroke="#D7C9BF"
             strokeWidth="1.5"
           />
-          {/* Vertical Packing Tape */}
           <path
             d="M 14 0 L 14 28"
             stroke="#C4B5A9"
             strokeWidth="2.5"
             opacity="0.6"
           />
-          {/* Subtle label sticker */}
           <rect
             x="4"
             y="5"
@@ -287,19 +279,12 @@ export default function HouseIllustration() {
           />
         </g>
 
-        {/* 5. The Key (Primary Animated Element) */}
-        {/*
-          Animation Sequence:
-          1. Gently floats in resting place.
-          2. Glides forward toward the door entrance.
-          3. Sits at threshold as the doorway pink glow shines.
-          4. Returns smoothly to its resting position.
-        */}
+        {/* 5. The Key (Animated Hero Element) */}
         <g
           id="animated-key"
           className={`key-journey ${isHovered ? 'key-hovered' : ''}`}
         >
-          {/* Floating Key Shadow */}
+          {/* Key Shadow */}
           <ellipse
             cx="224"
             cy="252"
@@ -310,9 +295,8 @@ export default function HouseIllustration() {
             className="key-shadow-pulse"
           />
 
-          {/* Key Graphic */}
+          {/* Key Body */}
           <g transform="translate(224, 218) rotate(-22)">
-            {/* Key Bow/Head (Round with hollow core) */}
             <circle
               cx="0"
               cy="0"
@@ -320,16 +304,13 @@ export default function HouseIllustration() {
               fill="url(#keyGrad)"
               stroke="#FFFFFF"
               strokeWidth="1.5"
-              className="drop-shadow-xs"
             />
-            {/* Inner Ring Opening */}
             <circle
               cx="0"
               cy="0"
               r="3.5"
               fill="#FFFFFF"
             />
-            {/* Key Shaft / Blade */}
             <rect
               x="-1.5"
               y="7"
@@ -338,7 +319,6 @@ export default function HouseIllustration() {
               rx="1.2"
               fill="url(#keyGrad)"
             />
-            {/* Key Tooth 1 */}
             <rect
               x="1"
               y="16"
@@ -347,7 +327,6 @@ export default function HouseIllustration() {
               rx="0.8"
               fill="url(#keyGrad)"
             />
-            {/* Key Tooth 2 */}
             <rect
               x="1"
               y="20"
@@ -360,13 +339,14 @@ export default function HouseIllustration() {
         </g>
       </svg>
 
-      {/* 6. Subtle Tooltip / Message on Hover */}
+      {/* 6. Subtle Tooltip / Message on Desktop Hover */}
       <div
-        className={`absolute -bottom-2 transition-all duration-300 pointer-events-none transform ${
+        className={`absolute -bottom-2 transition-all duration-300 pointer-events-none transform hidden sm:block ${
           isHovered
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-1'
         }`}
+        aria-hidden={!isHovered}
       >
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#EDEDED] shadow-[0_2px_8px_rgba(0,0,0,0.06)] text-xs font-medium text-[#111111] whitespace-nowrap">
           <span className="w-1.5 h-1.5 rounded-full bg-[#ED3258]" />
@@ -374,9 +354,8 @@ export default function HouseIllustration() {
         </span>
       </div>
 
-      {/* Scoped CSS for Key Movement, Gentle Float, & Door Glow Pulse */}
+      {/* Motion and Reduced-Motion CSS */}
       <style jsx>{`
-        /* Key 5-Second Looping Animation Journey */
         @keyframes keyCycle {
           0%, 100% {
             transform: translate(0px, 0px);
@@ -395,7 +374,6 @@ export default function HouseIllustration() {
           }
         }
 
-        /* Key Shadow Dynamics */
         @keyframes keyShadowCycle {
           0%, 100% {
             transform: scale(1) translate(0px, 0px);
@@ -419,7 +397,6 @@ export default function HouseIllustration() {
           }
         }
 
-        /* Doorway Subtle Warm Glow Pulse */
         @keyframes doorGlowCycle {
           0%, 100% {
             opacity: 0.25;
@@ -450,7 +427,6 @@ export default function HouseIllustration() {
           transform-origin: 200px 234px;
         }
 
-        /* On Desktop Hover: Key smoothly glides slightly closer toward the entrance */
         .key-hovered {
           animation-play-state: paused;
           transform: translate(-18px, 1px) !important;
@@ -462,6 +438,7 @@ export default function HouseIllustration() {
           .key-shadow-pulse,
           .door-glow-pulse {
             animation: none !important;
+            transform: none !important;
           }
         }
       `}</style>

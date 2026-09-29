@@ -17,18 +17,20 @@ export default function MaintenanceView() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FFFFFF] text-[#111111] flex flex-col justify-between selection:bg-[#FFE4EA] selection:text-[#ED3258] antialiased">
+    <div className="min-h-screen w-full bg-[#FFFFFF] text-[#111111] flex flex-col justify-between selection:bg-[#FFE4EA] selection:text-[#ED3258] antialiased overflow-x-hidden">
       {/* 1. Header / Brand */}
-      <header className="w-full pt-10 sm:pt-14 px-6 flex justify-center items-center">
+      <header className="w-full pt-8 sm:pt-12 md:pt-14 px-5 sm:px-6 flex justify-center items-center">
         <Link
           href="/"
-          className="inline-flex items-center gap-2.5 group focus-visible:outline-2 focus-visible:outline-[#ED3258] focus-visible:outline-offset-4 rounded-md"
+          className="inline-flex items-center gap-2.5 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] focus-visible:ring-offset-2 p-1"
           aria-label="ApnaStay Home"
         >
           <img
             src="/logo-icon.png"
             alt="ApnaStay Logo"
             className="h-8 sm:h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+            width={36}
+            height={36}
           />
           <span className="font-sans font-bold text-xl sm:text-2xl tracking-tight text-[#111111]">
             ApnaStay<span className="text-[#ED3258]">.</span>
@@ -36,43 +38,47 @@ export default function MaintenanceView() {
         </Link>
       </header>
 
-      {/* 2. Main Content & Visual Hierarchy */}
-      <main className="w-full max-w-2xl mx-auto px-6 py-6 sm:py-10 flex-1 flex flex-col items-center justify-center text-center">
-        {/* Central Visual: Polished House Illustration with Animated Key & Moving Boxes */}
+      {/* 2. Main Hero Content */}
+      <main className="w-full max-w-2xl mx-auto px-5 sm:px-6 py-6 sm:py-8 md:py-12 flex-1 flex flex-col items-center justify-center text-center">
+        {/* Central Visual: House Illustration */}
         <section
-          aria-label="ApnaStay house illustration"
-          className="w-full flex items-center justify-center my-4 sm:my-6"
+          aria-label="House illustration"
+          className="w-full flex items-center justify-center my-3 sm:my-5 md:my-6"
         >
           <HouseIllustration />
         </section>
 
-        {/* 3. Main Headline */}
-        <h1 className="text-[34px] sm:text-[42px] md:text-[54px] lg:text-[58px] font-bold text-[#111111] tracking-tight leading-[1.12] mb-4 sm:mb-5">
+        {/* Hero Headline: Mobile 34-42px, Desktop 52-64px */}
+        <h1 className="text-[34px] sm:text-[40px] md:text-[52px] lg:text-[58px] font-bold text-[#111111] tracking-tight leading-[1.14] sm:leading-[1.12] mb-3 sm:mb-4 md:mb-5">
           We&apos;re getting things ready.
         </h1>
 
-        {/* 4. Supporting Description */}
-        <p className="text-base sm:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mx-auto mb-6 sm:mb-8 font-normal">
+        {/* Supporting Description: Mobile 15-17px */}
+        <p className="text-[15px] sm:text-base md:text-[17px] text-[#6B7280] leading-relaxed max-w-[540px] mx-auto mb-5 sm:mb-7 md:mb-8 font-normal">
           ApnaStay is currently under maintenance while we&apos;re preparing a better way to find your next place to stay.
         </p>
 
-        {/* 5. Status Message */}
+        {/* Status Message */}
         <div className="flex items-center justify-center gap-2 text-sm sm:text-[15px] font-medium text-[#111111] mb-6 sm:mb-8">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ED3258] opacity-75"></span>
+          <span className="relative flex h-2 w-2" aria-hidden="true">
+            <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ED3258] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ED3258]"></span>
           </span>
           <span>We&apos;ll be back soon.</span>
         </div>
 
-        {/* 6. Go Back CTA (Enhanced Understated Hover Micro-Interaction) */}
+        {/* Minimal "← Go back" CTA with accessible touch target (>= 44px) */}
         <div>
           <button
+            type="button"
             onClick={handleGoBack}
-            className="group inline-flex items-center gap-2 text-sm sm:text-base font-medium text-[#111111] hover:text-[#ED3258] transition-colors duration-200 py-2 px-3 rounded-lg focus-visible:outline-2 focus-visible:outline-[#ED3258] focus-visible:outline-offset-4 cursor-pointer"
+            className="group inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm sm:text-base font-medium text-[#111111] hover:text-[#ED3258] transition-colors duration-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] focus-visible:ring-offset-2 cursor-pointer"
             aria-label="Go back to previous page"
           >
-            <span className="inline-block transition-transform duration-250 ease-out group-hover:-translate-x-1.5">
+            <span
+              className="inline-block transition-transform duration-200 ease-out group-hover:-translate-x-1.5 motion-reduce:transform-none"
+              aria-hidden="true"
+            >
               &larr;
             </span>
             <span>Go back</span>
@@ -80,17 +86,17 @@ export default function MaintenanceView() {
         </div>
       </main>
 
-      {/* 7. Social / Website Links (Footer) */}
-      <footer className="w-full pb-10 sm:pb-14 pt-6 px-6 text-center">
+      {/* 3. Footer Links with accessible tap targets */}
+      <footer className="w-full pb-8 sm:pb-12 md:pb-14 pt-4 sm:pt-6 px-5 sm:px-6 text-center">
         <nav
           aria-label="Footer links"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm text-[#6B7280]"
+          className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm text-[#6B7280]"
         >
           <a
             href="https://www.instagram.com/apnastay/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-[#ED3258] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[#ED3258] focus-visible:outline-offset-2 rounded"
+            className="min-h-[44px] inline-flex items-center px-2 hover:text-[#ED3258] transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] focus-visible:ring-offset-2"
           >
             Instagram
           </a>
@@ -99,7 +105,7 @@ export default function MaintenanceView() {
             href="https://apnastay.in/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-[#ED3258] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-[#ED3258] focus-visible:outline-offset-2 rounded"
+            className="min-h-[44px] inline-flex items-center px-2 hover:text-[#ED3258] transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ED3258] focus-visible:ring-offset-2"
           >
             ApnaStay.in
           </a>
