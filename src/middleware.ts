@@ -88,8 +88,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(maintenanceUrl, 307);
   }
 
-  // If maintenance mode is OFF but user visits /maintenance, send them to homepage
-  if (!isMaintenanceMode && pathname === '/maintenance') {
+  // If maintenance mode is OFF but user visits /maintenance, send them to homepage (allow during development)
+  if (!isMaintenanceMode && pathname === '/maintenance' && process.env.NODE_ENV !== 'development') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

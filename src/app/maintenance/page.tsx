@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import MaintenanceView from './MaintenanceView';
 
 export const metadata: Metadata = {
-  title: 'Under Scheduled Maintenance | ApnaStay India',
+  title: "We're getting things ready | ApnaStay",
   description:
-    'ApnaStay is temporarily undergoing scheduled performance and database upgrades. We will be back online shortly.',
+    "ApnaStay is currently under maintenance while we're preparing a better way to find your next place to stay.",
   robots: {
     index: false,
     follow: false,
