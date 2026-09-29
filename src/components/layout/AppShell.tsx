@@ -48,13 +48,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   } = useApp();
 
   const pathname = usePathname();
-  const isMaintenancePage = pathname === '/maintenance';
+  const isMaintenancePage = Boolean(pathname?.startsWith('/maintenance'));
+
+  // Completely bypass AppShell chrome (Navbar, Footer, Drawers, Modals) on maintenance page
+  if (isMaintenancePage) {
+    return <>{children}</>;
+  }
+
   const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/owner') || pathname?.startsWith('/admin');
   const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password';
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A] font-sans">
-      {!isDashboard && !isAuthPage && !isMaintenancePage && (
+      {!isDashboard && !isAuthPage && (
         <Navbar
           wishlistCount={wishlistIds.length}
           compareCount={compareIds.length}
