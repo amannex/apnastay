@@ -48,12 +48,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   } = useApp();
 
   const pathname = usePathname();
+  const isMaintenancePage = pathname === '/maintenance';
   const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/owner') || pathname?.startsWith('/admin');
   const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password';
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A] font-sans">
-      {!isDashboard && !isAuthPage && (
+      {!isDashboard && !isAuthPage && !isMaintenancePage && (
         <Navbar
           wishlistCount={wishlistIds.length}
           compareCount={compareIds.length}
@@ -94,39 +95,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Route Content */}
       <main>{children}</main>
 
-      {!isDashboard && !isAuthPage && <Footer onExploreClick={() => { }} />}
+      {!isDashboard && !isAuthPage && !isMaintenancePage && <Footer onExploreClick={() => { }} />}
 
       {/* Shared Modals & Drawers */}
+      {!isMaintenancePage && (
+        <>
+          <AiMatchmakerModal
+            isOpen={isAiMatchmakerOpen}
+            onClose={onCloseAiMatchmaker}
+            cities={STATIC_CITIES}
+            properties={STATIC_PROPERTIES}
+            onSelectProperty={onOpenModal}
+          />
 
+          <CompareDrawer
+            isOpen={isCompareOpen}
+            onClose={onCloseCompare}
+            compareList={comparePropertiesList}
+            onRemoveCompare={onRemoveCompare}
+            onClearCompare={onClearCompare}
+            onSelectProperty={onOpenModal}
+          />
 
-
-      <AiMatchmakerModal
-        isOpen={isAiMatchmakerOpen}
-        onClose={onCloseAiMatchmaker}
-        cities={STATIC_CITIES}
-        properties={STATIC_PROPERTIES}
-        onSelectProperty={onOpenModal}
-      />
-
-      <CompareDrawer
-        isOpen={isCompareOpen}
-        onClose={onCloseCompare}
-        compareList={comparePropertiesList}
-        onRemoveCompare={onRemoveCompare}
-        onClearCompare={onClearCompare}
-        onSelectProperty={onOpenModal}
-      />
-
-      <WishlistDrawer
-        isOpen={isWishlistOpen}
-        onClose={onCloseWishlist}
-        properties={wishlistPropertiesList}
-        onToggleWishlist={onToggleWishlist}
-        onClearWishlist={onClearWishlist}
-        onOpenModal={onOpenModal}
-        onOpenCompare={onOpenCompare}
-        onSelectForCompare={onSelectForCompare}
-      />
+          <WishlistDrawer
+            isOpen={isWishlistOpen}
+            onClose={onCloseWishlist}
+            properties={wishlistPropertiesList}
+            onToggleWishlist={onToggleWishlist}
+            onClearWishlist={onClearWishlist}
+            onOpenModal={onOpenModal}
+            onOpenCompare={onOpenCompare}
+            onSelectForCompare={onSelectForCompare}
+          />
+        </>
+      )}
 
       {/* Booking Confirmation Dialog */}
       {bookingConfirmation && (
