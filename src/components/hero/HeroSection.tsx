@@ -56,13 +56,8 @@ export default function HeroSection({
           </span>
         </h1>
 
-        {/* 2. Subheading */}
-        <p className="mt-4 sm:mt-5 text-lg sm:text-2xl md:text-[26px] font-semibold text-[#1A1A1A] tracking-tight max-w-3xl mx-auto leading-snug">
-          Find your long-term home, even when it&apos;s far from home.
-        </p>
-
-        {/* 3. Supporting Text */}
-        <p className="mt-2.5 sm:mt-3 text-sm sm:text-base md:text-lg text-[#52525B] max-w-2xl mx-auto font-normal leading-relaxed">
+        {/* 2. Supporting Text */}
+        <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#52525B] max-w-2xl mx-auto font-normal leading-relaxed">
           We&apos;re building an Indian platform to make long-term renting simpler — from finding genuine properties to connecting directly with owners.
         </p>
 
