@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Search, MapPin, IndianRupee, Home, X, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, MapPin, IndianRupee, Home, X, ChevronDown, Check } from 'lucide-react';
 
 export default function SearchBar({
   filters,
@@ -16,6 +16,20 @@ export default function SearchBar({
   onRoomTypeChange,
   totalResults = 0
 }: any) {
+  const [openDropdown, setOpenDropdown] = useState<'city' | 'budget' | 'room' | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Support both HomePage object-style props (filters/onChange) and standalone props
   const activeCities = (filters && filters.cities && filters.cities.length > 0)
     ? filters.cities
@@ -36,16 +50,19 @@ export default function SearchBar({
   const handleCityChange = (val: string) => {
     if (onChange) onChange('city', val);
     if (onCityChange) onCityChange(val);
+    setOpenDropdown(null);
   };
 
-  const handlePriceChange = (val: string) => {
-    if (onChange) onChange('price', Number(val));
-    if (onPriceChange) onPriceChange(Number(val));
+  const handlePriceChange = (val: number) => {
+    if (onChange) onChange('price', val);
+    if (onPriceChange) onPriceChange(val);
+    setOpenDropdown(null);
   };
 
   const handleRoomTypeChange = (val: string) => {
     if (onChange) onChange('roomType', val);
     if (onRoomTypeChange) onRoomTypeChange(val);
+    setOpenDropdown(null);
   };
 
   const handleResetFilters = () => {
@@ -55,9 +72,11 @@ export default function SearchBar({
       onChange('price', 50000);
       onChange('roomType', 'all');
     }
+    setOpenDropdown(null);
   };
 
   const handleSearchClick = () => {
+    setOpenDropdown(null);
     const el = document.getElementById('properties');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -83,78 +102,179 @@ export default function SearchBar({
     { value: 15000, label: 'Under ₹15,000 / month' }
   ];
 
+  const currentBudgetLabel = budgetOptions.find((b) => b.value === activePrice)?.label || 'Max Budget';
+  const currentRoomLabel = roomTypes.find((r) => r.id === activeRoomType)?.label || 'Room Type';
+
   const hasActiveFilters = activeCity !== 'all' || activePrice < 50000 || activeRoomType !== 'all';
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 relative z-40">
+    <div ref={containerRef} className="w-full max-w-5xl mx-auto px-4 relative z-40">
       <div className="bg-white rounded-3xl md:rounded-full p-2 sm:p-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-[#EDEDED] hover:border-[#D1D5DB] transition-all">
         <div className="flex flex-col md:flex-row items-center justify-between gap-1 sm:gap-2">
+          
           {/* STEP 1: CITY SELECTOR */}
-          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 sm:py-3 rounded-full hover:bg-[#FAFAFA] transition-colors relative cursor-pointer group">
-            <MapPin className="w-5 h-5 text-[#ED3258] shrink-0" />
-            <div className="flex-1 min-w-0">
-              <select
-                value={activeCity}
-                onChange={(e) => handleCityChange(e.target.value)}
-                className={`w-full bg-transparent text-sm focus:outline-none cursor-pointer appearance-none pr-6 ${
-                  activeCity === 'all' ? 'text-[#6B7280] font-medium' : 'text-[#1A1A1A] font-bold'
+          <div className="w-full md:w-auto flex-1 relative">
+            <button
+              type="button"
+              onClick={() => setOpenDropdown((prev) => (prev === 'city' ? null : 'city'))}
+              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 sm:py-3 rounded-full hover:bg-[#FAFAFA] transition-colors cursor-pointer group text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <MapPin className="w-5 h-5 text-[#ED3258] shrink-0" />
+                <span
+                  className={`truncate text-sm ${
+                    activeCity === 'all' ? 'text-[#6B7280] font-medium' : 'text-[#1A1A1A] font-bold'
+                  }`}
+                >
+                  {activeCity === 'all' ? 'City / Locality' : activeCity}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-[#9CA3AF] shrink-0 group-hover:text-[#1A1A1A] transition-transform duration-200 ${
+                  openDropdown === 'city' ? 'rotate-180 text-[#1A1A1A]' : ''
                 }`}
-              >
-                <option value="all">City / Locality</option>
-                {activeCities.map((c: any) => (
-                  <option key={c.id || c.name} value={c.name} className="text-[#1A1A1A]">
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <ChevronDown className="w-4 h-4 text-[#9CA3AF] pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 group-hover:text-[#1A1A1A] transition-colors" />
+              />
+            </button>
+
+            {/* City Dropdown Menu Below Tab */}
+            {openDropdown === 'city' && (
+              <div className="absolute top-[calc(100%+8px)] left-0 w-full sm:min-w-[260px] bg-white rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.14)] border border-[#EDEDED] py-2 z-50 animate-in fade-in zoom-in-95 duration-150 max-h-72 overflow-y-auto">
+                <button
+                  type="button"
+                  onClick={() => handleCityChange('all')}
+                  className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors ${
+                    activeCity === 'all'
+                      ? 'bg-[#ED3258]/[0.08] text-[#ED3258] font-bold'
+                      : 'text-[#4B5563] hover:text-[#1A1A1A] hover:bg-[#FAFAFA]'
+                  }`}
+                >
+                  <span>City / Locality (All)</span>
+                  {activeCity === 'all' && <Check className="w-4 h-4 text-[#ED3258]" />}
+                </button>
+                <div className="my-1 border-t border-[#F3F4F6]" />
+                {activeCities.map((c: any) => {
+                  const cityName = typeof c === 'string' ? c : c.name;
+                  const isSelected = activeCity === cityName;
+                  return (
+                    <button
+                      key={c.id || cityName}
+                      type="button"
+                      onClick={() => handleCityChange(cityName)}
+                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors ${
+                        isSelected
+                          ? 'bg-[#ED3258]/[0.08] text-[#ED3258] font-bold'
+                          : 'text-[#1A1A1A] hover:bg-[#FAFAFA]'
+                      }`}
+                    >
+                      <span>{cityName}</span>
+                      {isSelected && <Check className="w-4 h-4 text-[#ED3258]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="hidden md:block w-px h-8 bg-[#EDEDED]" />
 
           {/* STEP 2: BUDGET SELECTOR */}
-          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 sm:py-3 rounded-full hover:bg-[#FAFAFA] transition-colors relative cursor-pointer group">
-            <IndianRupee className="w-5 h-5 text-[#ED3258] shrink-0" />
-            <div className="flex-1 min-w-0">
-              <select
-                value={activePrice}
-                onChange={(e) => handlePriceChange(e.target.value)}
-                className={`w-full bg-transparent text-sm focus:outline-none cursor-pointer appearance-none pr-6 ${
-                  activePrice >= 50000 ? 'text-[#6B7280] font-medium' : 'text-[#1A1A1A] font-bold'
+          <div className="w-full md:w-auto flex-1 relative">
+            <button
+              type="button"
+              onClick={() => setOpenDropdown((prev) => (prev === 'budget' ? null : 'budget'))}
+              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 sm:py-3 rounded-full hover:bg-[#FAFAFA] transition-colors cursor-pointer group text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <IndianRupee className="w-5 h-5 text-[#ED3258] shrink-0" />
+                <span
+                  className={`truncate text-sm ${
+                    activePrice >= 50000 ? 'text-[#6B7280] font-medium' : 'text-[#1A1A1A] font-bold'
+                  }`}
+                >
+                  {activePrice >= 50000 ? 'Max Budget' : currentBudgetLabel}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-[#9CA3AF] shrink-0 group-hover:text-[#1A1A1A] transition-transform duration-200 ${
+                  openDropdown === 'budget' ? 'rotate-180 text-[#1A1A1A]' : ''
                 }`}
-              >
-                {budgetOptions.map((b) => (
-                  <option key={b.value} value={b.value} className="text-[#1A1A1A]">
-                    {b.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <ChevronDown className="w-4 h-4 text-[#9CA3AF] pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 group-hover:text-[#1A1A1A] transition-colors" />
+              />
+            </button>
+
+            {/* Budget Dropdown Menu Below Tab */}
+            {openDropdown === 'budget' && (
+              <div className="absolute top-[calc(100%+8px)] left-0 w-full sm:min-w-[260px] bg-white rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.14)] border border-[#EDEDED] py-2 z-50 animate-in fade-in zoom-in-95 duration-150 max-h-72 overflow-y-auto">
+                {budgetOptions.map((b) => {
+                  const isSelected = activePrice === b.value;
+                  return (
+                    <button
+                      key={b.value}
+                      type="button"
+                      onClick={() => handlePriceChange(b.value)}
+                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors ${
+                        isSelected
+                          ? 'bg-[#ED3258]/[0.08] text-[#ED3258] font-bold'
+                          : 'text-[#1A1A1A] hover:bg-[#FAFAFA]'
+                      }`}
+                    >
+                      <span>{b.label}</span>
+                      {isSelected && <Check className="w-4 h-4 text-[#ED3258]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="hidden md:block w-px h-8 bg-[#EDEDED]" />
 
           {/* STEP 3: ROOM TYPE SELECTOR */}
-          <div className="w-full md:w-auto flex-1 flex items-center gap-3 px-4 py-2.5 sm:py-3 rounded-full hover:bg-[#FAFAFA] transition-colors relative cursor-pointer group">
-            <Home className="w-5 h-5 text-[#ED3258] shrink-0" />
-            <div className="flex-1 min-w-0">
-              <select
-                value={activeRoomType}
-                onChange={(e) => handleRoomTypeChange(e.target.value)}
-                className={`w-full bg-transparent text-sm focus:outline-none cursor-pointer appearance-none pr-6 ${
-                  activeRoomType === 'all' ? 'text-[#6B7280] font-medium' : 'text-[#1A1A1A] font-bold'
+          <div className="w-full md:w-auto flex-1 relative">
+            <button
+              type="button"
+              onClick={() => setOpenDropdown((prev) => (prev === 'room' ? null : 'room'))}
+              className="w-full flex items-center justify-between gap-3 px-4 py-2.5 sm:py-3 rounded-full hover:bg-[#FAFAFA] transition-colors cursor-pointer group text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Home className="w-5 h-5 text-[#ED3258] shrink-0" />
+                <span
+                  className={`truncate text-sm ${
+                    activeRoomType === 'all' ? 'text-[#6B7280] font-medium' : 'text-[#1A1A1A] font-bold'
+                  }`}
+                >
+                  {activeRoomType === 'all' ? 'Room Type' : currentRoomLabel}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-[#9CA3AF] shrink-0 group-hover:text-[#1A1A1A] transition-transform duration-200 ${
+                  openDropdown === 'room' ? 'rotate-180 text-[#1A1A1A]' : ''
                 }`}
-              >
-                {roomTypes.map((t) => (
-                  <option key={t.id} value={t.id} className="text-[#1A1A1A]">
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <ChevronDown className="w-4 h-4 text-[#9CA3AF] pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 group-hover:text-[#1A1A1A] transition-colors" />
+              />
+            </button>
+
+            {/* Room Type Dropdown Menu Below Tab */}
+            {openDropdown === 'room' && (
+              <div className="absolute top-[calc(100%+8px)] left-0 w-full sm:min-w-[260px] bg-white rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.14)] border border-[#EDEDED] py-2 z-50 animate-in fade-in zoom-in-95 duration-150 max-h-72 overflow-y-auto">
+                {roomTypes.map((t) => {
+                  const isSelected = activeRoomType === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => handleRoomTypeChange(t.id)}
+                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between transition-colors ${
+                        isSelected
+                          ? 'bg-[#ED3258]/[0.08] text-[#ED3258] font-bold'
+                          : 'text-[#1A1A1A] hover:bg-[#FAFAFA]'
+                      }`}
+                    >
+                      <span>{t.label}</span>
+                      {isSelected && <Check className="w-4 h-4 text-[#ED3258]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* SEARCH BUTTON (CIRCULAR IN PRIMARY COLOR) */}
@@ -185,4 +305,5 @@ export default function SearchBar({
     </div>
   );
 }
+
 
