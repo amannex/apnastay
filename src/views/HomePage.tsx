@@ -1,18 +1,17 @@
 'use client';
 
 import React from 'react';
-import AppleSimpleHero from '../components/hero/AppleSimpleHero';
-import SearchBar from '../components/search/SearchBar';
-import CitiesCarousel from '../components/sections/CitiesCarousel';
-import WhyApnaStayGrid from '../components/sections/WhyApnaStayGrid';
-import PropertiesSection from '../components/properties/PropertiesSection';
-import BlogSection from '../components/sections/BlogSection';
-import FAQSection from '../components/sections/FaqSection';
-import RentalCategoriesShowcase from '../components/sections/RentalCategoriesShowcase';
-import ManagedServicesShowcase from '../components/sections/ManagedServicesShowcase';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import AppLaunchBanner from '../components/sections/AppLaunchBanner';
+import HeroSection from '../components/hero/HeroSection';
+import WhatWeSolveSection from '../components/sections/WhatWeSolveSection';
+import LocalityDiscovery from '../components/sections/LocalityDiscovery';
+import PropertiesSection from '../components/properties/PropertiesSection';
+import HowItWorksSimple from '../components/sections/HowItWorksSimple';
+import OwnerCalloutSection from '../components/sections/OwnerCalloutSection';
+import CommunitySection from '../components/sections/CommunitySection';
+import FAQSection from '../components/sections/FaqSection';
+import FinalCtaSection from '../components/sections/FinalCtaSection';
 import { useApp } from '../context/AppContext';
 
 export default function HomePage(props: any = {}) {
@@ -27,33 +26,35 @@ export default function HomePage(props: any = {}) {
   const wishlistIds = props.wishlistIds || app.wishlistIds;
   const onToggleCompare = props.onToggleCompare || app.onToggleCompare;
   const onToggleWishlist = props.onToggleWishlist || app.onToggleWishlist;
-  const onOpenAiMatchmaker = props.onOpenAiMatchmaker || app.onOpenAiMatchmaker;
   const activeTab = props.activeTab || app.activeTab || 'All';
-  const onTabChange = props.onTabChange || app.onTabChange || (() => { });
+  const onTabChange = props.onTabChange || app.onTabChange || (() => {});
+
+  const handleLocalitySelect = (city: string) => {
+    if (onSearchChange) {
+      onSearchChange('city', city);
+    }
+    if (onCitySelect) {
+      onCitySelect(city);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white">
-      {/* 1. APPLE SIMPLE LIGHT THEME HERO */}
-      <AppleSimpleHero />
+      {/* 1. 100SVH TYPOGRAPHY-LED HERO WITH REPOSITIONED SEARCH BAR */}
+      <HeroSection
+        filters={searchFilters}
+        onChange={onSearchChange}
+        onReset={onReset}
+      />
 
-      {/* 2. SEARCH & FILTER SECTION & CITIES CAROUSEL ON SEAMLESS WHITE BACKGROUND */}
-      <section className="bg-white pb-12 border-b border-[#EDEDED]">
-        <div className="relative z-30 pt-4 pb-6">
-          <SearchBar filters={searchFilters} onChange={onSearchChange} onReset={onReset} />
-        </div>
+      {/* 2. WHAT WE'RE SOLVING: WHY APNASTAY IS BUILT FOR LONG-TERM RENTING */}
+      <WhatWeSolveSection />
 
-        <div className="pt-2">
-          <CitiesCarousel onCityClick={onCitySelect} />
-        </div>
-      </section>
+      {/* 3. LOCALITY-BASED DISCOVERY: EARLY VALIDATION FOCUS HUBS */}
+      <LocalityDiscovery onSelectLocality={handleLocalitySelect} />
 
-      {/* 3.5. INDIAN RENTAL STAY CATEGORIES */}
-      <RentalCategoriesShowcase />
-
-      {/* 4. WHY APNASTAY ZERO-BROKERAGE PROMISE */}
-      <WhyApnaStayGrid />
-
-      {/* 5. FEATURED VERIFIED ROOMS WITH LINK TO MULTI-PAGE EXPLORER */}
-      <section className="pt-16 pb-12 bg-[#FAFAFA] border-b border-[#EDEDED]">
+      {/* 4. GENUINE PROPERTIES: CURRENT AVAILABLE SUPPLY */}
+      <section id="properties" className="pt-16 pb-12 bg-white border-b border-[#EDEDED]">
         <PropertiesSection
           activeTab={activeTab}
           onTabChange={onTabChange}
@@ -65,29 +66,31 @@ export default function HomePage(props: any = {}) {
           onToggleWishlist={onToggleWishlist}
           searchFilters={searchFilters}
         />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-2 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-2 text-center">
           <Link
             href="/properties"
-            className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#E1224D] text-white font-bold text-xs sm:text-sm shadow-apple hover:bg-[#C71B42] transition-all hover:scale-105 whitespace-nowrap max-w-full"
+            className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#1A1A1A] hover:bg-[#ED3258] text-white font-semibold text-xs sm:text-sm shadow-apple hover:shadow-apple-md transition-all active:scale-[0.98]"
           >
-            <span className="sm:hidden">Browse All 1,200+ Verified Homes</span>
-            <span className="hidden sm:inline">Browse All 1,200+ Verified Homes Across India</span>
+            <span>Browse All Available Properties</span>
             <ArrowRight className="w-4 h-4 shrink-0" />
           </Link>
         </div>
       </section>
 
-      {/* 5.5. MANAGED LIVING SERVICES & TRUST (bg-[#FAFAFA]) */}
-      <ManagedServicesShowcase />
+      {/* 5. SIMPLE HOW IT WORKS FOR TENANTS & OWNERS */}
+      <HowItWorksSimple />
 
-      {/* 6. APNASTAY JOURNAL & URBAN LIVING GUIDE */}
-      <BlogSection />
+      {/* 6. FOR PROPERTY OWNERS: DIRECT OWNER LISTING CALLOUT */}
+      <OwnerCalloutSection />
 
-      {/* 6.5. GOOGLE PLAY STORE MOBILE APP COMING SOON BANNER */}
-      <AppLaunchBanner />
+      {/* 7. EARLY COMMUNITY & TRUST SECTION */}
+      <CommunitySection />
 
-      {/* 7. FREQUENTLY ASKED QUESTIONS */}
+      {/* 8. HONEST, GROUNDED FAQS */}
       <FAQSection />
+
+      {/* 9. FINAL ACTION CTA */}
+      <FinalCtaSection />
     </main>
   );
 }
