@@ -28,20 +28,19 @@ export default function HeroSection({
   };
 
   return (
-    <section className="relative min-h-[100svh] flex flex-col justify-between pt-24 sm:pt-28 lg:pt-32 pb-6 sm:pb-8 overflow-hidden bg-white">
-      {/* Subtle editorial warm background glow */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[340px] bg-gradient-to-b from-[#ED3258]/[0.045] via-[#ED3258]/[0.015] to-transparent blur-3xl pointer-events-none -z-10"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute top-1/3 -left-24 w-[320px] h-[320px] bg-[#FAFAFA] rounded-full blur-2xl pointer-events-none -z-10"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute top-1/4 -right-24 w-[320px] h-[320px] bg-rose-50/20 rounded-full blur-2xl pointer-events-none -z-10"
-        aria-hidden="true"
-      />
+    <section className="relative min-h-[100svh] flex flex-col justify-between pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 bg-white z-30 overflow-visible">
+      {/* Subtle editorial warm background glow confined to background container */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[340px] bg-gradient-to-b from-[#ED3258]/[0.045] via-[#ED3258]/[0.015] to-transparent blur-3xl pointer-events-none"
+        />
+        <div
+          className="absolute top-1/3 -left-24 w-[320px] h-[320px] bg-[#FAFAFA] rounded-full blur-2xl pointer-events-none"
+        />
+        <div
+          className="absolute top-1/4 -right-24 w-[320px] h-[320px] bg-rose-50/20 rounded-full blur-2xl pointer-events-none"
+        />
+      </div>
 
       {/* Hero Content: Centered, balanced typography-led composition */}
       <div className="flex-1 flex flex-col justify-center max-w-7xl lg:max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 text-center w-full my-auto py-2 sm:py-4">
