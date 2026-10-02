@@ -163,10 +163,10 @@ export default function PropertiesSection({
               Verified & Zero Brokerage
             </div>
             <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1A1A1A]">
-              Available Long-Term Homes
+              Featured Properties
             </h2>
             <p className="text-[#6B7280] text-base mt-2">
-              Genuine apartments with direct owner communication, transparent terms, and zero brokerage.
+              Physically audited apartments ready for instant NFC smart-lock self-touring.
             </p>
           </div>
 
