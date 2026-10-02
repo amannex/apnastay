@@ -79,6 +79,7 @@ export const siteConfig = {
     twitter: 'https://twitter.com/apnastayindia',
     linkedin: 'https://www.linkedin.com/company/apnastayindia',
     instagram: 'https://www.instagram.com/apnastay.in_/',
+    whatsappCommunity: 'https://chat.whatsapp.com/B6D6CJPvtEJKNaFvbXohPz',
   },
 } as const;
 

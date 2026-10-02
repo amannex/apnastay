@@ -4,6 +4,7 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SearchBar from '../search/SearchBar';
+import { siteConfig } from '../../config/site';
 
 interface HeroSectionProps {
   filters?: any;
@@ -80,8 +81,9 @@ export default function HeroSection({
         {/* 4. Single Primary Hero CTA */}
         <div className="mt-5 sm:mt-7">
           <a
-            href="#community"
-            onClick={handleCommunityClick}
+            href={siteConfig.links.whatsappCommunity}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-[#1A1A1A] text-white hover:bg-[#ED3258] text-xs sm:text-sm font-semibold shadow-apple hover:shadow-apple-md transition-all active:scale-[0.98] group"
           >
             <span>Join the ApnaStay Community</span>
