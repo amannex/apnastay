@@ -46,35 +46,30 @@ export default function HeroSection({
 
       {/* Hero Content: Centered, balanced typography-led composition */}
       <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full my-auto py-2 sm:py-4">
-        {/* 1. Positioning Line - Large Unboxed Eyebrow */}
-        <div className="inline-flex items-center justify-center mx-auto mb-3 sm:mb-5 animate-slide-up">
-          <p className="text-lg sm:text-2xl md:text-3xl lg:text-[32px] font-semibold text-[#1A1A1A] tracking-tight">
-            Not another{' '}
-            <span className="relative inline-block font-extrabold text-[#ED3258] px-1 uppercase tracking-wide">
-              ONE-NIGHT
-              {/* Transparent thin black strike-through line */}
-              <motion.span
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.45, delay: 0.2, ease: 'easeInOut' }}
-                className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] sm:h-[2.5px] bg-black/40 rounded-full origin-left pointer-events-none"
-                aria-hidden="true"
-              />
-            </span>{' '}
-            stay platform.
-          </p>
-        </div>
-
-        {/* 2. Main Headline */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[66px] font-bold tracking-tight text-[#1A1A1A] leading-[1.12] sm:leading-[1.08] max-w-4xl mx-auto">
-          Find your long-term home,{' '}
-          <span className="block sm:inline text-[#1A1A1A]">
-            even when it&apos;s far from home.
-          </span>
+        {/* 1. Main Headline */}
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[68px] font-bold tracking-tight text-[#1A1A1A] leading-[1.12] sm:leading-[1.08] max-w-4xl mx-auto animate-slide-up">
+          Not another{' '}
+          <span className="relative inline-block font-extrabold text-[#ED3258] px-1 uppercase tracking-wide">
+            ONE-NIGHT
+            {/* Transparent thin black strike-through line */}
+            <motion.span
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.45, delay: 0.2, ease: 'easeInOut' }}
+              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] sm:h-[4px] bg-black/40 rounded-full origin-left pointer-events-none"
+              aria-hidden="true"
+            />
+          </span>{' '}
+          stay platform.
         </h1>
 
+        {/* 2. Subheading */}
+        <p className="mt-4 sm:mt-5 text-lg sm:text-2xl md:text-[26px] font-semibold text-[#1A1A1A] tracking-tight max-w-3xl mx-auto leading-snug">
+          Find your long-term home, even when it&apos;s far from home.
+        </p>
+
         {/* 3. Supporting Text */}
-        <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-[#52525B] max-w-2xl mx-auto font-normal leading-relaxed">
+        <p className="mt-2.5 sm:mt-3 text-sm sm:text-base md:text-lg text-[#52525B] max-w-2xl mx-auto font-normal leading-relaxed">
           We&apos;re building an Indian platform to make long-term renting simpler — from finding genuine properties to connecting directly with owners.
         </p>
 
