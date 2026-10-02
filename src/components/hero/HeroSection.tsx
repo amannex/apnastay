@@ -44,11 +44,11 @@ export default function HeroSection({
       />
 
       {/* Hero Content: Centered, balanced typography-led composition */}
-      <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full my-auto py-2 sm:py-4">
+      <div className="flex-1 flex flex-col justify-center max-w-7xl lg:max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 text-center w-full my-auto py-2 sm:py-4">
         {/* 1. Main Headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[86px] xl:text-[96px] 2xl:text-[104px] font-extrabold tracking-tight text-[#1A1A1A] leading-[1.04] sm:leading-[1.01] max-w-6xl mx-auto animate-slide-up">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[74px] xl:text-[84px] 2xl:text-[92px] font-extrabold tracking-tight text-[#1A1A1A] leading-[1.08] sm:leading-[1.02] max-w-full mx-auto animate-slide-up">
           <span className="block">Not another</span>
-          <span className="block mt-0.5 sm:mt-1.5">
+          <span className="block mt-0.5 sm:mt-1.5 whitespace-nowrap">
             <span className="font-black text-[#ED3258] pr-2 uppercase tracking-wide">
               ONE-NIGHT
             </span>
