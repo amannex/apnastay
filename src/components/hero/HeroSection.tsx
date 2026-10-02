@@ -46,12 +46,14 @@ export default function HeroSection({
       {/* Hero Content: Centered, balanced typography-led composition */}
       <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full my-auto py-2 sm:py-4">
         {/* 1. Main Headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[88px] font-extrabold tracking-tight text-[#1A1A1A] leading-[1.05] sm:leading-[1.02] max-w-5xl mx-auto animate-slide-up">
-          Not another{' '}
-          <span className="font-black text-[#ED3258] px-1 uppercase tracking-wide">
-            ONE-NIGHT
-          </span>{' '}
-          stay platform.
+        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[86px] xl:text-[96px] 2xl:text-[104px] font-extrabold tracking-tight text-[#1A1A1A] leading-[1.04] sm:leading-[1.01] max-w-6xl mx-auto animate-slide-up">
+          <span className="block">Not another</span>
+          <span className="block mt-0.5 sm:mt-1.5">
+            <span className="font-black text-[#ED3258] pr-2 uppercase tracking-wide">
+              ONE-NIGHT
+            </span>
+            stay platform.
+          </span>
         </h1>
 
         {/* 2. Subheading */}
