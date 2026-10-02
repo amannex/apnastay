@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import SearchBar from '../search/SearchBar';
 import { siteConfig } from '../../config/site';
 
@@ -49,16 +48,8 @@ export default function HeroSection({
         {/* 1. Main Headline */}
         <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[62px] xl:text-[68px] font-bold tracking-tight text-[#1A1A1A] leading-[1.12] sm:leading-[1.08] max-w-4xl mx-auto animate-slide-up">
           Not another{' '}
-          <span className="relative inline-block font-extrabold text-[#ED3258] px-1 uppercase tracking-wide">
+          <span className="font-extrabold text-[#ED3258] px-1 uppercase tracking-wide">
             ONE-NIGHT
-            {/* Transparent thin black strike-through line */}
-            <motion.span
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.45, delay: 0.2, ease: 'easeInOut' }}
-              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[3px] sm:h-[4px] bg-black/40 rounded-full origin-left pointer-events-none"
-              aria-hidden="true"
-            />
           </span>{' '}
           stay platform.
         </h1>
