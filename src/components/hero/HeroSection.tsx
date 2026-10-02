@@ -57,7 +57,7 @@ export default function HeroSection({
         </h1>
 
         {/* 2. Supporting Text */}
-        <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#52525B] max-w-2xl mx-auto font-normal leading-relaxed">
+        <p className="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl text-[#52525B] max-w-4xl lg:max-w-5xl mx-auto font-normal leading-relaxed tracking-tight">
           We&apos;re building an Indian platform to make long-term renting simpler — from finding genuine properties to connecting directly with owners.
         </p>
 
