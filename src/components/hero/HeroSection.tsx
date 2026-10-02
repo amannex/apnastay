@@ -56,12 +56,12 @@ export default function HeroSection({
         </h1>
 
         {/* 2. Supporting Text */}
-        <p className="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl text-[#52525B] max-w-4xl lg:max-w-5xl mx-auto font-normal leading-relaxed tracking-tight">
+        <p className="mt-6 sm:mt-8 md:mt-10 text-base sm:text-lg lg:text-xl text-[#52525B] max-w-4xl lg:max-w-5xl mx-auto font-normal leading-relaxed tracking-tight">
           We&apos;re building an Indian platform to make long-term renting simpler — from finding genuine properties to connecting directly with owners. Find your long-term home, <span className="text-[#ED3258] font-semibold">faaaaaar</span> from home.
         </p>
 
         {/* 4. Single Primary Hero CTA */}
-        <div className="mt-5 sm:mt-7">
+        <div className="mt-7 sm:mt-9 md:mt-11">
           <a
             href={siteConfig.links.whatsappCommunity}
             target="_blank"
