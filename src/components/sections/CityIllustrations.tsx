@@ -101,7 +101,117 @@ export function GurugramIllustration({ className = 'w-full h-full' }: CityIllust
 }
 
 /**
- * 2. NOIDA (Outlined line-art: Expressway Towers & Cable-Stayed Bridge)
+ * 2. GHAZIABAD (Outlined line-art: Gateway Arch, Clock Tower Dome & Elevated Metro Line)
+ */
+export function GhaziabadIllustration({ className = 'w-full h-full' }: CityIllustrationProps) {
+  return (
+    <svg
+      viewBox="0 0 80 80"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      {/* Background Residential Buildings */}
+      <rect
+        x="13"
+        y="36"
+        width="12"
+        height="32"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeOpacity="0.4"
+      />
+      <circle cx="16.5" cy="42" r="0.8" fill="currentColor" opacity="0.4" />
+      <circle cx="21" cy="42" r="0.8" fill="currentColor" opacity="0.4" />
+      <circle cx="16.5" cy="48" r="0.8" fill="currentColor" opacity="0.4" />
+      <circle cx="21" cy="48" r="0.8" fill="currentColor" opacity="0.4" />
+
+      <rect
+        x="55"
+        y="35"
+        width="12"
+        height="33"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeOpacity="0.4"
+      />
+      <circle cx="58.5" cy="41" r="0.8" fill="currentColor" opacity="0.4" />
+      <circle cx="63" cy="41" r="0.8" fill="currentColor" opacity="0.4" />
+      <circle cx="58.5" cy="47" r="0.8" fill="currentColor" opacity="0.4" />
+      <circle cx="63" cy="47" r="0.8" fill="currentColor" opacity="0.4" />
+
+      {/* Central Gateway Arch & Clock Tower */}
+      {/* Finial / Dome */}
+      <line x1="40" y1="12" x2="40" y2="16" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="40" cy="11" r="1.3" fill="#E1224D" />
+      <path
+        d="M35 22C35 17 45 17 45 22H35Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+
+      {/* Clock Tower Box */}
+      <rect x="33" y="22" width="14" height="15" rx="0.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="40" cy="28.5" r="3.2" stroke="currentColor" strokeWidth="1" />
+      {/* Clock Hands */}
+      <line x1="40" y1="28.5" x2="40" y2="26.8" stroke="#E1224D" strokeWidth="0.8" strokeLinecap="round" />
+      <line x1="40" y1="28.5" x2="41.5" y2="28.5" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
+
+      {/* Cornice */}
+      <rect x="31" y="37" width="18" height="2.5" rx="0.5" stroke="currentColor" strokeWidth="1.3" />
+
+      {/* Grand Entry Arch Base */}
+      <path
+        d="M26 68V40H54V68"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+
+      {/* Central Arch Portal Opening */}
+      <path
+        d="M33 68V51C33 46.5 47 46.5 47 51V68"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+
+      {/* Recessed Inner Arch Depth Line */}
+      <path
+        d="M35.5 68V52C35.5 48.5 44.5 48.5 44.5 52V68"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeOpacity="0.55"
+      />
+
+      {/* Arch Pier vertical lines */}
+      <line x1="29.5" y1="42" x2="29.5" y2="68" stroke="currentColor" strokeWidth="1" strokeOpacity="0.55" />
+      <line x1="50.5" y1="42" x2="50.5" y2="68" stroke="currentColor" strokeWidth="1" strokeOpacity="0.55" />
+
+      {/* Elevated Metro Rail Viaduct (Ghaziabad Rapid Transit) */}
+      <path
+        d="M10 60C25 58.5 55 58.5 70 60"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <line x1="10" y1="62" x2="70" y2="62" stroke="#E1224D" strokeWidth="0.8" strokeOpacity="0.7" />
+      {/* Metro Support Pillars */}
+      <line x1="19" y1="62" x2="19" y2="68" stroke="currentColor" strokeWidth="1.3" />
+      <line x1="61" y1="62" x2="61" y2="68" stroke="currentColor" strokeWidth="1.3" />
+
+      {/* Base ground line */}
+      <line x1="10" y1="68" x2="70" y2="68" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/**
+ * 3. NOIDA (Outlined line-art: Expressway Towers & Cable-Stayed Bridge)
  */
 export function NoidaIllustration({ className = 'w-full h-full' }: CityIllustrationProps) {
   return (
@@ -199,7 +309,7 @@ export function NoidaIllustration({ className = 'w-full h-full' }: CityIllustrat
 }
 
 /**
- * 3. DELHI (Outlined line-art: India Gate Architectural Monument)
+ * 4. DELHI (Outlined line-art: India Gate Architectural Monument)
  */
 export function DelhiIllustration({ className = 'w-full h-full' }: CityIllustrationProps) {
   return (
@@ -289,7 +399,7 @@ export function DelhiIllustration({ className = 'w-full h-full' }: CityIllustrat
 }
 
 /**
- * 4. MORE CITIES (Outlined line-art: Multi-City Skyline Panorama & Explore Compass/Plus)
+ * 5. MORE CITIES (Outlined line-art: Multi-City Skyline Panorama & Explore Compass/Plus)
  */
 export function MoreCitiesIllustration({ className = 'w-full h-full' }: CityIllustrationProps) {
   return (
