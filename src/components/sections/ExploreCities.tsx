@@ -81,7 +81,7 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
 
               {/* City Name */}
               <span
-                className={`mt-2.5 sm:mt-3 text-xs sm:text-sm md:text-base font-semibold tracking-tight transition-colors text-center ${
+                className={`mt-2.5 sm:mt-3 text-[13px] sm:text-[15px] font-semibold tracking-tight transition-colors text-center ${
                   isSelected
                     ? 'text-[#E1224D]'
                     : 'text-[#1A1A1A] group-hover:text-[#E1224D]'
