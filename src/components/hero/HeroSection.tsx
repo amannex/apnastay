@@ -47,8 +47,8 @@ export default function HeroSection({
         {/* 1. Main Headline */}
         <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[74px] xl:text-[84px] 2xl:text-[92px] font-extrabold tracking-tight text-[#1A1A1A] leading-[1.08] sm:leading-[1.02] max-w-full mx-auto animate-slide-up">
           <span className="block">Not another</span>
-          <span className="block mt-1 sm:mt-2.5 whitespace-nowrap">
-            <span className="inline-block px-3 sm:px-5 lg:px-6 py-0.5 sm:py-1 rounded-2xl sm:rounded-3xl lg:rounded-full bg-[#ED3258] text-white font-black mr-2 sm:mr-3.5 uppercase tracking-wide align-middle -translate-y-0.5 sm:-translate-y-1 shadow-sm">
+          <span className="block mt-0.5 sm:mt-1.5 whitespace-nowrap">
+            <span className="font-rounded font-black text-[#ED3258] pr-2 uppercase tracking-wide">
               ONE-NIGHT
             </span>
             stay platform.
