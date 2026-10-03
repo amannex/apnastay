@@ -54,7 +54,7 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
       {/* 1. LEFT-ALIGNED SECTION HEADER */}
       <div className="text-left mb-8 sm:mb-10">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[rgb(17,24,39)]">
-          Explore Indian Cities
+          We are currently building in
         </h2>
         <p className="mt-2 text-[17px] text-[rgb(107,114,128)] leading-relaxed">
           Explore cities, discover localities, and find a place to call home.
@@ -71,27 +71,19 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
               key={city.id}
               href={city.href}
               onClick={() => onSelectCity?.(city.name)}
-              className="group flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E1224D] focus-visible:ring-offset-2 rounded-full cursor-pointer transition-all duration-300"
+              className="group flex flex-col items-center outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 active:outline-none rounded-full cursor-pointer transition-all duration-300 select-none [-webkit-tap-highlight-color:transparent]"
               aria-label={`Explore ${city.name}`}
             >
               {/* Circular Outlined Container with slightly reduced radius */}
               <div
-                className={`w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full bg-white border transition-all duration-300 flex items-center justify-center p-2.5 sm:p-3 shadow-2xs group-hover:shadow-apple-hover group-hover:-translate-y-1 ${
-                  isSelected
-                    ? 'border-[#E1224D] ring-4 ring-rose-100 shadow-apple-hover scale-105'
-                    : 'border-[#E5E7EB] group-hover:border-[#E1224D]'
-                }`}
+                className="w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full bg-white border border-[#E5E7EB] group-hover:border-[#E1224D] transition-all duration-300 flex items-center justify-center p-2.5 sm:p-3 shadow-2xs group-hover:shadow-apple-hover group-hover:-translate-y-1 outline-none ring-0"
               >
                 <city.Illustration className="w-full h-full text-[#334155] group-hover:text-[#E1224D] transition-all duration-300 group-hover:scale-105" />
               </div>
 
               {/* City Name */}
               <span
-                className={`mt-2.5 sm:mt-3 text-[13px] sm:text-[15px] font-semibold tracking-tight transition-colors text-center ${
-                  isSelected
-                    ? 'text-[#E1224D]'
-                    : 'text-[#1A1A1A] group-hover:text-[#E1224D]'
-                }`}
+                className="mt-2.5 sm:mt-3 text-[13px] sm:text-[15px] font-semibold tracking-tight transition-colors text-center text-[#1A1A1A] group-hover:text-[#E1224D]"
               >
                 {city.name}
               </span>
