@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import {
   GurugramIllustration,
   GhaziabadIllustration,
@@ -18,26 +19,31 @@ const ACTIVE_CITIES = [
   {
     id: 'gurugram',
     name: 'Gurugram',
+    href: '/gurugram',
     Illustration: GurugramIllustration,
   },
   {
     id: 'ghaziabad',
     name: 'Ghaziabad',
+    href: '/ghaziabad',
     Illustration: GhaziabadIllustration,
   },
   {
     id: 'noida',
     name: 'Noida',
+    href: '/noida',
     Illustration: NoidaIllustration,
   },
   {
     id: 'delhi',
     name: 'Delhi',
+    href: '/delhi',
     Illustration: DelhiIllustration,
   },
   {
     id: 'more-cities',
     name: 'More Cities',
+    href: '/cities',
     Illustration: MoreCitiesIllustration,
   },
 ];
@@ -61,9 +67,9 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
           const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
 
           return (
-            <button
+            <Link
               key={city.id}
-              type="button"
+              href={city.href}
               onClick={() => onSelectCity?.(city.name)}
               className="group flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E1224D] focus-visible:ring-offset-2 rounded-full cursor-pointer transition-all duration-300"
               aria-label={`Explore ${city.name}`}
@@ -89,7 +95,7 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
               >
                 {city.name}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>
