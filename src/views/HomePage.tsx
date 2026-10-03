@@ -40,7 +40,7 @@ export default function HomePage(props: any = {}) {
       />
 
       {/* 2. EXPLORE INDIAN CITIES SECTION */}
-      <section className="bg-[#F8F9FA] py-14 sm:py-16 md:py-20">
+      <section className="bg-[#F8F9FA] py-20 sm:py-24 md:py-28 lg:py-32">
         <CitiesCarousel onCityClick={onCitySelect} />
       </section>
 
