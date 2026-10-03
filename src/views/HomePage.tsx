@@ -39,11 +39,9 @@ export default function HomePage(props: any = {}) {
         onReset={onReset}
       />
 
-      {/* 2. CITIES CAROUSEL SECTION */}
-      <section className="bg-[#F8F9FA] pb-12 border-t border-b border-[#EDEDED]">
-        <div className="pt-4">
-          <CitiesCarousel onCityClick={onCitySelect} />
-        </div>
+      {/* 2. EXPLORE INDIAN CITIES SECTION */}
+      <section className="bg-[#F8F9FA] py-14 sm:py-16 md:py-20">
+        <CitiesCarousel onCityClick={onCitySelect} />
       </section>
 
       {/* 3.5. INDIAN RENTAL STAY CATEGORIES */}
