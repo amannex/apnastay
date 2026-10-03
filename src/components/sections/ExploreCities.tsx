@@ -3,9 +3,9 @@
 import React from 'react';
 import {
   GurugramIllustration,
-  GhaziabadIllustration,
   NoidaIllustration,
   DelhiIllustration,
+  MoreCitiesIllustration,
 } from './CityIllustrations';
 
 export interface ExploreCitiesProps {
@@ -20,11 +20,6 @@ const ACTIVE_CITIES = [
     Illustration: GurugramIllustration,
   },
   {
-    id: 'ghaziabad',
-    name: 'Ghaziabad',
-    Illustration: GhaziabadIllustration,
-  },
-  {
     id: 'noida',
     name: 'Noida',
     Illustration: NoidaIllustration,
@@ -34,23 +29,28 @@ const ACTIVE_CITIES = [
     name: 'Delhi',
     Illustration: DelhiIllustration,
   },
+  {
+    id: 'more-cities',
+    name: 'More Cities',
+    Illustration: MoreCitiesIllustration,
+  },
 ];
 
 export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCitiesProps) {
   return (
     <div id="cities" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* 1. SECTION HEADER */}
-      <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12 md:mb-14">
+      {/* 1. LEFT-ALIGNED SECTION HEADER */}
+      <div className="text-left mb-8 sm:mb-10">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#1A1A1A]">
           Explore Indian Cities
         </h2>
-        <p className="mt-2.5 sm:mt-3 text-sm sm:text-base text-[#6B7280] leading-relaxed">
+        <p className="mt-2 text-sm sm:text-base text-[#6B7280] leading-relaxed">
           Explore cities, discover localities, and find a place to call home.
         </p>
       </div>
 
-      {/* 2. CITIES DISCOVERY ROW */}
-      <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-6 sm:gap-10 md:gap-14 lg:gap-16 max-w-4xl mx-auto justify-items-center">
+      {/* 2. LEFT-ALIGNED CITIES DISCOVERY ROW */}
+      <div className="flex flex-wrap items-center justify-start gap-6 sm:gap-8 md:gap-10 lg:gap-12">
         {ACTIVE_CITIES.map((city) => {
           const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
 
@@ -62,20 +62,20 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
               className="group flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E1224D] focus-visible:ring-offset-2 rounded-full cursor-pointer transition-all duration-300"
               aria-label={`Explore ${city.name}`}
             >
-              {/* City Circular Illustration Container */}
+              {/* Circular Outlined Container */}
               <div
-                className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-white border-2 flex items-center justify-center p-2.5 sm:p-3 transition-all duration-300 shadow-xs group-hover:shadow-apple-hover group-hover:-translate-y-1.5 ${
+                className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-white border transition-all duration-300 flex items-center justify-center p-3 sm:p-3.5 shadow-2xs group-hover:shadow-apple-hover group-hover:-translate-y-1 ${
                   isSelected
                     ? 'border-[#E1224D] ring-4 ring-rose-100 shadow-apple-hover scale-105'
                     : 'border-[#E5E7EB] group-hover:border-[#E1224D]'
                 }`}
               >
-                <city.Illustration className="w-full h-full transition-transform duration-300 group-hover:scale-105" />
+                <city.Illustration className="w-full h-full text-[#334155] group-hover:text-[#E1224D] transition-all duration-300 group-hover:scale-105" />
               </div>
 
               {/* City Name */}
               <span
-                className={`mt-3 text-sm sm:text-base font-semibold tracking-tight transition-colors text-center ${
+                className={`mt-2.5 sm:mt-3 text-sm sm:text-base font-semibold tracking-tight transition-colors text-center ${
                   isSelected
                     ? 'text-[#E1224D]'
                     : 'text-[#1A1A1A] group-hover:text-[#E1224D]'
