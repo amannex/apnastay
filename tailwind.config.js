@@ -37,6 +37,7 @@ export default {
         sans: ['var(--font-next-inter)', 'var(--font-sans)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'Roboto', 'sans-serif'],
         outfit: ['var(--font-next-outfit)', 'Outfit', 'sans-serif'],
         inter: ['var(--font-next-inter)', 'var(--font-sans)', 'Inter', 'sans-serif'],
+        rounded: ['var(--font-next-nunito)', 'Nunito', 'Quicksand', 'Comfortaa', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         'apple': '0 4px 24px -2px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.04)',

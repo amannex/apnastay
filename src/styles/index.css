@@ -100,3 +100,8 @@
   font-weight: 900;
   letter-spacing: -0.04em;
 }
+
+.font-rounded {
+  font-family: var(--font-next-nunito), "Nunito", "Quicksand", "Comfortaa", "Varela Round", sans-serif !important;
+}
+

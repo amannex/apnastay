@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React from 'react';
-import { Inter, Outfit } from 'next/font/google';
+import { Inter, Outfit, Nunito } from 'next/font/google';
 import type { Metadata } from 'next';
 import '../styles/index.css';
 import { AppProvider } from '../context/AppContext';
@@ -19,6 +19,12 @@ const outfit = Outfit({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-next-outfit',
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-next-nunito',
 });
 
 export const metadata: Metadata = {
@@ -121,7 +127,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${nunito.variable}`} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <script

@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import AppleSimpleHero from '../components/hero/AppleSimpleHero';
-import SearchBar from '../components/search/SearchBar';
+import HeroSection from '../components/hero/HeroSection';
 import CitiesCarousel from '../components/sections/CitiesCarousel';
 import WhyApnaStayGrid from '../components/sections/WhyApnaStayGrid';
 import PropertiesSection from '../components/properties/PropertiesSection';
@@ -30,18 +29,19 @@ export default function HomePage(props: any = {}) {
   const onOpenAiMatchmaker = props.onOpenAiMatchmaker || app.onOpenAiMatchmaker;
   const activeTab = props.activeTab || app.activeTab || 'All';
   const onTabChange = props.onTabChange || app.onTabChange || (() => { });
+
   return (
     <main className="min-h-screen bg-white">
-      {/* 1. APPLE SIMPLE LIGHT THEME HERO */}
-      <AppleSimpleHero />
+      {/* 1. NEWER VERSION HERO SECTION (100SVH + SEARCH BAR INTEGRATED) */}
+      <HeroSection
+        filters={searchFilters}
+        onChange={onSearchChange}
+        onReset={onReset}
+      />
 
-      {/* 2. SEARCH & FILTER SECTION & CITIES CAROUSEL ON SEAMLESS WHITE BACKGROUND */}
+      {/* 2. CITIES CAROUSEL SECTION */}
       <section className="bg-white pb-12 border-b border-[#EDEDED]">
-        <div className="relative z-30 pt-4 pb-6">
-          <SearchBar filters={searchFilters} onChange={onSearchChange} onReset={onReset} />
-        </div>
-
-        <div className="pt-2">
+        <div className="pt-4">
           <CitiesCarousel onCityClick={onCitySelect} />
         </div>
       </section>
@@ -53,7 +53,7 @@ export default function HomePage(props: any = {}) {
       <WhyApnaStayGrid />
 
       {/* 5. FEATURED VERIFIED ROOMS WITH LINK TO MULTI-PAGE EXPLORER */}
-      <section className="pt-16 pb-12 bg-[#FAFAFA] border-b border-[#EDEDED]">
+      <section id="properties" className="pt-16 pb-12 bg-[#FAFAFA] border-b border-[#EDEDED]">
         <PropertiesSection
           activeTab={activeTab}
           onTabChange={onTabChange}
