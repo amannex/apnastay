@@ -47,10 +47,10 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
     <div id="cities" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 1. LEFT-ALIGNED SECTION HEADER */}
       <div className="text-left mb-8 sm:mb-10">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[#1A1A1A]">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[rgb(17,24,39)]">
           Explore Indian Cities
         </h2>
-        <p className="mt-2 text-sm sm:text-base text-[#6B7280] leading-relaxed">
+        <p className="mt-2 text-[17px] text-[rgb(107,114,128)] leading-relaxed">
           Explore cities, discover localities, and find a place to call home.
         </p>
       </div>
