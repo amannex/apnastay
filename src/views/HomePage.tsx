@@ -40,7 +40,7 @@ export default function HomePage(props: any = {}) {
       />
 
       {/* 2. CITIES CAROUSEL SECTION */}
-      <section className="bg-white pb-12 border-b border-[#EDEDED]">
+      <section className="bg-[#F8F9FA] pb-12 border-t border-b border-[#EDEDED]">
         <div className="pt-4">
           <CitiesCarousel onCityClick={onCitySelect} />
         </div>

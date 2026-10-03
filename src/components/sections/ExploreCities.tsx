@@ -5,7 +5,7 @@ import { MapPin, ArrowUpRight, Flame } from 'lucide-react';
 
 export default function ExploreCities({ selectedCity, onSelectCity }) {
   return (
-    <section id="cities" className="py-24 bg-white">
+    <section id="cities" className="py-24 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
@@ -24,7 +24,7 @@ export default function ExploreCities({ selectedCity, onSelectCity }) {
 
           <button
             onClick={() => onSelectCity('all')}
-            className="self-start md:self-auto px-5 py-2.5 rounded-full border border-[#EDEDED] hover:border-[#1A1A1A] text-xs font-semibold text-[#1A1A1A] transition-colors"
+            className="self-start md:self-auto px-5 py-2.5 rounded-full bg-white border border-[#EDEDED] hover:border-[#1A1A1A] text-xs font-semibold text-[#1A1A1A] transition-all shadow-sm"
           >
             View All Cities ({STATIC_CITIES.reduce((acc, c) => acc + c.availableRooms, 0)} rooms)
           </button>
