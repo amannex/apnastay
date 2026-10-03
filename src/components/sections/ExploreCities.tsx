@@ -56,7 +56,7 @@ export default function ExploreCities({ selectedCity, onSelectCity }: ExploreCit
       </div>
 
       {/* 2. LEFT-ALIGNED CITIES DISCOVERY ROW */}
-      <div className="flex flex-wrap items-center justify-start gap-5 sm:gap-7 md:gap-9 lg:gap-10">
+      <div className="flex flex-wrap items-center justify-start gap-[25px] sm:gap-[33px] md:gap-[41px] lg:gap-[45px]">
         {ACTIVE_CITIES.map((city) => {
           const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
 
