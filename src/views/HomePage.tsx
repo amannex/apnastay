@@ -12,6 +12,7 @@ import ManagedServicesShowcase from '../components/sections/ManagedServicesShowc
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import AppLaunchBanner from '../components/sections/AppLaunchBanner';
+import WhatApnaStayDoes from '../components/sections/WhatApnaStayDoes';
 import { useApp } from '../context/AppContext';
 
 export default function HomePage(props: any = {}) {
@@ -39,12 +40,13 @@ export default function HomePage(props: any = {}) {
         onReset={onReset}
       />
 
-      {/* 2. CITIES CAROUSEL SECTION */}
-      <section className="bg-white pb-12 border-b border-[#EDEDED]">
-        <div className="pt-4">
-          <CitiesCarousel onCityClick={onCitySelect} />
-        </div>
+      {/* 2. EXPLORE INDIAN CITIES SECTION */}
+      <section className="bg-[#F8F9FA] py-20 sm:py-24 md:py-28 lg:py-32">
+        <CitiesCarousel onCityClick={onCitySelect} />
       </section>
+
+      {/* 3. WHAT APNASTAY ACTUALLY DOES */}
+      <WhatApnaStayDoes />
 
       {/* 3.5. INDIAN RENTAL STAY CATEGORIES */}
       <RentalCategoriesShowcase />

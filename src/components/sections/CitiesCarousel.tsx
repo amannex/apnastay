@@ -1,6 +1,11 @@
 import React from 'react';
 import ExploreCities from './ExploreCities';
 
-export default function CitiesCarousel({ onCityClick }) {
-  return <ExploreCities selectedCity="all" onSelectCity={onCityClick} />;
+interface CitiesCarouselProps {
+  onCityClick?: (city: string) => void;
+  selectedCity?: string;
+}
+
+export default function CitiesCarousel({ onCityClick, selectedCity }: CitiesCarouselProps) {
+  return <ExploreCities selectedCity={selectedCity} onSelectCity={onCityClick} />;
 }
